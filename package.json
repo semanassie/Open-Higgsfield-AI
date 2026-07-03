@@ -13,7 +13,21 @@
     "electron:build": "vite build && electron-builder --mac",
     "electron:build:dmg": "vite build && electron-builder --mac dmg",
     "electron:build:win": "vite build && electron-builder --win",
-    "electron:build:all": "vite build && electron-builder --mac --win"
+    "electron:build:all": "vite build && electron-builder --mac --win",
+    "test:phase1": "node tests/phase1-smoke.test.js",
+    "test:smoke": "node tests/smoke-full.test.js && node tests/smoke-interactions.test.js",
+    "test:smoke:full": "node tests/smoke-full.test.js",
+    "test:smoke:interactions": "node tests/smoke-interactions.test.js",
+    "test:seedance": "node tests/seedance.test.js",
+    "test:explainer": "node tests/explainer-combine.test.js",
+    "test:explainer:human": "node tests/explainer-human.test.js",
+    "test:character-builder": "node tests/character-builder.test.js",
+    "test:character-builder:human": "node tests/character-builder-human.test.js",
+    "audit:models": "node scripts/audit-model-params.js",
+    "audit:video-fields": "node scripts/audit-video-fields.js",
+    "sync:models-dump": "node scripts/sync-models-dump.js",
+    "test:all": "node tests/smoke-full.test.js && node tests/smoke-interactions.test.js && node tests/seedance.test.js",
+    "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/create-desktop-shortcut.ps1"
   },
   "build": {
     "appId": "ai.higgsfield.open",
@@ -54,7 +68,10 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
@@ -74,6 +91,9 @@
     "vite": "^5.4.0"
   },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.6",
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
     "puppeteer": "^24.37.2"

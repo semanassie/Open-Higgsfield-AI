@@ -7,6 +7,11 @@ import {
 import { AuthModal } from './AuthModal.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
+import {
+    loadGenerationHistory, saveGenerationHistory, createHistoryEntry,
+    createRetentionNoticeElement, HISTORY_KEYS,
+} from '../lib/generationHistory.js';
+import { validateModelParams } from '../lib/modelRequirements.js';
 
 export function ImageStudio() {
     const container = document.createElement('div');
@@ -159,7 +164,9 @@ export function ImageStudio() {
     // Show quality button if the default model has quality/resolution options
     const _initResolutions = getResolutionsForModel(defaultModel.id);
     qualityBtn.style.display = _initResolutions.length > 0 ? 'flex' : 'none';
-    if (_initResolutions.length > 0) document.getElementById('quality-btn-label').textContent = _initResolutions[0];
+    if (_initResolutions.length > 0) {
+        qualityBtn.querySelector('#quality-btn-label').textContent = _initResolutions[0];
+    }
 
     const generateBtn = document.createElement('button');
     generateBtn.className = 'bg-primary text-black px-6 md:px-8 py-3 md:py-3.5 rounded-xl md:rounded-[1.5rem] font-black text-sm md:text-base hover:shadow-glow hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5 w-full sm:w-auto shadow-lg';
@@ -358,7 +365,7 @@ export function ImageStudio() {
     // ==========================================
     // 4. CANVAS AREA + HISTORY
     // ==========================================
-    const generationHistory = [];
+    const generationHistory = loadGenerationHistory(HISTORY_KEYS.image);
 
     // History sidebar
     const historySidebar = document.createElement('div');
@@ -369,6 +376,9 @@ export function ImageStudio() {
     historyLabel.className = 'text-[9px] font-bold text-muted uppercase tracking-widest mb-2 rotate-0';
     historyLabel.textContent = 'History';
     historySidebar.appendChild(historyLabel);
+
+    const retentionNotice = createRetentionNoticeElement();
+    historySidebar.appendChild(retentionNotice);
 
     const historyList = document.createElement('div');
     historyList.className = 'flex flex-col gap-2 w-full px-2';
@@ -428,10 +438,8 @@ export function ImageStudio() {
 
     // --- Helper: Add to history ---
     const addToHistory = (entry) => {
-        generationHistory.unshift(entry);
-
-        // Save to localStorage
-        localStorage.setItem('muapi_history', JSON.stringify(generationHistory.slice(0, 50)));
+        generationHistory.unshift(createHistoryEntry(entry));
+        saveGenerationHistory(HISTORY_KEYS.image, generationHistory);
 
         // Show sidebar
         historySidebar.classList.remove('translate-x-full', 'opacity-0');
@@ -494,15 +502,11 @@ export function ImageStudio() {
     };
 
     // --- Load history from localStorage ---
-    try {
-        const saved = JSON.parse(localStorage.getItem('muapi_history') || '[]');
-        if (saved.length > 0) {
-            saved.forEach(e => generationHistory.push(e));
-            historySidebar.classList.remove('translate-x-full', 'opacity-0');
-            historySidebar.classList.add('translate-x-0', 'opacity-100');
-            renderHistory();
-        }
-    } catch (e) { /* ignore */ }
+    if (generationHistory.length > 0) {
+        historySidebar.classList.remove('translate-x-full', 'opacity-0');
+        historySidebar.classList.add('translate-x-0', 'opacity-100');
+        renderHistory();
+    }
 
     // --- Resume any pending image generations from a previous session ---
     (async () => {
@@ -616,7 +620,7 @@ export function ImageStudio() {
                 const genParams = {
                     model: selectedModel,
                     images_list: uploadedImageUrls,
-                    image_url: uploadedImageUrls[0], // backward compat for single-image models
+                    image_url: uploadedImageUrls[0],
                     aspect_ratio: selectedAr,
                     onRequestId: (rid) => {
                         capturedRequestId = rid;
@@ -626,6 +630,15 @@ export function ImageStudio() {
                 if (prompt) genParams.prompt = prompt;
                 const qualityField = getCurrentQualityField(selectedModel);
                 if (qualityField && qualityLabel) genParams[qualityField] = qualityLabel;
+
+                const check = validateModelParams('i2i', selectedModel, genParams);
+                if (!check.valid) {
+                    alert(check.errors.join('\n'));
+                    hero.classList.remove('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `Generate ✨`;
+                    return;
+                }
                 res = await muapi.generateI2I(genParams);
             } else {
                 const genParams = {
@@ -639,6 +652,15 @@ export function ImageStudio() {
                 };
                 const qualityField = getCurrentQualityField(selectedModel);
                 if (qualityField && qualityLabel) genParams[qualityField] = qualityLabel;
+
+                const check = validateModelParams('t2i', selectedModel, genParams);
+                if (!check.valid) {
+                    alert(check.errors.join('\n'));
+                    hero.classList.remove('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `Generate ✨`;
+                    return;
+                }
                 res = await muapi.generateImage(genParams);
             }
 

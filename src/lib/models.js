@@ -1,5 +1,8 @@
-// Auto-generated from models_dump.json
+// Auto-generated from models_dump.json + phase1 featured models
+import { PHASE1_T2I, PHASE1_I2I, PHASE1_T2V, PHASE1_I2V } from './phase1Models.js';
+
 export const t2iModels = [
+  ...PHASE1_T2I,
   {
     "id": "nano-banana",
     "name": "Nano Banana",
@@ -82,87 +85,6 @@ export const t2iModels = [
     }
   },
   {
-    "id": "flux-dev-lora",
-    "name": "Flux Dev Lora",
-    "inputs": {
-      "prompt": {
-        "examples": [
-          "A female warrior in ornate armor standing on a cliff during sunset, flowing cape, wind blowing through her hair, detailed fantasy art style."
-        ],
-        "description": "Text prompt describing the image. The length of the prompt must be between 2 and 3000 characters.",
-        "type": "string",
-        "title": "Prompt",
-        "name": "prompt"
-      },
-      "model_id": {
-        "examples": [
-          {
-            "model": "civitai:119351@317153",
-            "weight": 1
-          }
-        ],
-        "title": "LoRA Ids",
-        "name": "model_id",
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "model": {
-              "type": "string",
-              "format": "url",
-              "title": "Model ID",
-              "description": "The Civitai LoRA model ID."
-            },
-            "weight": {
-              "type": "number",
-              "title": "Weight",
-              "description": "A list of LoRA models to use for generation. Each item must include an `id` (e.g., \"civitai:1642876@1864626\") and a `weight` between 0 and 4. You can include up to 4 models. The `id` can be found in the Civitai model URL. These models will be applied with the specified weights by the Flux Dev system during image generation.",
-              "minValue": 0,
-              "maxValue": 4,
-              "step": 0.01,
-              "default": 1
-            }
-          }
-        },
-        "description": "The unique identifier of a LoRA model hosted on Civitai, used by the Flux Dev image generation system. This ID tells Flux Dev which specific LoRA model to apply during generation. You can find the model ID in the Civitai model URL (e.g., model_id: civitai:1642876@1864626).",
-        "maxItems": 4
-      },
-      "width": {
-        "title": "Width",
-        "name": "width",
-        "type": "int",
-        "description": "Width of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64,
-        "isEdit": true
-      },
-      "height": {
-        "title": "Height",
-        "name": "height",
-        "type": "int",
-        "description": "Height of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64,
-        "isEdit": true
-      },
-      "num_images": {
-        "title": "Number of images",
-        "name": "num_images",
-        "type": "int",
-        "description": "Number of images generated in single request. Each number will charge separately",
-        "default": 1,
-        "minValue": 1,
-        "maxValue": 4,
-        "step": 1,
-        "isEdit": true
-      }
-    }
-  },
-  {
     "id": "flux-kontext-dev-t2i",
     "name": "Flux Kontext Dev T2I",
     "inputs": {
@@ -203,141 +125,6 @@ export const t2iModels = [
         "maxValue": 4,
         "step": 1,
         "isEdit": true
-      }
-    }
-  },
-  {
-    "id": "hidream-i1-fast",
-    "name": "Hidream I1 Fast",
-    "inputs": {
-      "prompt": {
-        "examples": [
-          "A colorful cartoon-style cat sitting on a skateboard, wide smile, playful background, 2D flat illustration style."
-        ],
-        "description": "Text prompt describing the image. The length of the prompt must be between 2 and 3000 characters.",
-        "type": "string",
-        "title": "Prompt",
-        "name": "prompt"
-      },
-      "width": {
-        "title": "Width",
-        "name": "width",
-        "type": "int",
-        "description": "Width of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64
-      },
-      "height": {
-        "title": "Height",
-        "name": "height",
-        "type": "int",
-        "description": "Height of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64
-      },
-      "num_images": {
-        "title": "Number of images",
-        "name": "num_images",
-        "type": "int",
-        "description": "Number of images generated in single request. Each number will charge separately",
-        "default": 1,
-        "minValue": 1,
-        "maxValue": 4,
-        "step": 1
-      }
-    }
-  },
-  {
-    "id": "hidream-i1-dev",
-    "name": "Hidream I1 Dev",
-    "inputs": {
-      "prompt": {
-        "examples": [
-          "A colorful cartoon-style cat sitting on a skateboard, wide smile, playful background, 2D flat illustration style."
-        ],
-        "description": "Text prompt describing the image. The length of the prompt must be between 2 and 3000 characters.",
-        "type": "string",
-        "title": "Prompt",
-        "name": "prompt"
-      },
-      "width": {
-        "title": "Width",
-        "name": "width",
-        "type": "int",
-        "description": "Width of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64
-      },
-      "height": {
-        "title": "Height",
-        "name": "height",
-        "type": "int",
-        "description": "Height of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64
-      },
-      "num_images": {
-        "title": "Number of images",
-        "name": "num_images",
-        "type": "int",
-        "description": "Number of images generated in single request. Each number will charge separately",
-        "default": 1,
-        "minValue": 1,
-        "maxValue": 4,
-        "step": 1
-      }
-    }
-  },
-  {
-    "id": "hidream-i1-full",
-    "name": "Hidream I1 Full",
-    "inputs": {
-      "prompt": {
-        "examples": [
-          "A majestic elven queen standing in a glowing forest, wearing intricate golden armor with emerald details, sunlight rays filtering through the trees, ultra-detailed fantasy concept art."
-        ],
-        "description": "Text prompt describing the image. The length of the prompt must be between 2 and 3000 characters.",
-        "type": "string",
-        "title": "Prompt",
-        "name": "prompt"
-      },
-      "width": {
-        "title": "Width",
-        "name": "width",
-        "type": "int",
-        "description": "Width of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64
-      },
-      "height": {
-        "title": "Height",
-        "name": "height",
-        "type": "int",
-        "description": "Height of the output image. The value must be divisible by 64, eg: 128...512, 576, 640...2048.",
-        "default": 1024,
-        "minValue": 128,
-        "maxValue": 2048,
-        "step": 64
-      },
-      "num_images": {
-        "title": "Number of images",
-        "name": "num_images",
-        "type": "int",
-        "description": "Number of images generated in single request. Each number will charge separately",
-        "default": 1,
-        "minValue": 1,
-        "maxValue": 4,
-        "step": 1
       }
     }
   },
@@ -634,35 +421,6 @@ export const t2iModels = [
         "minValue": 1,
         "maxValue": 4,
         "step": 1
-      }
-    }
-  },
-  {
-    "id": "bytedance-seedream-v3",
-    "name": "Bytedance Seedream v3",
-    "inputs": {
-      "prompt": {
-        "examples": [
-          "A magical forest with glowing mushrooms and a crystal river under a starry sky, dreamy and ethereal style."
-        ],
-        "description": "Text prompt describing the image.",
-        "type": "string",
-        "title": "Prompt",
-        "name": "prompt"
-      },
-      "aspect_ratio": {
-        "enum": [
-          "1:1",
-          "16:9",
-          "9:16",
-          "3:4",
-          "4:3"
-        ],
-        "title": "Aspect Ratio",
-        "name": "aspect_ratio",
-        "type": "string",
-        "description": "Aspect ratio of the output image.",
-        "default": "1:1"
       }
     }
   },
@@ -2110,6 +1868,70 @@ export const getAspectRatiosForModel = (modelId) => {
 // Text-to-Video Models
 // ==========================================
 export const t2vModels = [
+  ...PHASE1_T2V,
+  {
+    "id": "seedance-2.0-omni-reference",
+    "name": "Seedance 2.0 Omni Reference",
+    "endpoint": "seedance-2.0-omni-reference",
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["480p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
+  {
+    "id": "seedance-2.0-omni-reference-480p",
+    "name": "Seedance 2.0 Omni Reference 480p",
+    "endpoint": "seedance-2.0-omni-reference-480p",
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 8, "minValue": 8, "maxValue": 8 },
+      "resolution": { "enum": ["480p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "480p" }
+    }
+  },
+  {
+    "id": "seedance-2-text-to-video",
+    "name": "Seedance 2.0 T2V",
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["480p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
+  {
+    "id": "pixverse-v6-t2v",
+    "name": "Pixverse V6 T2V",
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "enum": [5, 8, 10], "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["360p", "540p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" },
+      "style": { "enum": ["none", "anime", "3d_animation", "clay", "comic", "cyberpunk"], "title": "Style", "name": "style", "type": "string", "description": "Artistic style applied to generation", "default": "none" }
+    }
+  },
+  {
+    "id": "wan2.7-text-to-video",
+    "name": "Wan 2.7 T2V",
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "enum": [5, 10, 15], "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["480p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
+  {
+    "id": "veo3.1-4k-video",
+    "name": "Veo 3.1 4K T2V",
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 8 },
+      "resolution": { "enum": ["720p", "1080p", "4k"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "4k" }
+    }
+  },
   {
     "id": "seedance-lite-t2v",
     "name": "Seedance Lite",
@@ -2173,6 +1995,7 @@ export const t2vModels = [
   {
     "id": "seedance-v2.0-extend",
     "name": "Seedance 2.0 Extend",
+    "endpoint": "seedance-2-extend",
     "requiresRequestId": true,
     "inputs": {
       "request_id": { "type": "string", "title": "Request ID", "name": "request_id", "description": "Request ID of the original Seedance 2.0 video generation.", "placeholder": "abcdefg-123-456-789-a1b2c3d4e5f6" },
@@ -2534,6 +2357,55 @@ export const getResolutionsForVideoModel = (modelId) => {
 };
 // Auto-generated from schema_data.json — Image to Image models
 export const i2iModels = [
+  ...PHASE1_I2I,
+  {
+    "id": "wan2.7-image-edit",
+    "name": "Wan 2.7 Image Edit",
+    "endpoint": "wan2.7-image-edit",
+    "family": "wan2.7",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "maxImages": 5,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe how to transform the image."
+      },
+      "aspect_ratio": {
+        "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "default": "16:9"
+      }
+    }
+  },
+  {
+    "id": "wan2.7-image-edit-pro",
+    "name": "Wan 2.7 Image Edit Pro",
+    "endpoint": "wan2.7-image-edit-pro",
+    "family": "wan2.7",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "maxImages": 5,
+    "inputs": {
+      "prompt": {
+        "type": "string",
+        "title": "Prompt",
+        "name": "prompt",
+        "description": "Describe how to transform the image."
+      },
+      "aspect_ratio": {
+        "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        "title": "Aspect Ratio",
+        "name": "aspect_ratio",
+        "type": "string",
+        "default": "16:9"
+      }
+    }
+  },
   {
     "id": "ai-image-upscaler",
     "name": "AI Image Upscaler",
@@ -4102,22 +3974,6 @@ export const i2iModels = [
     }
   },
   {
-    "id": "image-passthrough",
-    "name": "Image Passthrough",
-    "endpoint": "image-passthrough",
-    "family": "image",
-    "imageField": "image_url",
-    "hasPrompt": false,
-    "inputs": {
-      "make_input": {
-        "type": "boolean",
-        "title": "Make Input",
-        "name": "make_input",
-        "default": true
-      }
-    }
-  },
-  {
     "id": "kling-o1-edit-image",
     "name": "Kling O1 Edit Image",
     "endpoint": "kling-o1-edit-image",
@@ -4563,34 +4419,6 @@ export const i2iModels = [
     }
   },
   {
-    "id": "Api Node",
-    "name": "Api Node",
-    "endpoint": "Api Node",
-    "family": "wavespeed",
-    "imageField": "image_url",
-    "hasPrompt": false,
-    "inputs": {
-      "model_url": {
-        "type": "string",
-        "title": "Model URL",
-        "name": "model_url",
-        "description": "Url of the wavespeed model",
-        "examples": [
-          ""
-        ]
-      },
-      "api_key": {
-        "type": "string",
-        "title": "API Key",
-        "name": "api_key",
-        "description": "API key for authentication",
-        "examples": [
-          ""
-        ]
-      }
-    }
-  },
-  {
     "id": "flux-2-klein-4b-edit",
     "name": "Flux 2 Klein 4b Edit",
     "endpoint": "flux-2-klein-4b-edit",
@@ -4793,6 +4621,64 @@ export const i2iModels = [
 
 // Auto-generated from schema_data.json — Image to Video models
 export const i2vModels = [
+  ...PHASE1_I2V,
+  {
+    "id": "seedance-2-omni-reference-no-video",
+    "name": "Seedance 2.0 Omni Ref No Video",
+    "endpoint": "seedance-2-omni-reference-no-video",
+    "family": "seedance-v2",
+    "imageField": "image_url",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["480p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
+  {
+    "id": "pixverse-v6-i2v",
+    "name": "Pixverse V6 I2V",
+    "endpoint": "pixverse-v6-i2v",
+    "family": "pixverse-v6",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "enum": [5, 8, 10], "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["360p", "540p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" },
+      "style": { "enum": ["none", "anime", "3d_animation", "clay", "comic", "cyberpunk"], "title": "Style", "name": "style", "type": "string", "description": "Artistic style applied to generation", "default": "none" }
+    }
+  },
+  {
+    "id": "wan2.7-image-to-video",
+    "name": "Wan 2.7 I2V",
+    "endpoint": "wan2.7-image-to-video",
+    "family": "wan2.7",
+    "imageField": "image_url",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "enum": [5, 10, 15], "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["480p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
+  {
+    "id": "wan2.7-reference-to-video",
+    "name": "Wan 2.7 Reference To Video",
+    "endpoint": "wan2.7-reference-to-video",
+    "family": "wan2.7",
+    "imageField": "videos_list",
+    "hasPrompt": true,
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "enum": [5, 10, 15], "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
+      "resolution": { "enum": ["720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
   {
     "id": "ai-video-effects",
     "name": "AI Video Effects",
@@ -5622,7 +5508,7 @@ export const i2vModels = [
     "name": "Runway Act Two I2V",
     "endpoint": "runway-act-two-i2v",
     "family": "runway",
-    "imageField": "image_url",
+    "imageField": "reference_video_url",
     "hasPrompt": false,
     "inputs": {
       "aspect_ratio": {
@@ -6952,7 +6838,8 @@ export const i2vModels = [
     "name": "Vidu Q2 Turbo Start End Video",
     "endpoint": "vidu-q2-turbo-start-end-video",
     "family": "vidu-q2",
-    "imageField": "image_url",
+    "imageField": "last_image",
+    "startImageField": "image_url",
     "hasPrompt": true,
     "inputs": {
       "prompt": {
@@ -7012,7 +6899,8 @@ export const i2vModels = [
     "name": "Vidu Q2 Pro Start End Video",
     "endpoint": "vidu-q2-pro-start-end-video",
     "family": "vidu-q2",
-    "imageField": "image_url",
+    "imageField": "last_image",
+    "startImageField": "image_url",
     "hasPrompt": true,
     "inputs": {
       "prompt": {
@@ -7969,6 +7857,14 @@ export const getModesForModel = (modelId) => {
     return [];
 };
 
+export const getStylesForModel = (modelId) => {
+    const model = [...t2vModels, ...i2vModels].find(m => m.id === modelId);
+    if (!model) return [];
+    const styleInput = model.inputs?.style;
+    if (styleInput?.enum) return styleInput.enum;
+    return [];
+};
+
 export const getResolutionsForI2IModel = (modelId) => {
     const model = getI2IModelById(modelId);
     if (!model) return [];
@@ -8012,6 +7908,43 @@ export const getMaxImagesForI2IModel = (modelId) => {
 
 // ─── Video-to-Video models ────────────────────────────────────────────────────
 export const v2vModels = [
+  {
+    "id": "pixverse-v6-transition",
+    "name": "Pixverse V6 Transition",
+    "endpoint": "pixverse-v6-transition",
+    "family": "pixverse-v6",
+    "videoField": "image_url",
+    "hasPrompt": true,
+    "description": "Generate smooth transitions from a reference image."
+  },
+  {
+    "id": "pixverse-v6-extend",
+    "name": "Pixverse V6 Extend",
+    "endpoint": "pixverse-v6-extend",
+    "family": "pixverse-v6",
+    "videoField": "video_url",
+    "hasPrompt": true,
+    "description": "Extend existing video clips using Pixverse V6."
+  },
+  {
+    "id": "wan2.7-video-extend",
+    "name": "Wan 2.7 Video Extend",
+    "endpoint": "wan2.7-video-extend",
+    "family": "wan2.7",
+    "videoField": "video_url",
+    "hasPrompt": true,
+    "description": "Extend an existing video seamlessly with Wan 2.7."
+  },
+  {
+    "id": "veo3.1-extend-video",
+    "name": "Veo 3.1 Extend Video",
+    "endpoint": "veo3.1-extend-video",
+    "family": "veo3.1",
+    "videoField": "request_id",
+    "requiresRequestId": true,
+    "hasPrompt": true,
+    "description": "Extend a previous Veo 3.1 generation using its request ID."
+  },
   {
     "id": "video-watermark-remover",
     "name": "AI Video Watermark Remover",
@@ -8169,3 +8102,104 @@ export const imageLipSyncModels = lipsyncModels.filter(m => m.category === 'imag
 export const videoLipSyncModels = lipsyncModels.filter(m => m.category === 'video');
 
 export const getV2VModelById = (id) => v2vModels.find(m => m.id === id);
+
+// ===================== AUDIO MODELS =====================
+
+export const ttsModels = [
+  {
+    id: 'minimax-speech-2.6-hd',
+    name: 'Minimax Speech HD',
+    endpoint: 'minimax-speech-2.6-hd',
+    description: 'High-definition text-to-speech with emotion control',
+    inputs: {
+      prompt: { type: 'string', title: 'Text', name: 'prompt', description: 'Text to speak (up to 10000 chars)' },
+      voice_id: {
+        type: 'string', title: 'Voice', name: 'voice_id',
+        enum: [
+          'Friendly_Person', 'Deep_Voice_Man', 'Calm_Woman', 'Wise_Woman', 'Casual_Guy',
+          'English_FriendlyPerson', 'English_Friendly_Female_3', 'English_Magnetic_Male_2',
+          'English_Steady_Female_1', 'English_CalmWoman', 'English_Deep-tonedMan',
+        ],
+        default: 'Friendly_Person'
+      },
+      speed: { type: 'number', title: 'Speed', name: 'speed', default: 1.0, minValue: 0.5, maxValue: 2.0, step: 0.1 },
+      emotion: {
+        type: 'string', title: 'Emotion', name: 'emotion',
+        enum: ['happy', 'sad', 'angry', 'fearful', 'disgusted', 'surprised', 'neutral'],
+        default: 'neutral'
+      }
+    }
+  },
+  {
+    id: 'minimax-speech-2.6-turbo',
+    name: 'Minimax Speech Turbo',
+    endpoint: 'minimax-speech-2.6-turbo',
+    description: 'Fast text-to-speech, great for quick previews',
+    inputs: {
+      prompt: { type: 'string', title: 'Text', name: 'prompt' },
+      voice_id: {
+        type: 'string', title: 'Voice', name: 'voice_id',
+        enum: [
+          'Friendly_Person', 'Deep_Voice_Man', 'Calm_Woman',
+          'English_FriendlyPerson', 'English_Friendly_Female_3', 'English_Magnetic_Male_2',
+        ],
+        default: 'Friendly_Person'
+      },
+      speed: { type: 'number', title: 'Speed', name: 'speed', default: 1.0, minValue: 0.5, maxValue: 2.0, step: 0.1 }
+    }
+  }
+];
+
+export const musicModels = [
+  {
+    id: 'suno-create-music',
+    name: 'Suno Create Music',
+    endpoint: 'suno-create-music',
+    description: 'Generate a full music track from a text prompt',
+    inputs: {
+      prompt: { type: 'string', title: 'Prompt / Lyrics', name: 'prompt', description: 'Describe the song or write lyrics (up to 3000 chars)' },
+      style: { type: 'string', title: 'Style', name: 'style', description: 'Music style (e.g. Pop, Jazz, Electronic, Classical)' },
+      instrumental: { type: 'boolean', title: 'Instrumental Only', name: 'instrumental', default: false }
+    }
+  },
+  {
+    id: 'suno-remix-music',
+    name: 'Suno Remix',
+    endpoint: 'suno-remix-music',
+    description: 'Remix an existing audio track',
+    inputs: {
+      prompt: { type: 'string', title: 'Remix Direction', name: 'prompt' },
+      audio_url: { type: 'string', title: 'Audio URL', name: 'audio_url', description: 'URL of audio to remix' },
+      style: { type: 'string', title: 'Style', name: 'style' }
+    }
+  },
+  {
+    id: 'suno-extend-music',
+    name: 'Suno Extend',
+    endpoint: 'suno-extend-music',
+    description: 'Extend an existing music track with new sections',
+    inputs: {
+      prompt: { type: 'string', title: 'Direction', name: 'prompt' },
+      audio_url: { type: 'string', title: 'Audio URL', name: 'audio_url', description: 'URL of audio to extend (must be < 2 min)' },
+      style: { type: 'string', title: 'Style', name: 'style' },
+      continue_at: { type: 'number', title: 'Continue At (seconds)', name: 'continue_at', description: 'Where in the track to start extending' }
+    }
+  }
+];
+
+export const sfxModels = [
+  {
+    id: 'mmaudio-v2-text-to-audio',
+    name: 'MMAudio Text to Audio',
+    endpoint: 'mmaudio-v2/text-to-audio',
+    description: 'Generate ambience and soundscapes from text',
+    inputs: {
+      prompt: { type: 'string', title: 'Prompt', name: 'prompt', description: 'Describe the sound or ambience' },
+      duration: { type: 'int', title: 'Duration (s)', name: 'duration', default: 8, minValue: 1, maxValue: 30 },
+    }
+  },
+];
+
+export function getTTSModelById(id) { return ttsModels.find(m => m.id === id); }
+export function getMusicModelById(id) { return musicModels.find(m => m.id === id); }
+export function getSFXModelById(id) { return sfxModels.find(m => m.id === id); }

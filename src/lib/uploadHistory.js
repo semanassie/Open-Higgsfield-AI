@@ -1,23 +1,46 @@
+import { computeExpiresAt, pruneExpiredEntries } from './generationHistory.js';
+
 const STORAGE_KEY = 'muapi_uploads';
 const MAX_UPLOADS = 20;
 
 export function getUploadHistory() {
     try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const pruned = pruneExpiredEntries(raw);
+        if (pruned.length !== raw.length) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+        }
+        return pruned;
     } catch {
         return [];
     }
 }
 
 export function saveUpload({ id, name, uploadedUrl, thumbnail, timestamp }) {
+    const ts = timestamp || new Date().toISOString();
+    const entry = {
+        id,
+        name,
+        uploadedUrl,
+        thumbnail,
+        timestamp: ts,
+        expiresAt: computeExpiresAt(ts),
+    };
     const history = getUploadHistory();
-    history.unshift({ id, name, uploadedUrl, thumbnail, timestamp });
+    history.unshift(entry);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, MAX_UPLOADS)));
 }
 
 export function removeUpload(id) {
     const history = getUploadHistory().filter(e => e.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+}
+
+/** Prune uploads whose MuAPI-hosted URLs are older than the retention window. */
+export function pruneUploadHistory() {
+    const pruned = pruneExpiredEntries(getUploadHistory());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+    return pruned;
 }
 
 /**
@@ -35,7 +58,6 @@ export async function generateThumbnail(file) {
             canvas.width = SIZE;
             canvas.height = SIZE;
             const ctx = canvas.getContext('2d');
-            // Center-crop to square
             const size = Math.min(img.width, img.height);
             const sx = (img.width - size) / 2;
             const sy = (img.height - size) / 2;

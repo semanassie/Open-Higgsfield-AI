@@ -27,7 +27,7 @@ export function Header(navigate) {
 
     const menu = document.createElement('nav');
     menu.className = 'hidden lg:flex items-center gap-6 text-[13px] font-bold text-secondary';
-    const items = ['Explore', 'Image', 'Video', 'Lip Sync', 'Edit', 'Character', 'Contests', 'Vibe Motion', 'Cinema Studio', 'AI Influencer', 'Apps', 'Assist', 'Community'];
+    const items = ['Explore', 'Image', 'Video', 'Shorts', 'Explainer', 'Lip Sync', 'Audio', 'Edit', 'Character', 'Contests', 'Vibe Motion', 'Cinema Studio', 'AI Influencer', 'Apps', 'Assist', 'Seedance', 'Community'];
 
     items.forEach(item => {
         const link = document.createElement('a');
@@ -53,8 +53,18 @@ export function Header(navigate) {
 
             if (item === 'Image') navigate('image');
             else if (item === 'Video') navigate('video');
+            else if (item === 'Shorts') navigate('shorts');
+            else if (item === 'Explainer') navigate('explainer');
             else if (item === 'Lip Sync') navigate('lipsync');
+            else if (item === 'Audio') navigate('audio');
+            else if (item === 'Apps') navigate('apps');
+            else if (item === 'Character') navigate('character');
             else if (item === 'Cinema Studio') navigate('cinema');
+            else if (item === 'Vibe Motion') navigate('vibemotion');
+            else if (item === 'AI Influencer') navigate('influencer');
+            else if (item === 'Assist') navigate('assist');
+            else if (item === 'Edit') navigate('edit');
+            else if (item === 'Seedance') navigate('seedance');
         };
 
         menu.appendChild(link);

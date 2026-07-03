@@ -1,8 +1,14 @@
 import { muapi } from '../lib/muapi.js';
-import { t2vModels, getAspectRatiosForVideoModel, getDurationsForModel, getResolutionsForVideoModel, i2vModels, getAspectRatiosForI2VModel, getDurationsForI2VModel, getResolutionsForI2VModel, v2vModels, getModesForModel } from '../lib/models.js';
+import { t2vModels, getAspectRatiosForVideoModel, getDurationsForModel, getResolutionsForVideoModel, i2vModels, getAspectRatiosForI2VModel, getDurationsForI2VModel, getResolutionsForI2VModel, v2vModels, getModesForModel, getStylesForModel } from '../lib/models.js';
+import { isSeedanceExtendable, isVeoExtendable, SEEDANCE_EXTEND_ENDPOINT, VEO_EXTEND_ENDPOINT } from '../lib/phase1Models.js';
 import { AuthModal } from './AuthModal.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
+import {
+    loadGenerationHistory, saveGenerationHistory, createHistoryEntry,
+    createRetentionNoticeElement, HISTORY_KEYS,
+} from '../lib/generationHistory.js';
+import { validateModelParams } from '../lib/modelRequirements.js';
 
 export function VideoStudio() {
     const container = document.createElement('div');
@@ -17,10 +23,13 @@ export function VideoStudio() {
     let selectedResolution = defaultModel.inputs?.resolution?.default || '';
     let selectedQuality = defaultModel.inputs?.quality?.default || '';
     let selectedMode = '';
+    let selectedStyle = '';
     let lastGenerationId = null;
     let lastGenerationModel = null;
     let dropdownOpen = null;
     let uploadedImageUrl = null;
+    let uploadedEndImageUrl = null;
+    let uploadedReferenceVideoUrl = null;
     let imageMode = false; // false = t2v models, true = i2v models
     let v2vMode = false;   // true = video-to-video tools mode
     let uploadedVideoUrl = null;
@@ -30,11 +39,16 @@ export function VideoStudio() {
     const getCurrentDurations = (id) => imageMode ? getDurationsForI2VModel(id) : getDurationsForModel(id);
     const getCurrentResolutions = (id) => imageMode ? getResolutionsForI2VModel(id) : getResolutionsForVideoModel(id);
     const getCurrentModes = (id) => getModesForModel(id);
+    const getCurrentStyles = (id) => getStylesForModel(id);
     const getCurrentModel = () => getCurrentModels().find(m => m.id === selectedModel);
     const getQualitiesForModel = (id) => {
         const model = getCurrentModels().find(m => m.id === id);
         return model?.inputs?.quality?.enum || [];
     };
+    const modelNeedsEndFrame = (m) => m?.startImageField === 'image_url' && m?.imageField === 'last_image';
+    const modelNeedsRefVideo = (m) => m?.imageField === 'videos_list' || m?.imageField === 'reference_video_url';
+    const modelIsImageV2V = (m) => m?.videoField === 'image_url';
+    const modelIsExtendV2V = (m) => m?.requiresRequestId && m?.videoField === 'request_id';
 
     // ==========================================
     // 1. HERO SECTION
@@ -111,6 +125,30 @@ export function VideoStudio() {
     topRow.appendChild(picker.trigger);
     container.appendChild(picker.panel);
 
+    const endFramePicker = createUploadPicker({
+        anchorContainer: container,
+        onSelect: ({ url }) => {
+            uploadedEndImageUrl = url;
+            if (!imageMode) {
+                imageMode = true;
+                const startEndModel = i2vModels.find(modelNeedsEndFrame) || i2vModels[0];
+                selectedModel = startEndModel.id;
+                selectedModelName = startEndModel.name;
+                document.getElementById('v-model-btn-label').textContent = selectedModelName;
+                updateControlsForModel(selectedModel);
+            }
+            textarea.placeholder = 'Describe the transition between start and end frames';
+            textarea.disabled = false;
+        },
+        onClear: () => {
+            uploadedEndImageUrl = null;
+        }
+    });
+    endFramePicker.trigger.title = 'Upload end frame image';
+    endFramePicker.trigger.classList.add('hidden');
+    topRow.appendChild(endFramePicker.trigger);
+    container.appendChild(endFramePicker.panel);
+
     // --- Video Upload Picker (Video-to-Video) ---
     const videoFileInput = document.createElement('input');
     videoFileInput.type = 'file';
@@ -165,6 +203,7 @@ export function VideoStudio() {
 
     const clearVideoUpload = () => {
         uploadedVideoUrl = null;
+        uploadedReferenceVideoUrl = null;
         v2vMode = false;
         showVideoIcon();
         selectedModel = t2vModels[0].id;
@@ -177,7 +216,7 @@ export function VideoStudio() {
 
     videoPickerBtn.onclick = (e) => {
         e.stopPropagation();
-        if (uploadedVideoUrl) {
+        if (uploadedVideoUrl || uploadedReferenceVideoUrl) {
             clearVideoUpload();
         } else {
             videoFileInput.click();
@@ -197,22 +236,53 @@ export function VideoStudio() {
         showVideoSpinner();
         try {
             const url = await muapi.uploadFile(file);
-            uploadedVideoUrl = url;
-            showVideoReady(file.name);
+            const currentModel = getCurrentModel();
 
-            // Switch to v2v mode
-            if (imageMode) {
-                picker.reset();
-                uploadedImageUrl = null;
-                imageMode = false;
+            if (imageMode && modelNeedsRefVideo(currentModel)) {
+                uploadedReferenceVideoUrl = url;
+                showVideoReady(file.name);
+                videoPickerBtn.title = `${file.name} (reference video) — click to clear`;
+                textarea.placeholder = currentModel?.imageField === 'reference_video_url'
+                    ? 'Upload character image + motion reference video, then Generate'
+                    : 'Reference video ready — add prompt and Generate';
+                textarea.disabled = false;
+            } else if (i2vModels.some((m) => m.imageField === 'videos_list' || m.imageField === 'reference_video_url')) {
+                uploadedReferenceVideoUrl = url;
+                showVideoReady(file.name);
+                imageMode = true;
+                const refModel = i2vModels.find((m) => m.imageField === 'videos_list')
+                    || i2vModels.find((m) => m.imageField === 'reference_video_url');
+                if (refModel && !modelNeedsRefVideo(currentModel)) {
+                    selectedModel = refModel.id;
+                    selectedModelName = refModel.name;
+                    document.getElementById('v-model-btn-label').textContent = selectedModelName;
+                    updateControlsForModel(selectedModel);
+                }
+                textarea.placeholder = refModel?.imageField === 'reference_video_url'
+                    ? 'Upload character image + motion reference video, then Generate'
+                    : 'Reference video ready — add prompt and Generate';
+                textarea.disabled = false;
+            } else {
+                uploadedVideoUrl = url;
+                showVideoReady(file.name);
+
+                // Switch to v2v mode
+                if (imageMode) {
+                    picker.reset();
+                    uploadedImageUrl = null;
+                    uploadedEndImageUrl = null;
+                    endFramePicker.reset();
+                    uploadedReferenceVideoUrl = null;
+                    imageMode = false;
+                }
+                v2vMode = true;
+                selectedModel = v2vModels[0].id;
+                selectedModelName = v2vModels[0].name;
+                document.getElementById('v-model-btn-label').textContent = selectedModelName;
+                updateControlsForModel(selectedModel);
+                textarea.placeholder = 'Video ready — click Generate to remove watermark';
+                textarea.disabled = true;
             }
-            v2vMode = true;
-            selectedModel = v2vModels[0].id;
-            selectedModelName = v2vModels[0].name;
-            document.getElementById('v-model-btn-label').textContent = selectedModelName;
-            updateControlsForModel(selectedModel);
-            textarea.placeholder = 'Video ready — click Generate to remove watermark';
-            textarea.disabled = true;
         } catch (err) {
             console.error('[VideoStudio] Video upload failed:', err);
             showVideoIcon();
@@ -290,12 +360,17 @@ export function VideoStudio() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="opacity-60 text-secondary"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     `, selectedMode || 'normal', 'v-mode-btn');
 
+    const styleBtn = createControlBtn(`
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="opacity-60 text-secondary"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/></svg>
+    `, selectedStyle || 'none', 'v-style-btn');
+
     controlsLeft.appendChild(modelBtn);
     controlsLeft.appendChild(arBtn);
     controlsLeft.appendChild(durationBtn);
     controlsLeft.appendChild(resolutionBtn);
     controlsLeft.appendChild(qualityBtn);
     controlsLeft.appendChild(modeBtn);
+    controlsLeft.appendChild(styleBtn);
 
     // Initial visibility (t2v mode)
     const initDurations = getDurationsForModel(defaultModel.id);
@@ -304,6 +379,7 @@ export function VideoStudio() {
     resolutionBtn.style.display = initResolutions.length > 0 ? 'flex' : 'none';
     qualityBtn.style.display = 'none';
     modeBtn.style.display = getModesForModel(defaultModel.id).length > 0 ? 'flex' : 'none';
+    styleBtn.style.display = getStylesForModel(defaultModel.id).length > 0 ? 'flex' : 'none';
 
     const generateBtn = document.createElement('button');
     generateBtn.className = 'bg-primary text-black px-6 md:px-8 py-3 md:py-3.5 rounded-xl md:rounded-[1.5rem] font-black text-sm md:text-base hover:shadow-glow hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2.5 w-full sm:w-auto shadow-lg';
@@ -324,17 +400,40 @@ export function VideoStudio() {
     const updateControlsForModel = (modelId) => {
         const model = getCurrentModels().find(m => m.id === modelId);
 
-        // In v2v mode, hide all parameter controls — no prompt/AR/duration/etc needed
+        // In v2v mode, hide parameter controls unless extend/image-based tool
         if (v2vMode) {
             arBtn.style.display = 'none';
             durationBtn.style.display = 'none';
             resolutionBtn.style.display = 'none';
             qualityBtn.style.display = 'none';
             modeBtn.style.display = 'none';
-            extendBanner.classList.add('hidden');
-            extendBanner.classList.remove('flex');
+            styleBtn.style.display = 'none';
+            picker.trigger.classList.toggle('hidden', !modelIsImageV2V(model));
+            endFramePicker.trigger.classList.add('hidden');
+            videoPickerBtn.classList.toggle('hidden', modelIsImageV2V(model) || modelIsExtendV2V(model));
+            if (modelIsExtendV2V(model)) {
+                extendBanner.classList.remove('hidden');
+                extendBanner.classList.add('flex');
+                extendBanner.querySelector('span').textContent =
+                    'Extending previous Veo 3.1 generation — add an optional prompt to guide the continuation';
+            } else {
+                extendBanner.classList.add('hidden');
+                extendBanner.classList.remove('flex');
+            }
+            if (modelIsImageV2V(model)) {
+                textarea.disabled = false;
+                textarea.placeholder = 'Upload a reference image, then describe the transition';
+            } else if (modelIsExtendV2V(model)) {
+                textarea.disabled = false;
+                textarea.placeholder = 'Optional: describe how to continue the video...';
+            }
             return;
         }
+
+        picker.trigger.classList.remove('hidden');
+        picker.trigger.classList.toggle('hidden', model?.imageField === 'videos_list');
+        endFramePicker.trigger.classList.toggle('hidden', !modelNeedsEndFrame(model));
+        videoPickerBtn.classList.toggle('hidden', !modelNeedsRefVideo(model));
 
         // Aspect ratio
         const availableArs = getCurrentAspectRatios(modelId);
@@ -388,10 +487,24 @@ export function VideoStudio() {
             modeBtn.style.display = 'none';
         }
 
+        // Style (Pixverse etc.)
+        const styles = getCurrentStyles(modelId);
+        if (styles.length > 0) {
+            selectedStyle = model?.inputs?.style?.default || styles[0];
+            document.getElementById('v-style-btn-label').textContent = selectedStyle.replace(/_/g, ' ');
+            styleBtn.style.display = 'flex';
+        } else {
+            selectedStyle = '';
+            styleBtn.style.display = 'none';
+        }
+
         // Extend banner (extend model only)
         if (model?.requiresRequestId) {
             extendBanner.classList.remove('hidden');
             extendBanner.classList.add('flex');
+            extendBanner.querySelector('span').textContent = model.id === VEO_EXTEND_ENDPOINT
+                ? 'Extending previous Veo 3.1 generation — add an optional prompt to guide the continuation'
+                : 'Extending previous Seedance 2.0 generation — add an optional prompt to guide the continuation';
         } else {
             extendBanner.classList.add('hidden');
             extendBanner.classList.remove('flex');
@@ -442,12 +555,23 @@ export function VideoStudio() {
                         imageMode = false;
                         picker.reset();
                         uploadedImageUrl = null;
+                        uploadedEndImageUrl = null;
+                        endFramePicker.reset();
+                        uploadedReferenceVideoUrl = null;
                         selectedModel = m.id;
                         selectedModelName = m.name;
                         document.getElementById('v-model-btn-label').textContent = selectedModelName;
                         updateControlsForModel(selectedModel);
-                        textarea.placeholder = 'Upload a video using the 🎥 button, then click Generate';
-                        textarea.disabled = true;
+                        if (modelIsImageV2V(m)) {
+                            textarea.placeholder = 'Upload a reference image, then describe the transition';
+                            textarea.disabled = false;
+                        } else if (modelIsExtendV2V(m)) {
+                            textarea.placeholder = 'Optional: describe how to continue the video...';
+                            textarea.disabled = false;
+                        } else {
+                            textarea.placeholder = 'Upload a video using the 🎥 button, then click Generate';
+                            textarea.disabled = true;
+                        }
                     } else {
                         // Leaving v2v mode if was in it
                         if (v2vMode) {
@@ -610,6 +734,29 @@ export function VideoStudio() {
                 list.appendChild(item);
             });
             dropdown.appendChild(list);
+
+        } else if (type === 'style') {
+            dropdown.classList.add('max-w-[200px]');
+            dropdown.innerHTML = `<div class="text-[10px] font-bold text-secondary uppercase tracking-widest px-3 py-2 border-b border-white/5 mb-2">Style</div>`;
+            const list = document.createElement('div');
+            list.className = 'flex flex-col gap-1';
+            getCurrentStyles(selectedModel).forEach(s => {
+                const label = s.replace(/_/g, ' ');
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3.5 hover:bg-white/5 rounded-2xl cursor-pointer transition-all group';
+                item.innerHTML = `
+                    <span class="text-xs font-bold text-white opacity-80 group-hover:opacity-100 capitalize">${label}</span>
+                    ${selectedStyle === s ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d9ff00" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                `;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    selectedStyle = s;
+                    document.getElementById('v-style-btn-label').textContent = label;
+                    closeDropdown();
+                };
+                list.appendChild(item);
+            });
+            dropdown.appendChild(list);
         }
 
         // Position dropdown
@@ -643,6 +790,7 @@ export function VideoStudio() {
     resolutionBtn.onclick = toggleDropdown('resolution', resolutionBtn);
     qualityBtn.onclick = toggleDropdown('quality', qualityBtn);
     modeBtn.onclick = toggleDropdown('mode', modeBtn);
+    styleBtn.onclick = toggleDropdown('style', styleBtn);
 
     window.addEventListener('click', closeDropdown);
     container.appendChild(dropdown);
@@ -650,7 +798,7 @@ export function VideoStudio() {
     // ==========================================
     // 4. CANVAS AREA + HISTORY
     // ==========================================
-    const generationHistory = [];
+    const generationHistory = loadGenerationHistory(HISTORY_KEYS.video, 30);
 
     const historySidebar = document.createElement('div');
     historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
@@ -660,6 +808,8 @@ export function VideoStudio() {
     historyLabel.className = 'text-[9px] font-bold text-muted uppercase tracking-widest mb-2';
     historyLabel.textContent = 'History';
     historySidebar.appendChild(historyLabel);
+
+    historySidebar.appendChild(createRetentionNoticeElement());
 
     const historyList = document.createElement('div');
     historyList.className = 'flex flex-col gap-2 w-full px-2';
@@ -717,9 +867,12 @@ export function VideoStudio() {
         hero.classList.add('hidden');
         promptWrapper.classList.add('hidden');
 
-        // Show extend button only for seedance-v2.0-t2v and i2v (not extend itself)
-        const isSeedance2 = genModel && (genModel === 'seedance-v2.0-t2v' || genModel === 'seedance-v2.0-i2v');
-        extendBtn.classList.toggle('hidden', !isSeedance2);
+        const isSeedance2 = genModel && isSeedanceExtendable(genModel);
+        const isVeo3 = genModel && isVeoExtendable(genModel);
+        extendBtn.classList.toggle('hidden', !(isSeedance2 || isVeo3));
+        extendBtn.title = isVeo3
+            ? 'Extend this video using Veo 3.1 Extend'
+            : 'Extend this video using Seedance 2.0 Extend';
 
         resultVideo.src = videoUrl;
         resultVideo.onloadeddata = () => {
@@ -732,8 +885,8 @@ export function VideoStudio() {
 
     // --- Helper: Add to history ---
     const addToHistory = (entry) => {
-        generationHistory.unshift(entry);
-        localStorage.setItem('video_history', JSON.stringify(generationHistory.slice(0, 30)));
+        generationHistory.unshift(createHistoryEntry(entry));
+        saveGenerationHistory(HISTORY_KEYS.video, generationHistory, 30);
         historySidebar.classList.remove('translate-x-full', 'opacity-0');
         historySidebar.classList.add('translate-x-0', 'opacity-100');
         renderHistory();
@@ -759,8 +912,7 @@ export function VideoStudio() {
                     downloadFile(entry.url, `video-${entry.id || idx}.mp4`);
                     return;
                 }
-                // Restore extend context when viewing a seedance-v2.0 generation
-                if (entry.model === 'seedance-v2.0-t2v' || entry.model === 'seedance-v2.0-i2v') {
+                if (entry.model && (isSeedanceExtendable(entry.model) || isVeoExtendable(entry.model))) {
                     lastGenerationId = entry.id;
                     lastGenerationModel = entry.model;
                 } else {
@@ -799,15 +951,11 @@ export function VideoStudio() {
     };
 
     // --- Load history from localStorage ---
-    try {
-        const saved = JSON.parse(localStorage.getItem('video_history') || '[]');
-        if (saved.length > 0) {
-            saved.forEach(e => generationHistory.push(e));
-            historySidebar.classList.remove('translate-x-full', 'opacity-0');
-            historySidebar.classList.add('translate-x-0', 'opacity-100');
-            renderHistory();
-        }
-    } catch (e) { /* ignore */ }
+    if (generationHistory.length > 0) {
+        historySidebar.classList.remove('translate-x-full', 'opacity-0');
+        historySidebar.classList.add('translate-x-0', 'opacity-100');
+        renderHistory();
+    }
 
     // --- Resume any pending video generations from a previous session ---
     (async () => {
@@ -887,9 +1035,18 @@ export function VideoStudio() {
         textarea.value = '';
         picker.reset();
         uploadedImageUrl = null;
+        uploadedEndImageUrl = null;
+        endFramePicker.reset();
+        uploadedReferenceVideoUrl = null;
         imageMode = false;
-        selectedModel = 'seedance-v2.0-extend';
-        selectedModelName = 'Seedance 2.0 Extend';
+        v2vMode = isVeoExtendable(lastGenerationModel);
+        if (v2vMode) {
+            selectedModel = VEO_EXTEND_ENDPOINT;
+            selectedModelName = 'Veo 3.1 Extend Video';
+        } else {
+            selectedModel = SEEDANCE_EXTEND_ENDPOINT;
+            selectedModelName = 'Seedance 2 Extend';
+        }
         document.getElementById('v-model-btn-label').textContent = selectedModelName;
         updateControlsForModel(selectedModel);
         textarea.placeholder = 'Optional: describe how to continue the video...';
@@ -905,18 +1062,44 @@ export function VideoStudio() {
         const isExtendMode = model?.requiresRequestId;
 
         if (v2vMode) {
-            if (!uploadedVideoUrl) {
+            const v2vModel = getCurrentModel();
+            if (modelIsExtendV2V(v2vModel)) {
+                if (!lastGenerationId) {
+                    alert('No Veo 3.1 generation found to extend. Generate a Veo 3.1 video first.');
+                    return;
+                }
+            } else if (modelIsImageV2V(v2vModel)) {
+                if (!uploadedImageUrl) {
+                    alert('Please upload a reference image first.');
+                    return;
+                }
+            } else if (!uploadedVideoUrl) {
                 alert('Please upload a video first.');
                 return;
             }
         } else if (isExtendMode) {
             if (!lastGenerationId) {
-                alert('No Seedance 2.0 generation found to extend. Generate a video first.');
+                alert(model?.id === VEO_EXTEND_ENDPOINT
+                    ? 'No Veo 3.1 generation found to extend. Generate a Veo 3.1 video first.'
+                    : 'No Seedance 2.0 generation found to extend. Generate a video first.');
                 return;
             }
         } else if (imageMode) {
-            if (!uploadedImageUrl) {
+            if (model?.imageField === 'videos_list') {
+                if (!uploadedReferenceVideoUrl) {
+                    alert('Please upload a reference video first.');
+                    return;
+                }
+            } else if (!uploadedImageUrl) {
                 alert('Please upload a start frame image first.');
+                return;
+            }
+            if (modelNeedsEndFrame(model) && !uploadedEndImageUrl) {
+                alert('Please upload an end frame image first.');
+                return;
+            }
+            if (model?.imageField === 'reference_video_url' && !uploadedReferenceVideoUrl) {
+                alert('Please upload a reference motion video first.');
                 return;
             }
         } else {
@@ -947,7 +1130,25 @@ export function VideoStudio() {
 
         try {
             if (v2vMode) {
-                const res = await muapi.processV2V({ model: selectedModel, video_url: uploadedVideoUrl, onRequestId });
+                const v2vModel = getCurrentModel();
+                const v2vParams = { model: selectedModel, onRequestId };
+                if (prompt) v2vParams.prompt = prompt;
+                if (modelIsExtendV2V(v2vModel)) {
+                    v2vParams.request_id = lastGenerationId;
+                } else if (modelIsImageV2V(v2vModel)) {
+                    v2vParams.image_url = uploadedImageUrl;
+                } else {
+                    v2vParams.video_url = uploadedVideoUrl;
+                }
+                const check = validateModelParams('v2v', selectedModel, v2vParams);
+                if (!check.valid) {
+                    alert(check.errors.join('\n'));
+                    hero.classList.remove('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `Generate ✨`;
+                    return;
+                }
+                const res = await muapi.processV2V(v2vParams);
                 console.log('[VideoStudio] V2V response:', res);
                 if (res && res.url) {
                     if (capturedRequestId) removePendingJob(capturedRequestId);
@@ -967,9 +1168,17 @@ export function VideoStudio() {
             if (imageMode) {
                 const i2vParams = {
                     model: selectedModel,
-                    image_url: uploadedImageUrl,
                     onRequestId,
                 };
+                if (model?.imageField === 'videos_list') {
+                    i2vParams.videos_list = [uploadedReferenceVideoUrl];
+                } else {
+                    i2vParams.image_url = uploadedImageUrl;
+                    if (modelNeedsEndFrame(model)) i2vParams.last_image = uploadedEndImageUrl;
+                    if (model?.imageField === 'reference_video_url') {
+                        i2vParams.reference_video_url = uploadedReferenceVideoUrl;
+                    }
+                }
                 if (prompt) i2vParams.prompt = prompt;
                 i2vParams.aspect_ratio = selectedAr;
                 const durations = getCurrentDurations(selectedModel);
@@ -978,6 +1187,16 @@ export function VideoStudio() {
                 if (resolutions.length > 0) i2vParams.resolution = selectedResolution;
                 if (selectedQuality) i2vParams.quality = selectedQuality;
                 if (selectedMode) i2vParams.mode = selectedMode;
+                if (selectedStyle) i2vParams.style = selectedStyle;
+
+                const check = validateModelParams('i2v', selectedModel, i2vParams);
+                if (!check.valid) {
+                    alert(check.errors.join('\n'));
+                    hero.classList.remove('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = `Generate ✨`;
+                    return;
+                }
 
                 const res = await muapi.generateI2V(i2vParams);
                 console.log('[VideoStudio] I2V response:', res);
@@ -985,7 +1204,7 @@ export function VideoStudio() {
                 if (res && res.url) {
                     if (capturedRequestId) removePendingJob(capturedRequestId);
                     const genId = res.id || capturedRequestId || Date.now().toString();
-                    if (selectedModel === 'seedance-v2.0-i2v') {
+                    if (isSeedanceExtendable(selectedModel) || isVeoExtendable(selectedModel)) {
                         lastGenerationId = genId;
                         lastGenerationModel = selectedModel;
                     } else {
@@ -1021,6 +1240,16 @@ export function VideoStudio() {
 
             if (selectedQuality) params.quality = selectedQuality;
             if (selectedMode) params.mode = selectedMode;
+            if (selectedStyle) params.style = selectedStyle;
+
+            const check = validateModelParams('t2v', selectedModel, params);
+            if (!check.valid) {
+                alert(check.errors.join('\n'));
+                hero.classList.remove('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `Generate ✨`;
+                return;
+            }
 
             const res = await muapi.generateVideo(params);
 
@@ -1029,8 +1258,7 @@ export function VideoStudio() {
             if (res && res.url) {
                 if (capturedRequestId) removePendingJob(capturedRequestId);
                 const genId = res.id || capturedRequestId || Date.now().toString();
-                // Store request_id for seedance-v2.0 models (enables Extend button)
-                if (selectedModel === 'seedance-v2.0-t2v' || selectedModel === 'seedance-v2.0-i2v') {
+                if (isSeedanceExtendable(selectedModel) || isVeoExtendable(selectedModel)) {
                     lastGenerationId = genId;
                     lastGenerationModel = selectedModel;
                 } else {

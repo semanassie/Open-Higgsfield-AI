@@ -3,6 +3,11 @@ import { lipsyncModels, imageLipSyncModels, videoLipSyncModels, getLipSyncModelB
 import { AuthModal } from './AuthModal.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
+import {
+    loadGenerationHistory, saveGenerationHistory, createHistoryEntry,
+    createRetentionNoticeElement, HISTORY_KEYS,
+} from '../lib/generationHistory.js';
+import { validateModelParams } from '../lib/modelRequirements.js';
 
 export function LipSyncStudio() {
     const container = document.createElement('div');
@@ -461,7 +466,7 @@ export function LipSyncStudio() {
     // ==========================================
     // 6. CANVAS AREA + HISTORY
     // ==========================================
-    const generationHistory = [];
+    const generationHistory = loadGenerationHistory(HISTORY_KEYS.lipsync, 30);
 
     const historySidebar = document.createElement('div');
     historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
@@ -471,6 +476,7 @@ export function LipSyncStudio() {
     historyLabel.className = 'text-[9px] font-bold text-muted uppercase tracking-widest mb-2';
     historyLabel.textContent = 'History';
     historySidebar.appendChild(historyLabel);
+    historySidebar.appendChild(createRetentionNoticeElement());
 
     const historyList = document.createElement('div');
     historyList.className = 'flex flex-col gap-2 w-full px-2';
@@ -528,8 +534,8 @@ export function LipSyncStudio() {
     };
 
     const addToHistory = (entry) => {
-        generationHistory.unshift(entry);
-        localStorage.setItem('lipsync_history', JSON.stringify(generationHistory.slice(0, 30)));
+        generationHistory.unshift(createHistoryEntry(entry));
+        saveGenerationHistory(HISTORY_KEYS.lipsync, generationHistory, 30);
         historySidebar.classList.remove('translate-x-full', 'opacity-0');
         historySidebar.classList.add('translate-x-0', 'opacity-100');
         renderHistory();
@@ -573,15 +579,11 @@ export function LipSyncStudio() {
     };
 
     // Load history
-    try {
-        const saved = JSON.parse(localStorage.getItem('lipsync_history') || '[]');
-        if (saved.length > 0) {
-            saved.forEach(e => generationHistory.push(e));
-            historySidebar.classList.remove('translate-x-full', 'opacity-0');
-            historySidebar.classList.add('translate-x-0', 'opacity-100');
-            renderHistory();
-        }
-    } catch { /* ignore */ }
+    if (generationHistory.length > 0) {
+        historySidebar.classList.remove('translate-x-full', 'opacity-0');
+        historySidebar.classList.add('translate-x-0', 'opacity-100');
+        renderHistory();
+    }
 
     // Resume pending jobs
     (async () => {
@@ -702,6 +704,15 @@ export function LipSyncStudio() {
             if (resolutions.length > 0) lipsyncParams.resolution = selectedResolution;
 
             if (model?.hasSeed) lipsyncParams.seed = -1;
+
+            const check = validateModelParams('lipsync', selectedModel, lipsyncParams);
+            if (!check.valid) {
+                alert(check.errors.join('\n'));
+                hero.classList.remove('opacity-0', 'scale-95', '-translate-y-10', 'pointer-events-none');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `Generate ✨`;
+                return;
+            }
 
             const res = await muapi.processLipSync(lipsyncParams);
             console.log('[LipSyncStudio] Response:', res);

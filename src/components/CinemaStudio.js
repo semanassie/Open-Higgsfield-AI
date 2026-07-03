@@ -3,6 +3,10 @@ import { muapi } from '../lib/muapi.js';
 import { CameraControls } from './CameraControls.js';
 import { buildNanoBananaPrompt, CAMERA_MAP, LENS_MAP } from '../lib/promptUtils.js';
 import { AuthModal } from './AuthModal.js';
+import {
+    loadGenerationHistory, saveGenerationHistory, createHistoryEntry,
+    createRetentionNoticeElement, HISTORY_KEYS,
+} from '../lib/generationHistory.js';
 
 export function CinemaStudio() {
     const container = document.createElement('div');
@@ -24,7 +28,7 @@ export function CinemaStudio() {
     const heroSection = document.createElement('div');
     heroSection.className = 'flex flex-col items-center justify-center text-center px-4 animate-fade-in-up';
     heroSection.innerHTML = `
-        <div class="mb-4 text-xs font-bold text-white/40 tracking-[0.2em] uppercase">Cinema Studio 2.0</div>
+        <div class="mb-4 text-xs font-bold text-white/40 tracking-[0.2em] uppercase">Cinema Studio 3.5</div>
         <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 tracking-tight leading-tight mb-2">
             What would you shoot<br>with infinite budget?
         </h1>
@@ -113,7 +117,24 @@ export function CinemaStudio() {
     };
     inputRow.appendChild(textarea);
 
+    const moodRow = document.createElement('div');
+    moodRow.className = 'flex flex-wrap gap-1.5 mt-2';
+    ['Noir', 'Epic', 'Romantic', 'Horror', 'Sci-Fi', 'Documentary'].forEach(mood => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.textContent = mood;
+        chip.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/10 text-white/50 hover:border-primary/40 hover:text-primary transition-colors';
+        chip.onclick = () => {
+            const tag = `${mood.toLowerCase()} mood, `;
+            if (!textarea.value.toLowerCase().includes(mood.toLowerCase())) {
+                textarea.value = tag + textarea.value;
+                textarea.dispatchEvent(new Event('input'));
+            }
+        };
+        moodRow.appendChild(chip);
+    });
     leftColumn.appendChild(inputRow);
+    leftColumn.appendChild(moodRow);
 
     // 2. Settings Toolbar (Bottom Left)
     // 2. Settings Toolbar (Bottom Left)
@@ -237,7 +258,7 @@ export function CinemaStudio() {
     // ==========================================
     // 3. HISTORY SIDEBAR
     // ==========================================
-    const generationHistory = [];
+    const generationHistory = loadGenerationHistory(HISTORY_KEYS.cinema);
 
     // History Sidebar - VISIBLE BY DEFAULT (removed translate-x-full opacity-0)
     const historySidebar = document.createElement('div');
@@ -247,6 +268,7 @@ export function CinemaStudio() {
     historyLabel.className = 'text-[9px] font-bold text-white/40 uppercase tracking-widest mb-2';
     historyLabel.textContent = 'History';
     historySidebar.appendChild(historyLabel);
+    historySidebar.appendChild(createRetentionNoticeElement());
 
     const historyList = document.createElement('div');
     historyList.className = 'flex flex-col gap-2 w-full px-2';
@@ -312,8 +334,8 @@ export function CinemaStudio() {
     };
 
     const addToHistory = (entry) => {
-        generationHistory.unshift(entry);
-        localStorage.setItem('cinema_history', JSON.stringify(generationHistory.slice(0, 50)));
+        generationHistory.unshift(createHistoryEntry(entry));
+        saveGenerationHistory(HISTORY_KEYS.cinema, generationHistory);
         renderHistory();
     };
 
@@ -375,13 +397,9 @@ export function CinemaStudio() {
     };
 
     // Load saved history
-    try {
-        const saved = JSON.parse(localStorage.getItem('cinema_history') || '[]');
-        if (saved.length > 0) {
-            saved.forEach(e => generationHistory.push(e));
-            renderHistory();
-        }
-    } catch (e) { }
+    if (generationHistory.length > 0) {
+        renderHistory();
+    }
 
     // Actions
     newPromptBtn.onclick = resetToPrompt;

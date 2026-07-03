@@ -1,4 +1,5 @@
-import { getModelById, getVideoModelById, getI2IModelById, getI2VModelById, getV2VModelById, getLipSyncModelById } from './models.js';
+import { buildApiPayload, buildAppPayload, buildAudioPayload, getAudioModelDefinition, getEndpointForModel, validateModelParams } from './modelRequirements.js';
+import { CHARACTER_FACE_I2I, CHARACTER_PORTRAIT_T2I } from './phase2Models.js';
 
 export class MuapiClient {
     constructor() {
@@ -10,6 +11,38 @@ export class MuapiClient {
         const key = localStorage.getItem('muapi_key');
         if (!key) throw new Error('API Key missing. Please set it in Settings.');
         return key;
+    }
+
+    getKlingKey() {
+        return localStorage.getItem('kling_key') || null;
+    }
+
+    /**
+     * POST JSON with retries on transient server errors (503/502/429).
+     */
+    async postJsonWithRetry(url, key, body, retries = 4) {
+        let lastErr = '';
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+                body: JSON.stringify(body),
+            });
+
+            if (response.ok) return response;
+
+            lastErr = await response.text();
+            const retryable = [503, 502, 429].includes(response.status);
+            if (retryable && attempt < retries) {
+                const delay = attempt * 2500;
+                console.warn(`[Muapi] ${response.status} on ${url}, retry ${attempt}/${retries - 1} in ${delay}ms`);
+                await new Promise((r) => setTimeout(r, delay));
+                continue;
+            }
+
+            throw new Error(`API Failed: ${response.status} - ${lastErr.slice(0, 200)}`);
+        }
+        throw new Error(`API Failed: ${lastErr.slice(0, 200)}`);
     }
 
     /**
@@ -27,43 +60,10 @@ export class MuapiClient {
     async generateImage(params) {
         const key = this.getKey();
 
-        // Resolve endpoint from model definition
-        const modelInfo = getModelById(params.model);
-        const endpoint = modelInfo?.endpoint || params.model;
+        const endpoint = getEndpointForModel('t2i', params.model);
         const url = `${this.baseUrl}/api/v1/${endpoint}`;
 
-        // Build payload matching the API's expected format
-        const finalPayload = {
-            prompt: params.prompt,
-        };
-
-        // Aspect ratio (send as string, the API handles it)
-        if (params.aspect_ratio) {
-            finalPayload.aspect_ratio = params.aspect_ratio;
-        }
-
-        // Resolution
-        if (params.resolution) {
-            finalPayload.resolution = params.resolution;
-        }
-
-        // Quality (used by seedream and similar models)
-        if (params.quality) {
-            finalPayload.quality = params.quality;
-        }
-
-        // Image-to-Image
-        if (params.image_url) {
-            finalPayload.image_url = params.image_url;
-            finalPayload.strength = params.strength || 0.6;
-        } else {
-            finalPayload.image_url = null;
-        }
-
-        // Optional params if supported by model
-        if (params.seed && params.seed !== -1) {
-            finalPayload.seed = params.seed;
-        }
+        const finalPayload = buildApiPayload('t2i', params.model, params);
 
         console.log('[Muapi] Requesting:', url);
         console.log('[Muapi] Payload:', finalPayload);
@@ -120,13 +120,33 @@ export class MuapiClient {
      * @param {number} maxAttempts - Maximum polling attempts (default 60 = ~2 min)
      * @param {number} interval - Polling interval in ms (default 2000)
      */
-    async pollForResult(requestId, key, maxAttempts = 60, interval = 2000) {
+    extractAudioUrl(result) {
+        if (!result) return null;
+        const candidates = [
+            ...(Array.isArray(result.outputs) ? result.outputs : []),
+            result.audio,
+            result.url,
+            result.output?.audio,
+            result.output?.url,
+        ];
+        for (const c of candidates) {
+            if (typeof c === 'string' && /^https?:\/\//i.test(c)) return c;
+            if (c?.url && /^https?:\/\//i.test(c.url)) return c.url;
+        }
+        return null;
+    }
+
+    async pollForResult(requestId, key, maxAttempts = 60, interval = 2000, options = {}) {
+        const quiet = options?.quiet === true;
         const pollUrl = `${this.baseUrl}/api/v1/predictions/${requestId}/result`;
+        const shouldLogAttempt = (attempt) => !quiet || attempt === 1 || attempt % 10 === 0;
 
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             await new Promise(resolve => setTimeout(resolve, interval));
 
-            console.log(`[Muapi] Polling attempt ${attempt}/${maxAttempts}...`);
+            if (shouldLogAttempt(attempt)) {
+                console.log(`[Muapi] Polling attempt ${attempt}/${maxAttempts}...`);
+            }
 
             try {
                 const response = await fetch(pollUrl, {
@@ -139,52 +159,67 @@ export class MuapiClient {
 
                 if (!response.ok) {
                     const errText = await response.text();
-                    console.warn(`[Muapi] Poll error (${response.status}):`, errText);
+                    if (!quiet || shouldLogAttempt(attempt)) {
+                        console.warn(`[Muapi] Poll error (${response.status}):`, errText);
+                    }
                     // Continue polling on non-fatal errors
                     if (response.status >= 500) continue;
                     throw new Error(`Poll Failed: ${response.status} - ${errText.slice(0, 100)}`);
                 }
 
                 const data = await response.json();
-                console.log('[Muapi] Poll Response:', data);
-
                 const status = data.status?.toLowerCase();
+                const terminal = status === 'completed' || status === 'succeeded' || status === 'success'
+                    || status === 'failed' || status === 'error';
+
+                if (!quiet || terminal) {
+                    console.log('[Muapi] Poll Response:', data);
+                }
 
                 if (status === 'completed' || status === 'succeeded' || status === 'success') {
+                    const hasOutput = Array.isArray(data.outputs) && data.outputs.length > 0 && data.outputs[0];
+                    if (!hasOutput && attempt < maxAttempts) continue;
+                    if (quiet) {
+                        console.log(`[Muapi] Poll succeeded on attempt ${attempt}/${maxAttempts}`);
+                    }
                     return data;
                 }
 
                 if (status === 'failed' || status === 'error') {
-                    throw new Error(`Generation failed: ${data.error || 'Unknown error'}`);
+                    const errMsg = data.error || 'Unknown error';
+                    if (quiet) {
+                        console.warn(`[Muapi] Poll failed on attempt ${attempt}:`, errMsg);
+                    }
+                    throw new Error(`Generation failed: ${errMsg}`);
                 }
 
                 // Otherwise (processing, pending, etc.) keep polling
             } catch (error) {
-                if (attempt === maxAttempts) throw error;
-                console.warn('[Muapi] Poll attempt failed, retrying...', error.message);
+                if (attempt === maxAttempts) {
+                    if (quiet) {
+                        console.warn(`[Muapi] Poll gave up after ${maxAttempts} attempts:`, error.message);
+                    }
+                    throw error;
+                }
+                if (!quiet || shouldLogAttempt(attempt)) {
+                    console.warn('[Muapi] Poll attempt failed, retrying...', error.message);
+                }
             }
         }
 
+        if (quiet) {
+            console.warn(`[Muapi] Poll timed out after ${maxAttempts} attempts`);
+        }
         throw new Error('Generation timed out after polling.');
     }
 
     async generateVideo(params) {
         const key = this.getKey();
 
-        const modelInfo = getVideoModelById(params.model);
-        const endpoint = modelInfo?.endpoint || params.model;
+        const endpoint = getEndpointForModel('t2v', params.model);
         const url = `${this.baseUrl}/api/v1/${endpoint}`;
 
-        const finalPayload = {};
-
-        if (params.prompt) finalPayload.prompt = params.prompt;
-        if (params.request_id) finalPayload.request_id = params.request_id;
-        if (params.aspect_ratio) finalPayload.aspect_ratio = params.aspect_ratio;
-        if (params.duration) finalPayload.duration = params.duration;
-        if (params.resolution) finalPayload.resolution = params.resolution;
-        if (params.quality) finalPayload.quality = params.quality;
-        if (params.mode) finalPayload.mode = params.mode;
-        if (params.image_url) finalPayload.image_url = params.image_url;
+        const finalPayload = buildApiPayload('t2v', params.model, params);
 
         console.log('[Muapi] Video Request:', url);
         console.log('[Muapi] Video Payload:', finalPayload);
@@ -238,29 +273,10 @@ export class MuapiClient {
      */
     async generateI2I(params) {
         const key = this.getKey();
-        const modelInfo = getI2IModelById(params.model);
-        const endpoint = modelInfo?.endpoint || params.model;
+        const endpoint = getEndpointForModel('i2i', params.model);
         const url = `${this.baseUrl}/api/v1/${endpoint}`;
 
-        const finalPayload = {};
-
-        // Only include prompt if the model supports it and one was provided
-        if (params.prompt) finalPayload.prompt = params.prompt;
-
-        // Place the uploaded image(s) in the correct field for this model
-        const imageField = modelInfo?.imageField || 'image_url';
-        const imagesList = params.images_list?.length > 0 ? params.images_list : (params.image_url ? [params.image_url] : null);
-        if (imagesList) {
-            if (imageField === 'images_list') {
-                finalPayload.images_list = imagesList;
-            } else {
-                finalPayload[imageField] = imagesList[0];
-            }
-        }
-
-        if (params.aspect_ratio) finalPayload.aspect_ratio = params.aspect_ratio;
-        if (params.resolution) finalPayload.resolution = params.resolution;
-        if (params.quality) finalPayload.quality = params.quality;
+        const finalPayload = buildApiPayload('i2i', params.model, params);
 
         console.log('[Muapi] I2I Request:', url);
         console.log('[Muapi] I2I Payload:', finalPayload);
@@ -308,29 +324,10 @@ export class MuapiClient {
      */
     async generateI2V(params) {
         const key = this.getKey();
-        const modelInfo = getI2VModelById(params.model);
-        const endpoint = modelInfo?.endpoint || params.model;
+        const endpoint = getEndpointForModel('i2v', params.model);
         const url = `${this.baseUrl}/api/v1/${endpoint}`;
 
-        const finalPayload = {};
-
-        if (params.prompt) finalPayload.prompt = params.prompt;
-
-        // Place image in the correct field for this model
-        const imageField = modelInfo?.imageField || 'image_url';
-        if (params.image_url) {
-            if (imageField === 'images_list') {
-                finalPayload.images_list = [params.image_url];
-            } else {
-                finalPayload[imageField] = params.image_url;
-            }
-        }
-
-        if (params.aspect_ratio) finalPayload.aspect_ratio = params.aspect_ratio;
-        if (params.duration) finalPayload.duration = params.duration;
-        if (params.resolution) finalPayload.resolution = params.resolution;
-        if (params.quality) finalPayload.quality = params.quality;
-        if (params.mode) finalPayload.mode = params.mode;
+        const finalPayload = buildApiPayload('i2v', params.model, params);
 
         console.log('[Muapi] I2V Request:', url);
         console.log('[Muapi] I2V Payload:', finalPayload);
@@ -355,7 +352,8 @@ export class MuapiClient {
 
             if (params.onRequestId) params.onRequestId(requestId);
 
-            const result = await this.pollForResult(requestId, key, 900, 2000);
+            const pollOpts = params.quiet ? { quiet: true } : {};
+            const result = await this.pollForResult(requestId, key, 900, 2000, pollOpts);
             const videoUrl = result.outputs?.[0] || result.url || result.output?.url;
             console.log('[Muapi] I2V Result URL:', videoUrl);
             return { ...result, url: videoUrl };
@@ -406,12 +404,10 @@ export class MuapiClient {
      */
     async processV2V(params) {
         const key = this.getKey();
-        const modelInfo = getV2VModelById(params.model);
-        const endpoint = modelInfo?.endpoint || params.model;
+        const endpoint = getEndpointForModel('v2v', params.model);
         const url = `${this.baseUrl}/api/v1/${endpoint}`;
 
-        const videoField = modelInfo?.videoField || 'video_url';
-        const finalPayload = { [videoField]: params.video_url };
+        const finalPayload = buildApiPayload('v2v', params.model, params);
 
         console.log('[Muapi] V2V Request:', url);
         console.log('[Muapi] V2V Payload:', finalPayload);
@@ -461,18 +457,10 @@ export class MuapiClient {
      */
     async processLipSync(params) {
         const key = this.getKey();
-        const modelInfo = getLipSyncModelById(params.model);
-        const endpoint = modelInfo?.endpoint || params.model;
+        const endpoint = getEndpointForModel('lipsync', params.model);
         const url = `${this.baseUrl}/api/v1/${endpoint}`;
 
-        const finalPayload = {};
-
-        if (params.audio_url) finalPayload.audio_url = params.audio_url;
-        if (params.image_url) finalPayload.image_url = params.image_url;
-        if (params.video_url) finalPayload.video_url = params.video_url;
-        if (params.prompt) finalPayload.prompt = params.prompt;
-        if (params.resolution) finalPayload.resolution = params.resolution;
-        if (params.seed !== undefined && params.seed !== -1) finalPayload.seed = params.seed;
+        const finalPayload = buildApiPayload('lipsync', params.model, params);
 
         console.log('[Muapi] LipSync Request:', url);
         console.log('[Muapi] LipSync Payload:', finalPayload);
@@ -518,6 +506,232 @@ export class MuapiClient {
             case '3:2': return [1216, 832];
             case '21:9': return [1536, 640];
             default: return [1024, 1024];
+        }
+    }
+
+    /**
+     * Generates audio (TTS, music, or SFX).
+     * Works with: minimax-speech-*, suno-*, mmaudio-*
+     * @param {Object} params
+     * @param {string} params.endpoint - The API endpoint name (e.g. 'minimax-speech-2.6-hd')
+     * @param {Object} params.payload - The request body to send
+     */
+    async generateAudio(params) {
+        const key = this.getKey();
+        const modelId = params.endpoint;
+        const category = params.category || 'tts';
+        const modelDef = getAudioModelDefinition(category, modelId);
+        const apiPath = modelDef?.endpoint || modelId;
+        const finalPayload = buildAudioPayload(category, modelId, params.payload || {});
+        const url = `${this.baseUrl}/api/v1/${apiPath}`;
+
+        console.log('[Muapi] Audio Request:', url);
+        console.log('[Muapi] Audio Payload:', finalPayload);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': key
+                },
+                body: JSON.stringify(finalPayload)
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`API Request Failed: ${response.status} - ${errText.slice(0, 200)}`);
+            }
+
+            const submitData = await response.json();
+            console.log('[Muapi] Audio Submit Response:', submitData);
+
+            const requestId = submitData.request_id || submitData.id;
+            if (!requestId) return submitData;
+
+            if (params.onRequestId) params.onRequestId(requestId);
+
+            // Poll for result (same pattern as images/videos)
+            const pollOpts = params.quiet ? { quiet: true } : {};
+            const result = await this.pollForResult(requestId, key, 120, 2000, pollOpts);
+
+            const audioUrl = this.extractAudioUrl(result);
+            console.log('[Muapi] Audio URL:', audioUrl);
+            if (!audioUrl) throw new Error('No audio URL in API response');
+            return { ...result, url: audioUrl };
+        } catch (error) {
+            console.error('Muapi Audio Error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Runs a generic "app" endpoint (effects, tools, etc.)
+     * Same submit-and-poll pattern used everywhere.
+     * @param {string} endpoint - e.g. 'ai-background-remover'
+     * @param {Object} payload - whatever the endpoint expects
+     */
+    async runApp(endpoint, payload) {
+        const key = this.getKey();
+        const finalPayload = buildAppPayload(endpoint, payload);
+        const url = `${this.baseUrl}/api/v1/${endpoint}`;
+
+        console.log('[Muapi] App Request:', url, finalPayload);
+
+        const response = await this.postJsonWithRetry(url, key, finalPayload);
+
+        const submitData = await response.json();
+        const requestId = submitData.request_id || submitData.id;
+        if (!requestId) return submitData;
+
+        const result = await this.pollForResult(requestId, key, 120, 2000);
+
+        // Result could be image, video, or audio — try all common fields
+        const outputUrl = result.outputs?.[0] || result.url || result.video ||
+                          result.image || result.audio || result.output?.url;
+        return { ...result, url: outputUrl };
+    }
+
+    /**
+     * Extract plain text from an any-llm-models poll result.
+     */
+    extractLLMText(result) {
+        if (!result) return '';
+        if (typeof result.text === 'string' && result.text.trim()) return result.text.trim();
+        if (typeof result.output === 'string' && result.output.trim()) return result.output.trim();
+        if (result.output?.text) return String(result.output.text).trim();
+        const out = result.outputs?.[0];
+        if (typeof out === 'string' && out.trim() && !/^https?:\/\//i.test(out)) return out.trim();
+        if (out?.text) return String(out.text).trim();
+        return '';
+    }
+
+    /**
+     * Submit to MuAPI any-llm-models (Text to Text).
+     * @see https://muapi.ai/playground/any-llm/llms.txt
+     */
+    async submitLLM(body) {
+        const key = this.getKey();
+        const url = `${this.baseUrl}/api/v1/any-llm-models`;
+
+        const payload = {
+            model: 'google/gemini-2.5-flash',
+            system_prompt: 'You are a helpful creative AI assistant.',
+            ...body,
+        };
+        if (payload.system_prompt == null) payload.system_prompt = '';
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`LLM Failed: ${response.status} - ${errText.slice(0, 200)}`);
+        }
+
+        const data = await response.json();
+        const requestId = data.request_id || data.id;
+        if (!requestId) {
+            return this.extractLLMText(data) || data.text || data.output || JSON.stringify(data);
+        }
+
+        const result = await this.pollForResult(requestId, key, 60, 2000);
+        return this.extractLLMText(result) || result.text || result.output?.text || JSON.stringify(result);
+    }
+
+    /**
+     * Calls an LLM (e.g. for backstory generation, prompt enhancement).
+     * Uses the any-llm-models endpoint on Muapi.
+     * @param {string} prompt - The text prompt to send
+     * @param {{ systemPrompt?: string, model?: string }} [options]
+     * @returns {Promise<string>} The LLM's text response
+     */
+    async callLLM(prompt, options = {}) {
+        const body = {
+            prompt,
+            system_prompt: options.systemPrompt ?? 'You are a helpful creative AI assistant.',
+        };
+        if (options.model) body.model = options.model;
+        return this.submitLLM(body);
+    }
+
+    /**
+     * Generates a character portrait reference image.
+     * - With referenceImageUrl: Flux PuLID (face-preserving restyle)
+     * - Without reference: photoreal T2I portrait from text description
+     * @param {string} prompt - Description of the character's appearance
+     * @param {string} [referenceImageUrl] - Optional existing face to preserve
+     * @param {{ aspect_ratio?: string, model?: string }} [options]
+     * @returns {Promise<{url: string}>} The generated image
+     */
+    async generateFaceId(prompt, referenceImageUrl, options = {}) {
+        const aspectRatio = options.aspect_ratio || '1:1';
+
+        if (!referenceImageUrl) {
+            return this.generateImage({
+                model: options.model || CHARACTER_PORTRAIT_T2I,
+                prompt,
+                aspect_ratio: aspectRatio,
+            });
+        }
+
+        const check = validateModelParams('i2i', CHARACTER_FACE_I2I, {
+            prompt,
+            image_url: referenceImageUrl,
+            aspect_ratio: aspectRatio,
+        });
+        if (!check.valid) {
+            throw new Error(check.errors.join(' '));
+        }
+
+        const key = this.getKey();
+        const url = `${this.baseUrl}/api/v1/flux-pulid`;
+        const payload = buildApiPayload('i2i', CHARACTER_FACE_I2I, check.normalized);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`PuLID Failed: ${response.status} - ${errText.slice(0, 200)}`);
+        }
+
+        const data = await response.json();
+        const requestId = data.request_id || data.id;
+        if (!requestId) return data;
+
+        const result = await this.pollForResult(requestId, key, 60, 2000);
+        const imageUrl = result.outputs?.[0] || result.url || result.output?.url;
+        return { ...result, url: imageUrl };
+    }
+    /**
+     * Multi-turn chat with an LLM (for Assist copilot).
+     * @param {Array<{role: string, content: string}>} messages - Chat history
+     * @param {string} [systemPrompt] - Optional system-level instruction
+     * @returns {Promise<string>} The assistant's text reply
+     */
+    async callLLMChat(messages, systemPrompt) {
+        const flatPrompt = messages.map(m => {
+            const prefix = m.role === 'user' ? 'User' : m.role === 'assistant' ? 'Assistant' : 'System';
+            return `${prefix}: ${m.content}`;
+        }).join('\n\n') + '\n\nAssistant:';
+
+        const body = {
+            prompt: flatPrompt,
+            model: 'google/gemini-2.5-flash',
+        };
+        if (systemPrompt) body.system_prompt = systemPrompt;
+
+        try {
+            return await this.submitLLM(body);
+        } catch (err) {
+            throw new Error(err.message.replace(/^LLM Failed:/, 'LLM Chat Failed:'));
         }
     }
 }

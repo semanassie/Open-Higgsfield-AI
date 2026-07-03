@@ -1,0 +1,5330 @@
+{
+  "testDate": "2026-04-09T15:04:31.830Z",
+  "totalModelsTested": 244,
+  "categories": {
+    "available": [
+      {
+        "id": "nano-banana",
+        "name": "Nano Banana",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 658,
+        "body": {
+          "request_id": "f116944d-e47a-4e0a-89de-bc8f3967b738",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-dev",
+        "name": "Flux Dev",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-dev-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 212,
+        "body": {
+          "request_id": "44805a09-8c98-437d-8886-9a776130d8f2",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-kontext-dev-t2i",
+        "name": "Flux Kontext Dev T2I",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-dev-t2i",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 210,
+        "body": {
+          "request_id": "22cb67b0-c17e-4116-8efb-6a9325a8c7f5",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ai-anime-generator",
+        "name": "Ai Anime Generator",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-anime-generator",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 288,
+        "body": {
+          "request_id": "7238667f-7f65-47cd-8791-e7949701176a",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.1-text-to-image",
+        "name": "Wan2.1 Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.1-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 221,
+        "body": {
+          "request_id": "43cfecf0-3654-4809-b6a5-ff36b6c29925",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-kontext-pro-t2i",
+        "name": "Flux Kontext Pro T2I",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-pro-t2i",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 213,
+        "body": {
+          "request_id": "5d1c0f64-7e2f-424c-8097-8c591a618091",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-kontext-max-t2i",
+        "name": "Flux Kontext Max T2I",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-max-t2i",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 274,
+        "body": {
+          "request_id": "b6c513b3-751d-493e-9324-a4761f59a4fc",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "gpt4o-text-to-image",
+        "name": "Gpt4o Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/gpt4o-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 209,
+        "body": {
+          "request_id": "d3529576-448b-41c3-bbc6-20f6b6a4cd74",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "midjourney-v7-text-to-image",
+        "name": "Midjourney v7 Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/midjourney-v7-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 541,
+        "body": {
+          "request_id": "fa0b8ec0-897c-4099-b60a-1d1af0cec396",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-schnell",
+        "name": "Flux Schnell",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-schnell-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 222,
+        "body": {
+          "request_id": "abb1902e-4be3-4d97-8e40-7af0d8e07c5d",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "qwen-image",
+        "name": "Qwen Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 213,
+        "body": {
+          "request_id": "892e6264-1b6d-4e13-bfaf-fb3ed1791f19",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ideogram-v3-t2i",
+        "name": "Ideogram v3 T2I",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ideogram-v3-t2i",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 225,
+        "body": {
+          "request_id": "75fbdc24-8678-471a-9734-7b9cfb9accf3",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "google-imagen4",
+        "name": "Google Imagen4",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/google-imagen4",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 222,
+        "body": {
+          "request_id": "e74c7151-9a01-4e44-9fe8-c4d7e9393bb0",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "google-imagen4-fast",
+        "name": "Google Imagen4 Fast",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/google-imagen4-fast",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 247,
+        "body": {
+          "request_id": "69269fa1-d7f2-47fe-aa74-3d050941a1c1",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "google-imagen4-ultra",
+        "name": "Google Imagen4 Ultra",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/google-imagen4-ultra",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 206,
+        "body": {
+          "request_id": "15ef2adc-2e41-4fff-888d-53faff224a8a",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "sdxl-image",
+        "name": "Sdxl Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/sdxl-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 210,
+        "body": {
+          "request_id": "abb14273-978b-4092-81df-3939927aa8ae",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "bytedance-seedream-v4",
+        "name": "Bytedance Seedream v4",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/bytedance-seedream-v4",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 250,
+        "body": {
+          "request_id": "39bd3f32-bdd6-4feb-bf47-f11a5b4f3f70",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "hunyuan-image-2.1",
+        "name": "Hunyuan Image 2.1",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hunyuan-image-2.1",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 211,
+        "body": {
+          "request_id": "fe8d11cc-91d7-4178-b7c0-ce56bd9c0151",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "chroma-image",
+        "name": "Chroma Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/chroma-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 274,
+        "body": {
+          "request_id": "38048087-2d19-43fa-8ecc-13e83cb9a5b8",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-krea-dev",
+        "name": "Flux Krea Dev",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-krea-dev",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 205,
+        "body": {
+          "request_id": "b1f5ff89-816e-42f9-88b3-af6cf02285d1",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "perfect-pony-xl",
+        "name": "Perfect Pony Xl",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/perfect-pony-xl",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "ccd5867f-f681-4022-a0b3-f267ef56d80b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "neta-lumina",
+        "name": "Neta Lumina",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/neta-lumina",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 216,
+        "body": {
+          "request_id": "e5691645-9d87-49ab-9f2b-52bf2219bc55",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.5-text-to-image",
+        "name": "Wan2.5 Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.5-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 324,
+        "body": {
+          "request_id": "e5782dee-c231-46b5-b774-6b462154449d",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "hunyuan-image-3.0",
+        "name": "Hunyuan Image 3.0",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hunyuan-image-3.0",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 264,
+        "body": {
+          "request_id": "496ca129-8adf-45ed-bbad-38b6f5737504",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "leonardoai-phoenix-1.0",
+        "name": "Leonardoai Phoenix 1.0",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/leonardoai-phoenix-1.0",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 2744,
+        "body": {
+          "request_id": "35567999-15a4-4bd9-86fa-0a29eda0ff2f",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "leonardoai-lucid-origin",
+        "name": "Leonardoai Lucid Origin",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/leonardoai-lucid-origin",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 215,
+        "body": {
+          "request_id": "4f931ab8-8527-446d-9de9-60ebcfcb2dd9",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "reve-text-to-image",
+        "name": "Reve Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/reve-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 478,
+        "body": {
+          "request_id": "7b4bad0b-95ae-4d97-be2c-bdcf4a425e4f",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "grok-imagine-text-to-image",
+        "name": "Grok Imagine Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/grok-imagine-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 269,
+        "body": {
+          "request_id": "ed056fcd-418f-44a0-8d7d-5052e71ee9f4",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "nano-banana-pro",
+        "name": "Nano Banana Pro",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana-pro",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 252,
+        "body": {
+          "request_id": "7c0adaea-94a1-4aa3-a347-0a31f0e84811",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-o1-text-to-image",
+        "name": "Kling O1 Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 348,
+        "body": {
+          "request_id": "0b6c15ef-acb2-44ea-b8cf-5fc3829a1f7b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "z-image-turbo",
+        "name": "Z Image Turbo",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/z-image-turbo",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 225,
+        "body": {
+          "request_id": "14b829f8-0f73-420a-89ba-425843bbfa78",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-2-dev",
+        "name": "Flux 2 Dev",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-dev",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 342,
+        "body": {
+          "request_id": "43174d8c-28d0-4df5-adfb-c139e60d9b00",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-2-flex",
+        "name": "Flux 2 Flex",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-flex",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 228,
+        "body": {
+          "request_id": "7435fece-ccbe-476a-b2d9-8593eb76e292",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-2-pro",
+        "name": "Flux 2 Pro",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-pro",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 217,
+        "body": {
+          "request_id": "aa1bc4ba-1233-49dc-b6b9-7364b352aa83",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "vidu-q2-text-to-image",
+        "name": "Vidu Q2 Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-q2-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 255,
+        "body": {
+          "request_id": "72efe74a-263f-45dd-83d5-c00c56400a04",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "bytedance-seedream-v4.5",
+        "name": "Bytedance Seedream V4.5",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/bytedance-seedream-v4.5",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 211,
+        "body": {
+          "request_id": "a116824a-873f-4496-bad2-cd843559abf0",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "gpt-image-1.5",
+        "name": "Gpt Image 1.5",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/gpt-image-1.5",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 243,
+        "body": {
+          "request_id": "27cf1359-f337-4870-a530-92b09183cb02",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.6-text-to-image",
+        "name": "Wan2.6 Text To Image",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.6-text-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 797,
+        "body": {
+          "request_id": "7a5f8d7a-ec9e-46a0-8ecc-ed48ad3e924d",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "qwen-text-to-image-2512",
+        "name": "Qwen Text To Image 2512",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-text-to-image-2512",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 302,
+        "body": {
+          "request_id": "c7081f46-eb4a-43d9-bd0e-98697390015e",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-2-klein-4b",
+        "name": "Flux 2 Klein 4b",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-klein-4b",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 288,
+        "body": {
+          "request_id": "3bcf2768-c03c-4c92-ba18-2965269e1be1",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-2-klein-9b",
+        "name": "Flux 2 Klein 9b",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-klein-9b",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 228,
+        "body": {
+          "request_id": "49c77581-c7cf-44f7-b3e9-d1f36102ae14",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "z-image-base",
+        "name": "Z Image Base",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/z-image-base",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 216,
+        "body": {
+          "request_id": "7f3d3f7b-6b90-4892-87b9-830b9dc34d2a",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "nano-banana-2",
+        "name": "Nano Banana 2",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana-2",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 231,
+        "body": {
+          "request_id": "6714c10f-3181-410f-a1b9-e76653f28ad8",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedream-5.0",
+        "name": "Seedream 5.0",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedream-5.0",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 236,
+        "body": {
+          "request_id": "817e5322-5c52-4a9f-9c8c-4de4ffdae9b6",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-2.0-omni-reference",
+        "name": "Seedance 2.0 Omni Reference",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-2.0-omni-reference",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 196,
+        "body": {
+          "request_id": "ee5fe767-83a5-423d-bf26-f95fc32be3be",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-2-text-to-video",
+        "name": "Seedance 2.0 T2V",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-2-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 197,
+        "body": {
+          "request_id": "8727a346-a3f3-40ea-b91d-ac769d881747",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-lite-t2v",
+        "name": "Seedance Lite",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-lite-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 215,
+        "body": {
+          "request_id": "1fc48c67-6d70-4b6f-840c-10877300443e",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-pro-t2v",
+        "name": "Seedance Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-pro-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 542,
+        "body": {
+          "request_id": "44faf7b0-975c-47cd-8f32-90c1d8d21ffb",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-pro-t2v-fast",
+        "name": "Seedance Pro Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-pro-t2v-fast",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 356,
+        "body": {
+          "request_id": "8e54c6d5-9718-44e0-a37e-0caef8c4f03a",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-v1.5-pro-t2v",
+        "name": "Seedance v1.5 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v1.5-pro-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 251,
+        "body": {
+          "request_id": "8664f31b-f09e-411e-b5db-d96474d6b4f9",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-v2.0-t2v",
+        "name": "Seedance 2.0",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v2.0-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 291,
+        "body": {
+          "request_id": "a245c827-e046-4a37-a8d6-0eeb43222988",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.1-master-t2v",
+        "name": "Kling v2.1 Master",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.1-master-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 199,
+        "body": {
+          "request_id": "21b1eeca-c1a6-40f4-83c2-97ca5f3ef0f6",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.5-turbo-pro-t2v",
+        "name": "Kling v2.5 Turbo Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.5-turbo-pro-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 200,
+        "body": {
+          "request_id": "f82cd4a6-f3a6-4f87-8d7b-24a9ab99373b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.6-pro-t2v",
+        "name": "Kling v2.6 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.6-pro-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 223,
+        "body": {
+          "request_id": "b3156111-5a78-4111-b6d9-9a84a1867dc3",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-o1-text-to-video",
+        "name": "Kling O1 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 398,
+        "body": {
+          "request_id": "840c507d-a17e-44f7-8503-c063c9129135",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v3.0-pro-text-to-video",
+        "name": "Kling v3.0 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v3.0-pro-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 199,
+        "body": {
+          "request_id": "0ef22f10-70f0-4ede-9fa3-1448b71f27ec",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v3.0-standard-text-to-video",
+        "name": "Kling v3.0 Standard",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v3.0-standard-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 207,
+        "body": {
+          "request_id": "37ad7e28-8536-4c7c-8dc8-a637f955f05a",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "veo3-text-to-video",
+        "name": "Veo 3",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 250,
+        "body": {
+          "request_id": "40f544e9-8121-4dc7-90f8-2b8a867cdbf4",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "veo3-fast-text-to-video",
+        "name": "Veo 3 Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3-fast-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "5d17f945-35e2-4322-930e-eff6054c52d3",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.1-text-to-video",
+        "name": "Wan 2.1",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.1-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 5478,
+        "body": {
+          "request_id": "3ed5b3ff-b650-40b5-929a-606739ea65d5",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.2-text-to-video",
+        "name": "Wan 2.2",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.2-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 1181,
+        "body": {
+          "request_id": "faea86af-1f75-4564-9ac2-2ef69ff33fc7",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.2-5b-fast-t2v",
+        "name": "Wan 2.2 Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.2-5b-fast-t2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 201,
+        "body": {
+          "request_id": "12e53a52-a7ef-4910-a9b8-f96dd285ec35",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.5-text-to-video",
+        "name": "Wan 2.5",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.5-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 257,
+        "body": {
+          "request_id": "fe18e583-f15b-46c0-8756-f61ad47d2e9e",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "hunyuan-text-to-video",
+        "name": "Hunyuan",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hunyuan-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 279,
+        "body": {
+          "request_id": "6e3a7334-077d-45b9-829a-08284097a6db",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "hunyuan-fast-text-to-video",
+        "name": "Hunyuan Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hunyuan-fast-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 252,
+        "body": {
+          "request_id": "5d42c383-846a-4784-beb0-51ce3b359bec",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "openai-sora",
+        "name": "Sora",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/openai-sora",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 198,
+        "body": {
+          "request_id": "7abdbd4e-63fc-4ebd-a426-549af9ce689b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ovi-text-to-video",
+        "name": "OVI",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ovi-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 312,
+        "body": {
+          "request_id": "e57c9488-5337-4426-a90d-d43f09f970ba",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ltx-2-19b-text-to-video",
+        "name": "LTX 2 19B",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-19b-text-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 248,
+        "body": {
+          "request_id": "d016265a-d77d-41e0-af52-a3c53363e3db",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ai-image-upscaler",
+        "name": "AI Image Upscaler",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-image-upscale",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "75b5b3fb-8f94-49b1-9512-79f5fa2c531b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ai-background-remover",
+        "name": "AI Background Remover",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-background-remover",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 222,
+        "body": {
+          "request_id": "7af78b03-abbc-48c7-8922-84ec3232f607",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ai-skin-enhancer",
+        "name": "AI Skin Enhancer",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-skin-enhancer",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 203,
+        "body": {
+          "request_id": "a344311f-d408-4041-a71e-5bc1b58e6265",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ai-color-photo",
+        "name": "AI Color Photo",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-color-photo",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "c10b2935-d24d-4fe9-a042-cf0923276cab",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-kontext-dev-i2i",
+        "name": "Flux Kontext Dev I2I",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-dev-i2i",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 197,
+        "body": {
+          "request_id": "93b8e76f-3eef-445f-ba61-d8e7ac95ece4",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ai-ghibli-style",
+        "name": "AI Ghibli Style",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-ghibli-style",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 223,
+        "body": {
+          "request_id": "df84591a-dc68-40eb-92a9-f856b80907bb",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "midjourney-v7-image-to-image",
+        "name": "Midjourney v7 Image To Image",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/midjourney-v7-image-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 206,
+        "body": {
+          "request_id": "d7b145ee-49a2-4f10-b60d-e620f8810eaf",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "bytedance-seededit-v3",
+        "name": "Bytedance Seededit v3",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/bytedance-seededit-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 208,
+        "body": {
+          "request_id": "0ed76e33-5099-451b-a439-53375483a0f5",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "midjourney-v7-style-reference",
+        "name": "Midjourney v7 Style Reference",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/midjourney-v7-style-reference",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 230,
+        "body": {
+          "request_id": "169db8f2-3df2-4543-a6b2-86e802dfaab8",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "midjourney-v7-omni-reference",
+        "name": "Midjourney v7 Omni Reference",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/midjourney-v7-omni-reference",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 199,
+        "body": {
+          "request_id": "91aeb74e-2257-41b3-92c4-c1651b3a89ec",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "minimax-image-01-subject-reference",
+        "name": "Minimax Image 01 Subject Reference",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-01-subject-reference",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 215,
+        "body": {
+          "request_id": "ad3f0d40-94a0-4455-a3c0-c4b60558b0b8",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ideogram-character",
+        "name": "Ideogram Character",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ideogram-character",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 198,
+        "body": {
+          "request_id": "bd26a129-e78d-44b2-8fce-e062119b3cd7",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-pulid",
+        "name": "Flux Pulid",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-pulid",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 214,
+        "body": {
+          "request_id": "96a2bf55-1d91-4677-96ee-9287f4059d6e",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "qwen-image-edit",
+        "name": "Qwen Image Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-image-edit",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 203,
+        "body": {
+          "request_id": "9ae7ab7a-42ac-4ae6-a8fc-762e26726499",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "image-effects",
+        "name": "Image Effects",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/image-effects",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 205,
+        "body": {
+          "request_id": "bf85f3ee-03ad-4cd1-b620-af8fde1acaad",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ideogram-v3-reframe",
+        "name": "Ideogram v3 Reframe",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ideogram-v3-reframe",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 199,
+        "body": {
+          "request_id": "0ca3ff09-5e48-4461-8808-3c16d50df01c",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "nano-banana-effects",
+        "name": "Nano Banana Effects",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana-effects",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 202,
+        "body": {
+          "request_id": "ca1e32f1-1429-44a0-aca0-6f9f465e6b80",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-kontext-effects",
+        "name": "Flux Kontext Effects",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-effects",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 196,
+        "body": {
+          "request_id": "414e6cd8-224c-4d1c-b337-f5e1631b605e",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "flux-redux",
+        "name": "Flux Redux",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-redux",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 206,
+        "body": {
+          "request_id": "a4949960-58af-4742-805e-21cda35d4105",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "higgsfield-soul-image-to-image",
+        "name": "Higgsfield Soul Image To Image",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/higgsfield-soul-image-to-image",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 199,
+        "body": {
+          "request_id": "59fca0fd-959e-4413-8432-be1ed5a28351",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "reve-image-edit",
+        "name": "Reve Image Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/reve-image-edit",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 203,
+        "body": {
+          "request_id": "b1ddabaf-df48-4fe9-82f9-0ff418af9a65",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "topaz-image-upscale",
+        "name": "Topaz Image Upscale",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/topaz-image-upscale",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 210,
+        "body": {
+          "request_id": "b7229d5a-abbc-46bf-b5b4-fe59e93ca00d",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedvr2-image-upscale",
+        "name": "Seedvr2 Image Upscale",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedvr2-image-upscale",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 200,
+        "body": {
+          "request_id": "e02cada2-4c52-4b46-936b-90c4c93fea8d",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "qwen-text-to-image-2512",
+        "name": "Qwen Text To Image 2512",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-text-to-image-2512",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 205,
+        "body": {
+          "request_id": "43c37b9f-f6fd-478e-bb0a-02fa766775bf",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-2-omni-reference-no-video",
+        "name": "Seedance 2.0 Omni Ref No Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-2-omni-reference-no-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 279,
+        "body": {
+          "request_id": "a5926a8d-b2c5-46e7-ac48-4a597834ce1b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.1-image-to-video",
+        "name": "Wan2.1 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.1-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 203,
+        "body": {
+          "request_id": "42743495-d65b-49c1-8c0e-ac8a1186eae6",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "midjourney-v7-image-to-video",
+        "name": "Midjourney v7 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/midjourney-v7-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 224,
+        "body": {
+          "request_id": "1852534f-1cf2-4b2f-9eaa-56e1b0622af8",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "hunyuan-image-to-video",
+        "name": "Hunyuan Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hunyuan-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 245,
+        "body": {
+          "request_id": "fd51ab9a-3c01-4813-8cac-eaf6ad58c4c4",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.1-master-i2v",
+        "name": "Kling v2.1 Master I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.1-master-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 206,
+        "body": {
+          "request_id": "ba5a8fd0-ca0e-4803-97ee-0ee19f333781",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.1-standard-i2v",
+        "name": "Kling v2.1 Standard I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.1-standard-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 205,
+        "body": {
+          "request_id": "1a05542c-a0fc-4af9-a7f4-749295e6c667",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.1-pro-i2v",
+        "name": "Kling v2.1 Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.1-pro-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 204,
+        "body": {
+          "request_id": "5407cdd2-3527-400b-af22-5756d8e73be3",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.2-image-to-video",
+        "name": "Wan2.2 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.2-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 222,
+        "body": {
+          "request_id": "55945148-065f-4fd1-b654-ca3e15b8fbf4",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "video-effects",
+        "name": "Video Effects",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/video-effects",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 240,
+        "body": {
+          "request_id": "5735a7fa-accf-4278-aa43-eb490e86d786",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-lite-i2v",
+        "name": "Seedance Lite I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-lite-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 220,
+        "body": {
+          "request_id": "23acee5a-32fe-4131-bc04-4c4e8d9a8d47",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-pro-i2v",
+        "name": "Seedance Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-pro-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 223,
+        "body": {
+          "request_id": "5102df37-89d6-4d35-bc4e-f4252070ccf0",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.5-turbo-pro-i2v",
+        "name": "Kling v2.5 Turbo Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.5-turbo-pro-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 232,
+        "body": {
+          "request_id": "7771b5cb-080b-4b7a-a854-23253bcbd1ea",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.5-image-to-video",
+        "name": "Wan2.5 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.5-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "0e990d05-5125-426c-af32-3b8bb9ceab33",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ovi-image-to-video",
+        "name": "Ovi Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ovi-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 209,
+        "body": {
+          "request_id": "3f81f538-c0cf-489a-9b24-c48dd42c55d3",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "leonardoai-motion-2.0",
+        "name": "Leonardoai Motion 2.0",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/leonardoai-motion-2.0",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 216,
+        "body": {
+          "request_id": "12008e02-4215-4942-af4c-bbb98bd49a29",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "higgsfield-dop-image-to-video",
+        "name": "Higgsfield Dop Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/higgsfield-dop-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 255,
+        "body": {
+          "request_id": "5abfb249-021f-404d-be27-593f3d155cd4",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-pro-i2v-fast",
+        "name": "Seedance Pro I2V Fast",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-pro-i2v-fast",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 214,
+        "body": {
+          "request_id": "e30b6a8d-007a-440a-9ca2-849ca3fb6b5d",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.5-turbo-std-i2v",
+        "name": "Kling v2.5 Turbo Std I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.5-turbo-std-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 749,
+        "body": {
+          "request_id": "3144d526-87a3-4fe4-bfca-7945c44bde2c",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-o1-image-to-video",
+        "name": "Kling O1 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 287,
+        "body": {
+          "request_id": "c939fbdb-030d-408d-98f6-4674b2407983",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v2.6-pro-i2v",
+        "name": "Kling v2.6 Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v2.6-pro-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 306,
+        "body": {
+          "request_id": "7845b9f3-73b2-4f83-abc9-ee8134215d7f",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.2-spicy-image-to-video",
+        "name": "Wan2.2 Spicy Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.2-spicy-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 396,
+        "body": {
+          "request_id": "9c50d74e-a064-46fe-81e6-7f4dd9b79df0",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-o1-standard-image-to-video",
+        "name": "Kling O1 Standard Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-standard-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 222,
+        "body": {
+          "request_id": "d005765d-f615-4bbd-8b11-09a03ff0b76b",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-v1.5-pro-i2v",
+        "name": "Seedance v1.5 Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v1.5-pro-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 217,
+        "body": {
+          "request_id": "f80b6721-d463-4dd3-b4dd-4bc7a7de35d2",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ltx-2-19b-image-to-video",
+        "name": "Ltx 2 19b Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-19b-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 233,
+        "body": {
+          "request_id": "5bbde2b2-9edd-4ed6-97b0-7873bb4f9713",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v3.0-pro-image-to-video",
+        "name": "Kling v3.0 Pro Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v3.0-pro-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "471f42a5-69be-4f37-95b5-4eeba551b1fb",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "kling-v3.0-standard-image-to-video",
+        "name": "Kling v3.0 Standard Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-v3.0-standard-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 406,
+        "body": {
+          "request_id": "7c5cccab-1a6c-4e48-830a-fa57d5306985",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "seedance-v2.0-i2v",
+        "name": "Seedance 2.0 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v2.0-i2v",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 226,
+        "body": {
+          "request_id": "43b0d29a-a282-4210-a4d0-a08a8eec5dd2",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "pixverse-v6-extend",
+        "name": "Pixverse V6 Extend",
+        "category": "v2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v6-extend",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 239,
+        "body": {
+          "request_id": "bfc61f2b-c2ec-4e07-b271-905ba01d134a",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.7-video-extend",
+        "name": "Wan 2.7 Video Extend",
+        "category": "v2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.7-video-extend",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 262,
+        "body": {
+          "request_id": "31edae50-524c-4017-8824-b7eb4b8b7177",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "video-watermark-remover",
+        "name": "AI Video Watermark Remover",
+        "category": "v2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/video-watermark-remover",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 650,
+        "body": {
+          "request_id": "147ef2c4-d0b2-4879-96b0-466d6d6f5fd7",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "infinitetalk-image-to-video",
+        "name": "Infinite Talk",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/infinitetalk-image-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 631,
+        "body": {
+          "request_id": "740af11d-afdd-4099-b7fc-951e235293d1",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "wan2.2-speech-to-video",
+        "name": "Wan 2.2 Speech to Video",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.2-speech-to-video",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 672,
+        "body": {
+          "request_id": "6164d9cb-2cbf-463a-9633-22c6fb7caf83",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ltx-2.3-lipsync",
+        "name": "LTX 2.3 Lipsync",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2.3-lipsync",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 506,
+        "body": {
+          "request_id": "f725bbb3-5bad-4bca-a83d-ff3b204d98ce",
+          "status": "processing"
+        },
+        "available": true
+      },
+      {
+        "id": "ltx-2-19b-lipsync",
+        "name": "LTX 2 19B Lipsync",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-19b-lipsync",
+        "status": 200,
+        "statusText": "OK",
+        "responseTime": 643,
+        "body": {
+          "request_id": "d3589d8a-3a61-405e-abab-a5bdd1dfd6f2",
+          "status": "processing"
+        },
+        "available": true
+      }
+    ],
+    "deprecated": [
+      {
+        "id": "flux-dev-lora",
+        "name": "Flux Dev Lora",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-dev-lora",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 184,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "hidream-i1-fast",
+        "name": "Hidream I1 Fast",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hidream-i1-fast",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 171,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "hidream-i1-dev",
+        "name": "Hidream I1 Dev",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hidream-i1-dev",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 173,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "hidream-i1-full",
+        "name": "Hidream I1 Full",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/hidream-i1-full",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 182,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "bytedance-seedream-v3",
+        "name": "Bytedance Seedream v3",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/bytedance-seedream-v3",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 172,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "image-passthrough",
+        "name": "Image Passthrough",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/image-passthrough",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 175,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "Api Node",
+        "name": "Api Node",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/Api Node",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 183,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "seedance-v2.0-omni-reference",
+        "name": "Seedance 2.0 Omni Reference I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v2.0-omni-reference",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 171,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      },
+      {
+        "id": "mmaudio-v2-text-to-audio",
+        "name": "MMAudio Text to Audio",
+        "category": "sfxModels",
+        "endpoint": "https://api.muapi.ai/api/v1/mmaudio-v2-text-to-audio",
+        "status": 404,
+        "statusText": "Not Found",
+        "responseTime": 164,
+        "body": {
+          "detail": "Not Found"
+        },
+        "deprecated": true,
+        "reason": "404 - Endpoint not found"
+      }
+    ],
+    "rateLimited": [],
+    "serverError": [
+      {
+        "id": "ai-image-extension",
+        "name": "AI Image Extension",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-image-extension",
+        "status": 500,
+        "statusText": "Internal Server Error",
+        "responseTime": 326,
+        "body": "Internal Server Error"
+      }
+    ],
+    "clientError": [
+      {
+        "id": "flux-pulid",
+        "name": "Flux Pulid",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-pulid",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 184,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test image",
+                "aspect_ratio": "1:1",
+                "num_images": 1
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-redux",
+        "name": "Flux Redux",
+        "category": "t2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-redux",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 192,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test image",
+                "aspect_ratio": "1:1",
+                "num_images": 1
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "seedance-2.0-omni-reference-480p",
+        "name": "Seedance 2.0 Omni Reference 480p",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-2.0-omni-reference-480p",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 190,
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be greater than or equal to 8",
+              "input": 5,
+              "ctx": {
+                "ge": 8
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/greater_than_equal"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v6-t2v",
+        "name": "Pixverse V6 T2V",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v6-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 188,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.7-text-to-video",
+        "name": "Wan 2.7 T2V",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.7-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 173,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-4k-video",
+        "name": "Veo 3.1 4K T2V",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-4k-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 187,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "request_id"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test video",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "seedance-v1.5-pro-t2v-fast",
+        "name": "Seedance v1.5 Pro Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v1.5-pro-t2v-fast",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 299,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "seedance-v2.0-extend",
+        "name": "Seedance 2.0 Extend",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v2.0-extend",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 183,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "request_id"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test video",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-text-to-video",
+        "name": "Veo 3.1",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 186,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p', '1080p' or '4k'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p', '1080p' or '4k'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 8",
+              "input": 5,
+              "ctx": {
+                "expected": "8"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-fast-text-to-video",
+        "name": "Veo 3.1 Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-fast-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 217,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p', '1080p' or '4k'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p', '1080p' or '4k'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 8",
+              "input": 5,
+              "ctx": {
+                "expected": "8"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.5-text-to-video-fast",
+        "name": "Wan 2.5 Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.5-text-to-video-fast",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 251,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.6-text-to-video",
+        "name": "Wan 2.6",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.6-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 180,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v4.5-t2v",
+        "name": "Pixverse v4.5",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v4.5-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 1511,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v5-t2v",
+        "name": "Pixverse v5",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v5-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 177,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v5.5-t2v",
+        "name": "Pixverse v5.5",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v5.5-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 211,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-02-standard-t2v",
+        "name": "Hailuo 02 Standard",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-02-standard-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 182,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '768P'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'768P'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-02-pro-t2v",
+        "name": "Hailuo 02 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-02-pro-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 182,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6",
+              "input": 5,
+              "ctx": {
+                "expected": "6"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '1080P'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'1080P'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-2.3-pro-t2v",
+        "name": "Hailuo 2.3 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-2.3-pro-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 179,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-2.3-standard-t2v",
+        "name": "Hailuo 2.3 Standard",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-2.3-standard-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 180,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "openai-sora-2-text-to-video",
+        "name": "Sora 2",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/openai-sora-2-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 186,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 10 or 15",
+              "input": 5,
+              "ctx": {
+                "expected": "10 or 15"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "openai-sora-2-pro-text-to-video",
+        "name": "Sora 2 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/openai-sora-2-pro-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 184,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 10, 15 or 25",
+              "input": 5,
+              "ctx": {
+                "expected": "10, 15 or 25"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-v2.0-t2v",
+        "name": "Vidu v2.0",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-v2.0-t2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 201,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "aspect_ratio"
+              ],
+              "msg": "Input should be '9:16'",
+              "input": "16:9",
+              "ctx": {
+                "expected": "'9:16'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 4",
+              "input": 5,
+              "ctx": {
+                "expected": "4"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "grok-imagine-text-to-video",
+        "name": "Grok Imagine",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/grok-imagine-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 185,
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be greater than or equal to 6",
+              "input": 5,
+              "ctx": {
+                "ge": 6
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/greater_than_equal"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ltx-2-pro-text-to-video",
+        "name": "LTX 2 Pro",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-pro-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 206,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6, 8 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6, 8 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ltx-2-fast-text-to-video",
+        "name": "LTX 2 Fast",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-fast-text-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 214,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6, 8, 10, 12, 14, 16, 18 or 20",
+              "input": 5,
+              "ctx": {
+                "expected": "6, 8, 10, 12, 14, 16, 18 or 20"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.7-image-edit",
+        "name": "Wan 2.7 Image Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.7-image-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 182,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.7-image-edit-pro",
+        "name": "Wan 2.7 Image Edit Pro",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.7-image-edit-pro",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 186,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ai-image-face-swap",
+        "name": "AI Image Face Swap",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-image-face-swap",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 183,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "swap_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ai-dress-change",
+        "name": "AI Dress Change",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-dress-change",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 195,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "model_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "garment_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ai-product-shot",
+        "name": "AI Product Shot",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-product-shot",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 198,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "scene_description"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ai-product-photography",
+        "name": "AI Product Photography",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-product-photography",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 189,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "person_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "product_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ai-object-eraser",
+        "name": "AI Object Eraser",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ai-object-eraser",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 248,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "mask_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-kontext-pro-i2i",
+        "name": "Flux Kontext Pro I2I",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-pro-i2i",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 223,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-kontext-max-i2i",
+        "name": "Flux Kontext Max I2I",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-kontext-max-i2i",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 180,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "gpt4o-image-to-image",
+        "name": "GPT-4o Image To Image",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/gpt4o-image-to-image",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 178,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "gpt4o-edit",
+        "name": "GPT-4o Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/gpt4o-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 181,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "mask_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "nano-banana-edit",
+        "name": "Nano Banana Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 187,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "bytedance-seedream-edit-v4",
+        "name": "Bytedance Seedream Edit v4",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/bytedance-seedream-edit-v4",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 189,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "qwen-image-edit-plus",
+        "name": "Qwen Image Edit Plus",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-image-edit-plus",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 188,
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Value error, You must provide between 1 to 3 image URLs",
+              "input": [],
+              "ctx": {
+                "error": {}
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/value_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.5-image-edit",
+        "name": "Wan2.5 Image Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.5-image-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 192,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "qwen-image-edit-plus-lora",
+        "name": "Qwen Image Edit Plus Lora",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-image-edit-plus-lora",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 199,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "nano-banana-pro-edit",
+        "name": "Nano Banana Pro Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana-pro-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 194,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "kling-o1-edit-image",
+        "name": "Kling O1 Edit Image",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-edit-image",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 185,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-2-dev-edit",
+        "name": "Flux 2 Dev Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-dev-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 185,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-2-flex-edit",
+        "name": "Flux 2 Flex Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-flex-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 208,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-2-pro-edit",
+        "name": "Flux 2 Pro Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-pro-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 180,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-q2-reference-to-image",
+        "name": "Vidu Q2 Reference To Image",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-q2-reference-to-image",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 178,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "bytedance-seedream-v4.5-edit",
+        "name": "Bytedance Seedream v4.5 Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/bytedance-seedream-v4.5-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 188,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "qwen-image-edit-2511",
+        "name": "Qwen Image Edit 2511",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/qwen-image-edit-2511",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 178,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.6-image-edit",
+        "name": "Wan2.6 Image Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.6-image-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 178,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "gpt-image-1.5-edit",
+        "name": "Gpt Image 1.5 Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/gpt-image-1.5-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 182,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "grok-imagine-image-to-image",
+        "name": "Grok Imagine Image To Image",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/grok-imagine-image-to-image",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 183,
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Value error, You must provide either `image_url` or `images_list`",
+              "input": [],
+              "ctx": {
+                "error": {}
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/value_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-2-klein-4b-edit",
+        "name": "Flux 2 Klein 4b Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-klein-4b-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 179,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "flux-2-klein-9b-edit",
+        "name": "Flux 2 Klein 9b Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/flux-2-klein-9b-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 181,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "add-image-watermark",
+        "name": "Add Image Watermark",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/add-image-watermark",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 204,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "watermark_image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "nano-banana-2-edit",
+        "name": "Nano Banana 2 Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/nano-banana-2-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 223,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "seedream-5.0-edit",
+        "name": "Seedream 5.0 Edit",
+        "category": "i2iModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedream-5.0-edit",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 188,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "edit test",
+                "aspect_ratio": "1:1",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v6-i2v",
+        "name": "Pixverse V6 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v6-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 221,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.7-image-to-video",
+        "name": "Wan 2.7 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.7-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 294,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.7-reference-to-video",
+        "name": "Wan 2.7 Reference To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.7-reference-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 250,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "videos_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ai-video-effects",
+        "name": "AI Video Effects",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/generate_wan_ai_effects",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 194,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "motion-controls",
+        "name": "Motion Controls",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/generate_wan_ai_effects",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 207,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vfx",
+        "name": "VFX",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/generate_wan_ai_effects",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 224,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "name"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3-image-to-video",
+        "name": "Veo3 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 192,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3-fast-image-to-video",
+        "name": "Veo3 Fast Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3-fast-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 184,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "runway-image-to-video",
+        "name": "Runway Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/runway-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 180,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "runway-act-two-i2v",
+        "name": "Runway Act Two I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/runway-act-two-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 177,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "reference_video_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v4.5-i2v",
+        "name": "Pixverse v4.5 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v4.5-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 192,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-v2.0-i2v",
+        "name": "Vidu v2.0 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-v2.0-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 200,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 4",
+              "input": 5,
+              "ctx": {
+                "expected": "4"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-q1-reference",
+        "name": "Vidu Q1 Reference",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-q1-reference",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 199,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-02-standard-i2v",
+        "name": "Minimax Hailuo 02 Standard I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-02-standard-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 205,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '512P' or '768P'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'512P' or '768P'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-02-pro-i2v",
+        "name": "Minimax Hailuo 02 Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-02-pro-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 195,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6",
+              "input": 5,
+              "ctx": {
+                "expected": "6"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '1080P'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'1080P'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v5-i2v",
+        "name": "Pixverse v5 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v5-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 191,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "seedance-lite-reference-video",
+        "name": "Seedance Lite Reference Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-lite-reference-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 195,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.1-reference-video",
+        "name": "Wan2.1 Reference Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.1-reference-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 195,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.5-image-to-video-fast",
+        "name": "Wan2.5 Image To Video Fast",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.5-image-to-video-fast",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 189,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "openai-sora-2-image-to-video",
+        "name": "Openai Sora 2 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/openai-sora-2-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 188,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 10 or 15",
+              "input": 5,
+              "ctx": {
+                "expected": "10 or 15"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "openai-sora-2-pro-image-to-video",
+        "name": "Openai Sora 2 Pro Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/openai-sora-2-pro-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 189,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 10, 15 or 25",
+              "input": 5,
+              "ctx": {
+                "expected": "10, 15 or 25"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-image-to-video",
+        "name": "Veo3.1 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 178,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p', '1080p' or '4k'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p', '1080p' or '4k'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 8",
+              "input": 5,
+              "ctx": {
+                "expected": "8"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-fast-image-to-video",
+        "name": "Veo3.1 Fast Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-fast-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 181,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p', '1080p' or '4k'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p', '1080p' or '4k'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 8",
+              "input": 5,
+              "ctx": {
+                "expected": "8"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-reference-to-video",
+        "name": "Veo3.1 Reference To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-reference-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 186,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 8",
+              "input": 5,
+              "ctx": {
+                "expected": "8"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p', '1080p' or '4k'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p', '1080p' or '4k'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ltx-2-pro-image-to-video",
+        "name": "Ltx 2 Pro Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-pro-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 186,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6, 8 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6, 8 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "ltx-2-fast-image-to-video",
+        "name": "Ltx 2 Fast Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/ltx-2-fast-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 181,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6, 8, 10, 12, 14, 16, 18 or 20",
+              "input": 5,
+              "ctx": {
+                "expected": "6, 8, 10, 12, 14, 16, 18 or 20"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-q2-reference",
+        "name": "Vidu Q2 Reference",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-q2-reference",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 189,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-q2-turbo-start-end-video",
+        "name": "Vidu Q2 Turbo Start End Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-q2-turbo-start-end-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 194,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "last_image"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "vidu-q2-pro-start-end-video",
+        "name": "Vidu Q2 Pro Start End Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/vidu-q2-pro-start-end-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 187,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "last_image"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-2.3-pro-i2v",
+        "name": "Minimax Hailuo 2.3 Pro I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-2.3-pro-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 181,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-2.3-standard-i2v",
+        "name": "Minimax Hailuo 2.3 Standard I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-2.3-standard-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 206,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-hailuo-2.3-fast",
+        "name": "Minimax Hailuo 2.3 Fast",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-hailuo-2.3-fast",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 198,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be 6 or 10",
+              "input": 5,
+              "ctx": {
+                "expected": "6 or 10"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "grok-imagine-image-to-video",
+        "name": "Grok Imagine Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/grok-imagine-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 202,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "body",
+                "duration"
+              ],
+              "msg": "Input should be greater than or equal to 6",
+              "input": 5,
+              "ctx": {
+                "ge": 6
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/greater_than_equal"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "kling-o1-reference-to-video",
+        "name": "Kling O1 Reference To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-reference-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 183,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v5.5-i2v",
+        "name": "Pixverse v5.5 I2V",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v5.5-i2v",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 187,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '360p', '540p', '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'360p', '540p', '720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "wan2.6-image-to-video",
+        "name": "Wan2.6 Image To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/wan2.6-image-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 198,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "kling-o1-standard-reference-to-video",
+        "name": "Kling O1 Standard Reference To Video",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/kling-o1-standard-reference-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 175,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "images_list"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "animate test",
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "aspect_ratio": "16:9",
+                "duration": 5,
+                "resolution": "480p"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "seedance-v1.5-pro-i2v-fast",
+        "name": "Seedance v1.5 Pro I2V Fast",
+        "category": "i2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/seedance-v1.5-pro-i2v-fast",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 199,
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "resolution"
+              ],
+              "msg": "Input should be '720p' or '1080p'",
+              "input": "480p",
+              "ctx": {
+                "expected": "'720p' or '1080p'"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/literal_error"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "pixverse-v6-transition",
+        "name": "Pixverse V6 Transition",
+        "category": "v2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/pixverse-v6-transition",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 417,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "image_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "video_url": "https://via.placeholder.com/test.mp4",
+                "prompt": "extend"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veo3.1-extend-video",
+        "name": "Veo 3.1 Extend Video",
+        "category": "v2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veo3.1-extend-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 184,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "request_id"
+              ],
+              "msg": "Field required",
+              "input": {
+                "video_url": "https://via.placeholder.com/test.mp4",
+                "prompt": "extend"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "sync-lipsync",
+        "name": "Sync Lipsync",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/sync-lipsync",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 257,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "video_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "audio_url": "https://via.placeholder.com/test.mp3"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "latent-sync",
+        "name": "LatentSync",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/latentsync-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 355,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "video_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "audio_url": "https://via.placeholder.com/test.mp3"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "creatify-lipsync",
+        "name": "Creatify Lipsync",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/creatify-lipsync",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 200,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "video_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "audio_url": "https://via.placeholder.com/test.mp3"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "veed-lipsync",
+        "name": "Veed Lipsync",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/veed-lipsync",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 585,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "video_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "audio_url": "https://via.placeholder.com/test.mp3"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "infinitetalk-video-to-video",
+        "name": "Infinite Talk V2V",
+        "category": "lipsyncModels",
+        "endpoint": "https://api.muapi.ai/api/v1/infinitetalk-video-to-video",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 1411,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "video_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "image_url": "https://via.placeholder.com/512x512.png/000000/FFFFFF?text=test",
+                "audio_url": "https://via.placeholder.com/test.mp3"
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-speech-2.6-hd",
+        "name": "Minimax Speech HD",
+        "category": "ttsModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-speech-2.6-hd",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 340,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "voice_id"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "minimax-speech-2.6-turbo",
+        "name": "Minimax Speech Turbo",
+        "category": "ttsModels",
+        "endpoint": "https://api.muapi.ai/api/v1/minimax-speech-2.6-turbo",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 184,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "voice_id"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "suno-create-music",
+        "name": "Suno Create Music",
+        "category": "musicModels",
+        "endpoint": "https://api.muapi.ai/api/v1/suno-create-music",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 195,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "style"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "suno-remix-music",
+        "name": "Suno Remix",
+        "category": "musicModels",
+        "endpoint": "https://api.muapi.ai/api/v1/suno-remix-music",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 220,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "audio_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "style"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      },
+      {
+        "id": "suno-extend-music",
+        "name": "Suno Extend",
+        "category": "musicModels",
+        "endpoint": "https://api.muapi.ai/api/v1/suno-extend-music",
+        "status": 422,
+        "statusText": "Unprocessable Entity",
+        "responseTime": 191,
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "audio_url"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "style"
+              ],
+              "msg": "Field required",
+              "input": {
+                "prompt": "test audio",
+                "duration": 5
+              },
+              "url": "https://errors.pydantic.dev/2.12/v/missing"
+            }
+          ]
+        },
+        "reason": "Client error - may need different payload"
+      }
+    ],
+    "unknownError": [
+      {
+        "id": "runway-text-to-video",
+        "name": "Runway Gen-3",
+        "category": "t2vModels",
+        "endpoint": "https://api.muapi.ai/api/v1/runway-text-to-video",
+        "error": "AbortError",
+        "errorMessage": "This operation was aborted",
+        "responseTime": 10009,
+        "reason": "Request timeout - endpoint may be slow or unavailable"
+      }
+    ],
+    "skipped": []
+  }
+}
