@@ -55,12 +55,31 @@ function modelControls(modelId, kind) {
     const resolutions = kind === 'i2v'
         ? getResolutionsForI2VModel(modelId)
         : getResolutionsForVideoModel(modelId);
+    // Only invent resolution options when the model declares a resolution input;
+    // VIP has high_bitrate instead — leave empty so we don't send invalid params.
+    const resolutionFallback = meta?.inputs?.resolution ? ['720p', '1080p'] : [];
     return {
         meta,
         aspects: aspects.length ? aspects : ['16:9', '9:16', '1:1'],
         durations: durations.length ? durations : [5, 10, 15],
-        resolutions: resolutions.length ? resolutions : ['720p', '1080p'],
+        resolutions: resolutions.length ? resolutions : resolutionFallback,
     };
+}
+
+/** Rebuild <select> options; keep current value if still valid, else prefer fallbackDefault. */
+function setSelectOptions(sel, options, fallbackDefault) {
+    const prev = sel.value;
+    const opts = (options || []).map(String);
+    sel.innerHTML = '';
+    opts.forEach((o) => {
+        const opt = document.createElement('option');
+        opt.value = o;
+        opt.textContent = o;
+        sel.appendChild(opt);
+    });
+    if (opts.includes(prev)) sel.value = prev;
+    else if (opts.includes(String(fallbackDefault))) sel.value = String(fallbackDefault);
+    else if (opts.length) sel.value = opts[0];
 }
 
 const extendMeta = getVideoModelById(EXTEND_MODEL);
@@ -180,11 +199,18 @@ function buildCharacterSwap(onResult, getTier) {
 
     const controlRow = s('div', { className: 'grid grid-cols-3 gap-3' });
     const { wrap: arW, sel: arSel } = labeledSelect('Aspect Ratio', initial.aspects, initial.meta?.inputs?.aspect_ratio?.default || '16:9');
-    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', initial.durations, 5);
+    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', initial.durations, initial.meta?.inputs?.duration?.default || 5);
     const { wrap: resW, sel: resSel } = labeledSelect('Resolution', initial.resolutions, initial.meta?.inputs?.resolution?.default || '720p');
     controlRow.appendChild(arW);
     controlRow.appendChild(durW);
     controlRow.appendChild(resW);
+
+    function syncControls() {
+        const controls = modelControls(getTier().i2v, 'i2v');
+        setSelectOptions(arSel, controls.aspects, controls.meta?.inputs?.aspect_ratio?.default || '16:9');
+        setSelectOptions(durSel, controls.durations, controls.meta?.inputs?.duration?.default || 5);
+        setSelectOptions(resSel, controls.resolutions, controls.meta?.inputs?.resolution?.default || '720p');
+    }
 
     const status = statusBox();
     const btn = generateBtn('🎬 Generate Character Swap');
@@ -234,6 +260,7 @@ function buildCharacterSwap(onResult, getTier) {
     wrap.appendChild(status.el);
     wrap.appendChild(btn);
     wrap.appendChild(results);
+    wrap.syncControls = syncControls;
     return wrap;
 }
 
@@ -321,12 +348,19 @@ function buildVariations(getTier) {
     const controlRow = s('div', { className: 'grid grid-cols-4 gap-3' });
     const { wrap: countW, sel: countSel } = labeledSelect('Count', [2, 3, 4], 2);
     const { wrap: arW, sel: arSel } = labeledSelect('Aspect Ratio', initial.aspects, initial.meta?.inputs?.aspect_ratio?.default || '16:9');
-    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', initial.durations, 5);
+    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', initial.durations, initial.meta?.inputs?.duration?.default || 5);
     const { wrap: resW, sel: resSel } = labeledSelect('Resolution', initial.resolutions, initial.meta?.inputs?.resolution?.default || '720p');
     controlRow.appendChild(countW);
     controlRow.appendChild(arW);
     controlRow.appendChild(durW);
     controlRow.appendChild(resW);
+
+    function syncControls() {
+        const controls = modelControls(getTier().t2v, 't2v');
+        setSelectOptions(arSel, controls.aspects, controls.meta?.inputs?.aspect_ratio?.default || '16:9');
+        setSelectOptions(durSel, controls.durations, controls.meta?.inputs?.duration?.default || 5);
+        setSelectOptions(resSel, controls.resolutions, controls.meta?.inputs?.resolution?.default || '720p');
+    }
 
     const status = statusBox();
     const btn = generateBtn('✨ Generate Variations');
@@ -382,6 +416,7 @@ function buildVariations(getTier) {
     wrap.appendChild(status.el);
     wrap.appendChild(btn);
     wrap.appendChild(grid);
+    wrap.syncControls = syncControls;
     return wrap;
 }
 
@@ -532,28 +567,6 @@ export function SeedanceStudio() {
     const tierWrap = s('div', { className: 'flex flex-col gap-1' });
     const tierLbl = s('label', { className: 'text-xs text-secondary uppercase tracking-wider' }, 'Model tier');
     const tierRow = s('div', { className: 'flex gap-1 bg-input rounded-lg p-1' });
-    const tierBtns = SEEDANCE_TIERS.map((tier) => {
-        const btn = s('button', {
-            type: 'button',
-            className: `px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${tier.id === currentTierId ? 'bg-primary text-black' : 'text-secondary hover:text-primary'}`,
-            onclick: () => {
-                currentTierId = tier.id;
-                try { localStorage.setItem(TIER_PREF_KEY, tier.id); } catch { /* ignore */ }
-                tierBtns.forEach((b, j) => {
-                    const t = SEEDANCE_TIERS[j];
-                    b.className = `px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${t.id === currentTierId ? 'bg-primary text-black' : 'text-secondary hover:text-primary'}`;
-                });
-            }
-        }, tier.label);
-        tierRow.appendChild(btn);
-        return btn;
-    });
-    tierWrap.appendChild(tierLbl);
-    tierWrap.appendChild(tierRow);
-    hdr.appendChild(left);
-    hdr.appendChild(tierWrap);
-    root.appendChild(hdr);
-
     const tabBar = s('div', { className: 'flex gap-1 bg-input rounded-xl p-1' });
     let activeTab = 0;
     let remixPanel = null;
@@ -573,6 +586,35 @@ export function SeedanceStudio() {
         buildOmniReference(),
     ];
     remixPanel = tabPanels[1];
+
+    function syncTierControls() {
+        tabPanels.forEach((panel) => {
+            if (typeof panel.syncControls === 'function') panel.syncControls();
+        });
+    }
+
+    const tierBtns = SEEDANCE_TIERS.map((tier) => {
+        const btn = s('button', {
+            type: 'button',
+            className: `px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${tier.id === currentTierId ? 'bg-primary text-black' : 'text-secondary hover:text-primary'}`,
+            onclick: () => {
+                currentTierId = tier.id;
+                try { localStorage.setItem(TIER_PREF_KEY, tier.id); } catch { /* ignore */ }
+                tierBtns.forEach((b, j) => {
+                    const t = SEEDANCE_TIERS[j];
+                    b.className = `px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${t.id === currentTierId ? 'bg-primary text-black' : 'text-secondary hover:text-primary'}`;
+                });
+                syncTierControls();
+            }
+        }, tier.label);
+        tierRow.appendChild(btn);
+        return btn;
+    });
+    tierWrap.appendChild(tierLbl);
+    tierWrap.appendChild(tierRow);
+    hdr.appendChild(left);
+    hdr.appendChild(tierWrap);
+    root.appendChild(hdr);
 
     const tabBtns = TABS.map((label, i) => {
         const btn = s('button', {

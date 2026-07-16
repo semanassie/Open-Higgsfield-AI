@@ -59,6 +59,41 @@ async function testCharacterSwap(page) {
     const selectCount = await page.$$eval('select', els => els.length);
     assert(selectCount >= 3, `At least 3 selects rendered (got ${selectCount})`);
 
+    // Tier switch must refresh AR / resolution options to match new model metadata
+    await clickByText(page, 'button', 'Mini');
+    const miniOpts = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        // Character Swap: Aspect, Duration, Resolution
+        return {
+            aspects: Array.from(selects[0]?.options || []).map(o => o.value),
+            resolutions: Array.from(selects[2]?.options || []).map(o => o.value),
+        };
+    });
+    assert(miniOpts.resolutions.includes('480p'), `Mini Character Swap includes 480p (got: ${miniOpts.resolutions.join(', ')})`);
+    assert(miniOpts.aspects.includes('9:21'), `Mini Character Swap includes 9:21 (got: ${miniOpts.aspects.join(', ')})`);
+
+    await clickByText(page, 'button', '2.5');
+    const midOpts = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return {
+            resolutions: Array.from(selects[2]?.options || []).map(o => o.value),
+        };
+    });
+    assert(midOpts.resolutions.includes('4k'), `2.5 Character Swap includes 4k (got: ${midOpts.resolutions.join(', ')})`);
+    assert(!midOpts.resolutions.includes('480p'), `2.5 Character Swap drops 480p (got: ${midOpts.resolutions.join(', ')})`);
+
+    await clickByText(page, 'button', 'VIP');
+    const vipOpts = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return {
+            aspects: Array.from(selects[0]?.options || []).map(o => o.value),
+            resolutions: Array.from(selects[2]?.options || []).map(o => o.value),
+        };
+    });
+    assert(!vipOpts.aspects.includes('9:21'), `VIP Character Swap drops 9:21 (got: ${vipOpts.aspects.join(', ')})`);
+    assert(vipOpts.resolutions.length === 0, `VIP Character Swap has no resolution options (got: ${vipOpts.resolutions.join(', ')})`);
+
+    await clickByText(page, 'button', 'Mini');
     await screenshot(page, 'seedance-01-character-swap');
 }
 
@@ -115,6 +150,26 @@ async function testVariations(page) {
         `Count selector has options 2/3/4 (got: ${countOptions.join(', ')})`
     );
 
+    // Tier switch refreshes Variations aspect/resolution (indexes: Count, Aspect, Duration, Resolution)
+    await clickByText(page, 'button', 'Mini');
+    const miniRes = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return Array.from(selects[3]?.options || []).map(o => o.value);
+    });
+    assert(miniRes.includes('480p'), `Mini Variations includes 480p (got: ${miniRes.join(', ')})`);
+
+    await clickByText(page, 'button', 'VIP');
+    const vipVar = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return {
+            aspects: Array.from(selects[1]?.options || []).map(o => o.value),
+            resolutions: Array.from(selects[3]?.options || []).map(o => o.value),
+        };
+    });
+    assert(!vipVar.aspects.includes('9:21'), `VIP Variations drops 9:21 (got: ${vipVar.aspects.join(', ')})`);
+    assert(vipVar.resolutions.length === 0, `VIP Variations has no resolution options (got: ${vipVar.resolutions.join(', ')})`);
+
+    await clickByText(page, 'button', 'Mini');
     await screenshot(page, 'seedance-03-variations');
 }
 

@@ -153,6 +153,22 @@ async function testSeedanceStudio(page, errors) {
         return vip ? vip.className.includes('bg-primary') : false;
     });
     assert(vipSelected, 'VIP tier selected after click');
+
+    // VIP has no resolution input — Character Swap resolution select should clear
+    const vipSwapRes = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return Array.from(selects[2]?.options || []).map(o => o.value);
+    });
+    assert(vipSwapRes.length === 0, `VIP clears Character Swap resolution options (got: ${vipSwapRes.join(', ')})`);
+
+    await clickByText(page, 'button', '2.5');
+    await new Promise(r => setTimeout(r, 200));
+    const midSwapRes = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return Array.from(selects[2]?.options || []).map(o => o.value);
+    });
+    assert(midSwapRes.includes('4k'), `2.5 Character Swap resolution includes 4k (got: ${midSwapRes.join(', ')})`);
+
     await clickByText(page, 'button', 'Mini');
 
     assert(await findByText(page, 'button', 'Character Swap'), 'Character Swap tab');
@@ -169,6 +185,15 @@ async function testSeedanceStudio(page, errors) {
     assert(await findByText(page, 'button', 'Generate Variations'), 'Generate Variations button');
     const selectCount = await countElements(page, 'select');
     assert(selectCount >= 4, `Variations has 4+ selects (got ${selectCount})`);
+
+    await clickByText(page, 'button', 'VIP');
+    await new Promise(r => setTimeout(r, 200));
+    const vipVarRes = await page.evaluate(() => {
+        const selects = Array.from(document.querySelectorAll('select'));
+        return Array.from(selects[3]?.options || []).map(o => o.value);
+    });
+    assert(vipVarRes.length === 0, `VIP clears Variations resolution options (got: ${vipVarRes.join(', ')})`);
+    await clickByText(page, 'button', 'Mini');
 }
 
 async function testAppsCategories(page, errors) {
