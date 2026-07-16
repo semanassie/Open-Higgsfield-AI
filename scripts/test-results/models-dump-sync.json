@@ -1,25 +1,30 @@
 {
-  "syncedAt": "2026-07-03T15:30:26.515Z",
-  "catalogSize": 453,
+  "syncedAt": "2026-07-16T17:27:23.329Z",
+  "catalogSize": 474,
   "categories": {
     "t2i": {
-      "count": 50,
-      "missingInCatalog": 2
+      "count": 52,
+      "missingInCatalog": 3
     },
     "t2v": {
-      "count": 54,
+      "count": 58,
       "missingInCatalog": 3
     },
     "i2i": {
-      "count": 60,
-      "missingInCatalog": 6
+      "count": 63,
+      "missingInCatalog": 7
     },
     "i2v": {
-      "count": 71,
+      "count": 76,
       "missingInCatalog": 3
     }
   },
   "notInCatalog": [
+    {
+      "category": "t2i",
+      "id": "seedream-5.0-pro",
+      "endpoint": "seedream-5.0-pro"
+    },
     {
       "category": "t2i",
       "id": "midjourney-v7-text-to-image",
@@ -44,6 +49,11 @@
       "category": "t2v",
       "id": "seedance-v2.0-t2v",
       "endpoint": "seedance-v2.0-t2v"
+    },
+    {
+      "category": "i2i",
+      "id": "seedream-5.0-pro-edit",
+      "endpoint": "seedream-5.0-pro-edit"
     },
     {
       "category": "i2i",

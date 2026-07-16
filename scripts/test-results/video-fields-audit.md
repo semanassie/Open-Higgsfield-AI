@@ -1,11 +1,11 @@
 # Video Model Fields Audit
 
-Generated: 2026-07-03T21:32:52.268Z
+Generated: 2026-07-16T19:40:08.783Z
 
 ## Summary
-- I2V: 71 | T2V: 54 | V2V: 5
+- I2V: 76 | T2V: 58 | V2V: 6
 - API test hints: 57
-- **BROKEN**: 0 | **SUSPECT**: 0 | **UNVERIFIED**: 53
+- **BROKEN**: 0 | **SUSPECT**: 0 | **UNVERIFIED**: 59
 
 ## BROKEN (metadata ≠ API)
 (none)
@@ -14,12 +14,17 @@ Generated: 2026-07-03T21:32:52.268Z
 | Model | imageField | API expects | Payload | Status | Studio |
 |-------|------------|-------------|---------|--------|--------|
 | seedance-2-mini-image-to-video | images_list | - | images_list | UNVERIFIED | SeedanceStudio, ShortsStudio |
-| seedance-2.5-image-to-video | images_list | - | images_list | UNVERIFIED | SeedanceStudio |
+| seedance-2.5-image-to-video | image_url | - | image_url | UNVERIFIED | SeedanceStudio |
+| seedance-2-vip-image-to-video | images_list | - | images_list | UNVERIFIED | VideoStudio |
+| veo-4-image-to-video | images_list | - | images_list | UNVERIFIED | VideoStudio |
 | seedance-2.1-image-to-video | images_list | - | images_list | UNVERIFIED | SeedanceStudio |
 | seedance-2-i2v | images_list | - | images_list | UNVERIFIED | SeedanceStudio |
 | kling-v3-turbo-standard-image-to-video | image_url | - | image_url | UNVERIFIED | VideoStudio |
 | kling-v3-turbo-pro-image-to-video | image_url | - | image_url | UNVERIFIED | VideoStudio |
-| seedance-2-omni-reference-no-video | image_url | - | image_url | UNVERIFIED | SeedanceStudio |
+| kling-v3.0-omni-standard-image-to-video | images_list | - | images_list | UNVERIFIED | VideoStudio |
+| kling-v3.0-omni-pro-image-to-video | images_list | - | images_list | UNVERIFIED | VideoStudio |
+| seedance-2-omni-reference-no-video | images_list | - | images_list | UNVERIFIED | SeedanceStudio |
+| seedance-2-omni-reference-no-video-fast | images_list | - | images_list | UNVERIFIED | VideoStudio |
 | pixverse-v6-i2v | images_list | images_list | images_list | OK | VideoStudio |
 | wan2.7-image-to-video | image_url | - | image_url | UNVERIFIED | VideoStudio |
 | wan2.7-reference-to-video | videos_list | videos_list | videos_list | OK | VideoStudio |

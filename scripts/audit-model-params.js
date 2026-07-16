@@ -107,6 +107,7 @@ function sampleParams(category, model) {
 const report = {
     generatedAt: new Date().toISOString(),
     counts: {},
+    duplicateIds: [],
     missingInDump: [],
     enumMismatches: [],
     missingEndpoint: [],
@@ -122,8 +123,20 @@ const report = {
 for (const [cat, models] of Object.entries(CATALOG)) {
     report.counts[cat] = models.length;
     const dumpMap = dumpByCat[cat];
+    const seenIds = new Map();
 
-    for (const m of models) {
+    for (let i = 0; i < models.length; i++) {
+        const m = models[i];
+        if (seenIds.has(m.id)) {
+            report.duplicateIds.push({
+                category: cat,
+                id: m.id,
+                firstIndex: seenIds.get(m.id),
+                duplicateIndex: i,
+            });
+        } else {
+            seenIds.set(m.id, i);
+        }
         const endpoint = m.endpoint || m.id;
         if (!m.endpoint) report.missingEndpoint.push({ category: cat, id: m.id });
 
@@ -153,6 +166,26 @@ for (const [cat, models] of Object.entries(CATALOG)) {
             } catch (e) {
                 report.payloadTests.fail.push({ category: cat, id: m.id, error: e.message });
             }
+        }
+    }
+}
+
+// Also flag duplicate IDs inside models_dump.json category arrays
+for (const [cat, arr] of Object.entries(dump)) {
+    if (!Array.isArray(arr)) continue;
+    const seen = new Map();
+    for (let i = 0; i < arr.length; i++) {
+        const id = arr[i]?.id;
+        if (!id) continue;
+        if (seen.has(id)) {
+            report.duplicateIds.push({
+                category: `dump:${cat}`,
+                id,
+                firstIndex: seen.get(id),
+                duplicateIndex: i,
+            });
+        } else {
+            seen.set(id, i);
         }
     }
 }
@@ -247,6 +280,11 @@ const md = [
     '## Model counts',
     ...Object.entries(report.counts).map(([k, v]) => `- **${k}**: ${v}`),
     '',
+    `## Duplicate model IDs: ${report.duplicateIds.length}`,
+    ...(report.duplicateIds.length
+        ? report.duplicateIds.map((d) => `- \`${d.category}/${d.id}\` (indices ${d.firstIndex}, ${d.duplicateIndex})`)
+        : ['- (none)']),
+    '',
     `## Payload build tests: ${report.payloadTests.pass} pass, ${report.payloadTests.fail.length} fail`,
     ...(report.payloadTests.fail.length
         ? report.payloadTests.fail.map((f) => `- \`${f.category}/${f.id}\`: ${f.error}`)
@@ -288,9 +326,10 @@ fs.writeFileSync(mdPath, md);
 
 console.log(`Audit complete. ${report.payloadTests.pass} payload, ${report.audioTests.pass} audio, ${report.appTests.pass} app tests passed.`);
 console.log(`Failures: payload ${report.payloadTests.fail.length}, audio ${report.audioTests.fail.length}, app ${report.appTests.fail.length}`);
+console.log(`Duplicate IDs: ${report.duplicateIds.length}`);
 console.log(`Wrote ${jsonPath}`);
 console.log(`Wrote ${mdPath}`);
 
 const totalFail = report.payloadTests.fail.length + report.audioTests.fail.length + report.appTests.fail.length
-    + (report.videoFields?.summary?.broken ?? 0);
+    + (report.videoFields?.summary?.broken ?? 0) + report.duplicateIds.length;
 if (totalFail > 0) process.exit(1);

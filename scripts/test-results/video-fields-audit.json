@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-03T21:32:52.268Z",
+  "generatedAt": "2026-07-16T19:40:08.783Z",
   "summary": {
-    "i2v": 71,
-    "t2v": 54,
-    "v2v": 5,
+    "i2v": 76,
+    "t2v": 58,
+    "v2v": 6,
     "apiTestHints": 57,
     "broken": 0,
     "suspect": 0,
-    "unverified": 53
+    "unverified": 59
   },
   "broken": [],
   "suspect": [],
@@ -26,13 +26,35 @@
     {
       "id": "seedance-2.5-image-to-video",
       "category": "i2v",
+      "currentField": "image_url",
+      "apiExpects": "-",
+      "payloadSends": "image_url",
+      "status": "UNVERIFIED",
+      "inPhase1": true,
+      "studio": "SeedanceStudio",
+      "endpoint": "seedance-2.5-image-to-video"
+    },
+    {
+      "id": "seedance-2-vip-image-to-video",
+      "category": "i2v",
       "currentField": "images_list",
       "apiExpects": "-",
       "payloadSends": "images_list",
       "status": "UNVERIFIED",
       "inPhase1": true,
-      "studio": "SeedanceStudio",
-      "endpoint": "seedance-2.5-image-to-video"
+      "studio": "VideoStudio",
+      "endpoint": "seedance-2-vip-image-to-video"
+    },
+    {
+      "id": "veo-4-image-to-video",
+      "category": "i2v",
+      "currentField": "images_list",
+      "apiExpects": "-",
+      "payloadSends": "images_list",
+      "status": "UNVERIFIED",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "veo-4-image-to-video"
     },
     {
       "id": "seedance-2.1-image-to-video",
@@ -79,15 +101,48 @@
       "endpoint": "kling-v3-turbo-pro-image-to-video"
     },
     {
+      "id": "kling-v3.0-omni-standard-image-to-video",
+      "category": "i2v",
+      "currentField": "images_list",
+      "apiExpects": "-",
+      "payloadSends": "images_list",
+      "status": "UNVERIFIED",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "kling-v3.0-omni-standard-image-to-video"
+    },
+    {
+      "id": "kling-v3.0-omni-pro-image-to-video",
+      "category": "i2v",
+      "currentField": "images_list",
+      "apiExpects": "-",
+      "payloadSends": "images_list",
+      "status": "UNVERIFIED",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "kling-v3.0-omni-pro-image-to-video"
+    },
+    {
       "id": "seedance-2-omni-reference-no-video",
       "category": "i2v",
-      "currentField": "image_url",
+      "currentField": "images_list",
       "apiExpects": "-",
-      "payloadSends": "image_url",
+      "payloadSends": "images_list",
       "status": "UNVERIFIED",
       "inPhase1": false,
       "studio": "SeedanceStudio",
       "endpoint": "seedance-2-omni-reference-no-video"
+    },
+    {
+      "id": "seedance-2-omni-reference-no-video-fast",
+      "category": "i2v",
+      "currentField": "images_list",
+      "apiExpects": "-",
+      "payloadSends": "images_list",
+      "status": "UNVERIFIED",
+      "inPhase1": false,
+      "studio": "VideoStudio",
+      "endpoint": "seedance-2-omni-reference-no-video-fast"
     },
     {
       "id": "pixverse-v6-i2v",
@@ -818,6 +873,28 @@
       "endpoint": "seedance-2.5-text-to-video"
     },
     {
+      "id": "seedance-2-vip-text-to-video",
+      "category": "t2v",
+      "currentField": "-",
+      "apiExpects": "-",
+      "payloadSends": "-",
+      "status": "OK",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "seedance-2-vip-text-to-video"
+    },
+    {
+      "id": "veo-4-text-to-video",
+      "category": "t2v",
+      "currentField": "-",
+      "apiExpects": "-",
+      "payloadSends": "-",
+      "status": "OK",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "veo-4-text-to-video"
+    },
+    {
       "id": "seedance-2.1-text-to-video",
       "category": "t2v",
       "currentField": "-",
@@ -849,6 +926,28 @@
       "inPhase1": true,
       "studio": "VideoStudio",
       "endpoint": "kling-v3-turbo-pro-text-to-video"
+    },
+    {
+      "id": "kling-v3.0-omni-standard-text-to-video",
+      "category": "t2v",
+      "currentField": "-",
+      "apiExpects": "-",
+      "payloadSends": "-",
+      "status": "OK",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "kling-v3.0-omni-standard-text-to-video"
+    },
+    {
+      "id": "kling-v3.0-omni-pro-text-to-video",
+      "category": "t2v",
+      "currentField": "-",
+      "apiExpects": "-",
+      "payloadSends": "-",
+      "status": "OK",
+      "inPhase1": true,
+      "studio": "VideoStudio",
+      "endpoint": "kling-v3.0-omni-pro-text-to-video"
     },
     {
       "id": "seedance-2-extend",
@@ -1445,6 +1544,17 @@
       "inPhase1": false,
       "studio": "VideoStudio",
       "endpoint": "video-watermark-remover"
+    },
+    {
+      "id": "seedance-2-watermark-remover",
+      "category": "v2v",
+      "currentField": "video_url",
+      "apiExpects": "-",
+      "payloadSends": "video_url",
+      "status": "UNVERIFIED",
+      "inPhase1": false,
+      "studio": "VideoStudio",
+      "endpoint": "seedance-2-watermark-remover"
     }
   ]
 }
