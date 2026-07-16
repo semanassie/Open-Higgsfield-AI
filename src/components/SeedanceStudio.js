@@ -7,22 +7,63 @@ import {
 import { OMNI_I2V_MODELS, OMNI_T2V_MODELS } from '../lib/phase2Models.js';
 
 const TABS = ['Character Swap', 'Remix', 'Variations', 'Omni Reference'];
-const I2V_MODEL = 'seedance-2-mini-image-to-video';
-const T2V_MODEL = 'seedance-2-mini-text-to-video';
 const EXTEND_MODEL = 'seedance-2-extend';
+const TIER_PREF_KEY = 'seedance_tier';
 
-const i2vMeta = getI2VModelById(I2V_MODEL);
-const t2vMeta = getVideoModelById(T2V_MODEL);
+const SEEDANCE_TIERS = [
+    {
+        id: 'mini',
+        label: 'Mini',
+        i2v: 'seedance-2-mini-image-to-video',
+        t2v: 'seedance-2-mini-text-to-video',
+    },
+    {
+        id: '2.5',
+        label: '2.5',
+        i2v: 'seedance-2.5-image-to-video',
+        t2v: 'seedance-2.5-text-to-video',
+    },
+    {
+        id: 'vip',
+        label: 'VIP',
+        i2v: 'seedance-2-vip-image-to-video',
+        t2v: 'seedance-2-vip-text-to-video',
+    },
+];
+
+function getSavedTierId() {
+    try {
+        const saved = localStorage.getItem(TIER_PREF_KEY);
+        if (SEEDANCE_TIERS.some((t) => t.id === saved)) return saved;
+    } catch { /* ignore */ }
+    return 'mini';
+}
+
+function tierById(id) {
+    return SEEDANCE_TIERS.find((t) => t.id === id) || SEEDANCE_TIERS[0];
+}
+
+function modelControls(modelId, kind) {
+    const meta = kind === 'i2v' ? getI2VModelById(modelId) : getVideoModelById(modelId);
+    const aspects = kind === 'i2v'
+        ? getAspectRatiosForI2VModel(modelId)
+        : getAspectRatiosForVideoModel(modelId);
+    const durations = (kind === 'i2v'
+        ? getDurationsForI2VModel(modelId)
+        : getDurationsForModel(modelId)
+    ).filter((d) => [5, 8, 10, 15].includes(d));
+    const resolutions = kind === 'i2v'
+        ? getResolutionsForI2VModel(modelId)
+        : getResolutionsForVideoModel(modelId);
+    return {
+        meta,
+        aspects: aspects.length ? aspects : ['16:9', '9:16', '1:1'],
+        durations: durations.length ? durations : [5, 10, 15],
+        resolutions: resolutions.length ? resolutions : ['720p', '1080p'],
+    };
+}
+
 const extendMeta = getVideoModelById(EXTEND_MODEL);
-
-const I2V_ASPECTS = getAspectRatiosForI2VModel(I2V_MODEL);
-const I2V_DURATIONS = getDurationsForI2VModel(I2V_MODEL).filter((d) => [5, 10, 15].includes(d));
-const I2V_RESOLUTIONS = getResolutionsForI2VModel(I2V_MODEL);
-
-const T2V_ASPECTS = getAspectRatiosForVideoModel(T2V_MODEL);
-const T2V_DURATIONS = getDurationsForModel(T2V_MODEL).filter((d) => [5, 10, 15].includes(d));
-const T2V_RESOLUTIONS = getResolutionsForVideoModel(T2V_MODEL);
-
 const EXTEND_DURATIONS = getDurationsForModel(EXTEND_MODEL).filter((d) => [5, 10, 15].includes(d));
 const SESSION_KEY = 'seedance_last_request_id';
 
@@ -101,8 +142,9 @@ function generateBtn(label) {
 }
 
 // ── Tab 1: Character Swap ───────────────────────────────────────────────────
-function buildCharacterSwap(onResult) {
+function buildCharacterSwap(onResult, getTier) {
     const wrap = s('div', { className: 'flex flex-col gap-4' });
+    const initial = modelControls(getTier().i2v, 'i2v');
 
     // Upload zone
     let uploadedUrl = null;
@@ -137,9 +179,9 @@ function buildCharacterSwap(onResult) {
     });
 
     const controlRow = s('div', { className: 'grid grid-cols-3 gap-3' });
-    const { wrap: arW, sel: arSel } = labeledSelect('Aspect Ratio', I2V_ASPECTS, i2vMeta?.inputs?.aspect_ratio?.default || '16:9');
-    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', I2V_DURATIONS.length ? I2V_DURATIONS : [5, 10, 15], 5);
-    const { wrap: resW, sel: resSel } = labeledSelect('Resolution', I2V_RESOLUTIONS, i2vMeta?.inputs?.resolution?.default || '720p');
+    const { wrap: arW, sel: arSel } = labeledSelect('Aspect Ratio', initial.aspects, initial.meta?.inputs?.aspect_ratio?.default || '16:9');
+    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', initial.durations, 5);
+    const { wrap: resW, sel: resSel } = labeledSelect('Resolution', initial.resolutions, initial.meta?.inputs?.resolution?.default || '720p');
     controlRow.appendChild(arW);
     controlRow.appendChild(durW);
     controlRow.appendChild(resW);
@@ -151,23 +193,26 @@ function buildCharacterSwap(onResult) {
     btn.onclick = async () => {
         if (!uploadedUrl) { status.set('Please upload a character reference image first.', true); return; }
         if (!prompt.value.trim()) { status.set('Please enter a scene prompt.', true); return; }
+        const tier = getTier();
+        const i2vModel = tier.i2v;
         btn.disabled = true;
-        status.set('⏳ Submitting to Seedance 2.0 I2V…');
+        status.set(`⏳ Submitting to ${tier.label} I2V…`);
         try {
             let reqId = null;
-            const result = await muapi.generateI2V({
-                model: I2V_MODEL,
+            const payload = {
+                model: i2vModel,
                 image_url: uploadedUrl,
                 prompt: prompt.value.trim(),
                 aspect_ratio: arSel.value,
                 duration: parseInt(durSel.value, 10),
-                resolution: resSel.value,
                 onRequestId: id => {
                     reqId = id;
                     sessionStorage.setItem(SESSION_KEY, id);
                     status.set(`⏳ Generating… request_id: ${id}`);
                 }
-            });
+            };
+            if (resSel.options.length) payload.resolution = resSel.value;
+            const result = await muapi.generateI2V(payload);
             const url = result.url || result.outputs?.[0];
             if (url) {
                 status.set('✓ Done!');
@@ -263,8 +308,9 @@ function buildRemix() {
 }
 
 // ── Tab 3: Variations ───────────────────────────────────────────────────────
-function buildVariations() {
+function buildVariations(getTier) {
     const wrap = s('div', { className: 'flex flex-col gap-4' });
+    const initial = modelControls(getTier().t2v, 't2v');
 
     const prompt = s('textarea', {
         className: 'w-full bg-input border border-border-color rounded-xl p-3 text-sm resize-none',
@@ -274,9 +320,9 @@ function buildVariations() {
 
     const controlRow = s('div', { className: 'grid grid-cols-4 gap-3' });
     const { wrap: countW, sel: countSel } = labeledSelect('Count', [2, 3, 4], 2);
-    const { wrap: arW, sel: arSel } = labeledSelect('Aspect Ratio', T2V_ASPECTS, t2vMeta?.inputs?.aspect_ratio?.default || '16:9');
-    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', T2V_DURATIONS.length ? T2V_DURATIONS : [5, 10, 15], 5);
-    const { wrap: resW, sel: resSel } = labeledSelect('Resolution', T2V_RESOLUTIONS, t2vMeta?.inputs?.resolution?.default || '720p');
+    const { wrap: arW, sel: arSel } = labeledSelect('Aspect Ratio', initial.aspects, initial.meta?.inputs?.aspect_ratio?.default || '16:9');
+    const { wrap: durW, sel: durSel } = labeledSelect('Duration (s)', initial.durations, 5);
+    const { wrap: resW, sel: resSel } = labeledSelect('Resolution', initial.resolutions, initial.meta?.inputs?.resolution?.default || '720p');
     controlRow.appendChild(countW);
     controlRow.appendChild(arW);
     controlRow.appendChild(durW);
@@ -289,9 +335,10 @@ function buildVariations() {
     btn.onclick = async () => {
         if (!prompt.value.trim()) { status.set('Please enter a prompt.', true); return; }
         const count = parseInt(countSel.value);
+        const tier = getTier();
         btn.disabled = true;
         grid.innerHTML = '';
-        status.set(`⏳ Generating ${count} variations in parallel…`);
+        status.set(`⏳ Generating ${count} ${tier.label} variations in parallel…`);
 
         const placeholders = [];
         for (let i = 0; i < count; i++) {
@@ -301,14 +348,15 @@ function buildVariations() {
         }
 
         let done = 0;
-        const tasks = Array.from({ length: count }, (_, i) =>
-            muapi.generateVideo({
-                model: T2V_MODEL,
+        const tasks = Array.from({ length: count }, (_, i) => {
+            const payload = {
+                model: tier.t2v,
                 prompt: prompt.value.trim(),
                 aspect_ratio: arSel.value,
                 duration: parseInt(durSel.value, 10),
-                resolution: resSel.value,
-            }).then(result => {
+            };
+            if (resSel.options.length) payload.resolution = resSel.value;
+            return muapi.generateVideo(payload).then(result => {
                 const url = result.url || result.outputs?.[0];
                 done++;
                 status.set(`⏳ ${done}/${count} done…`);
@@ -321,8 +369,8 @@ function buildVariations() {
             }).catch(e => {
                 done++;
                 placeholders[i].textContent = `Variation ${i + 1} failed: ${e.message}`;
-            })
-        );
+            });
+        });
 
         await Promise.allSettled(tasks);
         status.set(`✓ All ${count} variations complete.`);
@@ -467,29 +515,50 @@ function buildOmniReference() {
 // ── Main export ─────────────────────────────────────────────────────────────
 export function SeedanceStudio() {
     const root = s('div', { className: 'flex flex-col gap-6 p-6 max-w-4xl mx-auto w-full' });
+    let currentTierId = getSavedTierId();
+    const getTier = () => tierById(currentTierId);
 
-    // Header
-    const hdr = s('div', { className: 'flex items-center gap-3 mb-2' });
+    const hdr = s('div', { className: 'flex items-center justify-between gap-3 mb-2 flex-wrap' });
+    const left = s('div', { className: 'flex items-center gap-3' });
     const icon = s('div', { className: 'w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-xl' }, '🎬');
     const hdrText = s('div');
-    const title = s('h1', { className: 'text-2xl font-bold' }, 'Seedance 2.0 Studio');
+    const title = s('h1', { className: 'text-2xl font-bold' }, 'Seedance Studio');
     const sub = s('p', { className: 'text-secondary text-sm' }, 'Swap characters · Remix outputs · Infinite variations');
     hdrText.appendChild(title);
     hdrText.appendChild(sub);
-    hdr.appendChild(icon);
-    hdr.appendChild(hdrText);
+    left.appendChild(icon);
+    left.appendChild(hdrText);
+
+    const tierWrap = s('div', { className: 'flex flex-col gap-1' });
+    const tierLbl = s('label', { className: 'text-xs text-secondary uppercase tracking-wider' }, 'Model tier');
+    const tierRow = s('div', { className: 'flex gap-1 bg-input rounded-lg p-1' });
+    const tierBtns = SEEDANCE_TIERS.map((tier) => {
+        const btn = s('button', {
+            type: 'button',
+            className: `px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${tier.id === currentTierId ? 'bg-primary text-black' : 'text-secondary hover:text-primary'}`,
+            onclick: () => {
+                currentTierId = tier.id;
+                try { localStorage.setItem(TIER_PREF_KEY, tier.id); } catch { /* ignore */ }
+                tierBtns.forEach((b, j) => {
+                    const t = SEEDANCE_TIERS[j];
+                    b.className = `px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${t.id === currentTierId ? 'bg-primary text-black' : 'text-secondary hover:text-primary'}`;
+                });
+            }
+        }, tier.label);
+        tierRow.appendChild(btn);
+        return btn;
+    });
+    tierWrap.appendChild(tierLbl);
+    tierWrap.appendChild(tierRow);
+    hdr.appendChild(left);
+    hdr.appendChild(tierWrap);
     root.appendChild(hdr);
 
-    // Tabs
     const tabBar = s('div', { className: 'flex gap-1 bg-input rounded-xl p-1' });
-    const panels = [];
     let activeTab = 0;
-
-    // Build tab panels
     let remixPanel = null;
 
     function onCharacterSwapResult(requestId) {
-        // Switch to remix tab and populate request_id
         activateTab(1);
         if (remixPanel) {
             const inp = remixPanel.querySelector('input[type="text"]');
@@ -498,9 +567,9 @@ export function SeedanceStudio() {
     }
 
     const tabPanels = [
-        buildCharacterSwap(onCharacterSwapResult),
+        buildCharacterSwap(onCharacterSwapResult, getTier),
         buildRemix(),
-        buildVariations(),
+        buildVariations(getTier),
         buildOmniReference(),
     ];
     remixPanel = tabPanels[1];

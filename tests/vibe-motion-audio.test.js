@@ -67,7 +67,6 @@ assert(seedancePayload.images_list[0] === TEST_IMAGE, 'Seedance images_list cont
 assert(!seedancePayload.image_url, 'Seedance payload omits image_url');
 
 for (const modelId of [
-    'seedance-2.5-image-to-video',
     'seedance-2.1-image-to-video',
     'seedance-2-i2v',
 ]) {
@@ -75,6 +74,10 @@ for (const modelId of [
     assert(Array.isArray(p.images_list) && p.images_list.length === 1, `${modelId} uses images_list`);
     assert(!p.image_url, `${modelId} omits image_url`);
 }
+
+const seedance25 = buildApiPayload('i2v', 'seedance-2.5-image-to-video', vibeMotionParams);
+assert(seedance25.image_url === TEST_IMAGE, 'Seedance 2.5 uses image_url');
+assert(!seedance25.images_list, 'Seedance 2.5 omits images_list');
 
 const klingPayload = buildApiPayload('i2v', 'kling-v2.6-pro-i2v', vibeMotionParams);
 assert(klingPayload.image_url === TEST_IMAGE, 'Kling v2.6 Pro uses image_url');

@@ -1,9 +1,7 @@
 import puppeteer from 'puppeteer';
 import fs from 'node:fs';
 import path from 'node:path';
-
-const BASE_URL = 'http://localhost:5173';
-const SCREENSHOTS_DIR = path.resolve('tests/screenshots');
+import { BASE_URL, SCREENSHOTS_DIR } from './helpers/smoke.js';
 
 if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
@@ -141,8 +139,8 @@ async function run() {
         await clickByText(page, 'a', 'Seedance');
         await new Promise(r => setTimeout(r, 400));
 
-        const hasTitle = await findByText(page, 'h1', 'Seedance 2.0 Studio');
-        assert(hasTitle, 'Page title "Seedance 2.0 Studio" rendered');
+        const hasTitle = await findByText(page, 'h1', 'Seedance Studio');
+        assert(hasTitle, 'Page title "Seedance Studio" rendered');
 
         // Run tab tests
         await testCharacterSwap(page);

@@ -200,7 +200,7 @@ export function ExplainerStudio() {
             const llmPrompt = `Create an explainer video script about: "${t}"
 Return ONLY a JSON array of exactly ${n} objects. Each object: {"title":"short title","visual":"cinematic video prompt for this scene","narration":"voiceover text 1-2 sentences"}
 Style: educational, clear, engaging. Visual prompts should be concrete and filmable.`;
-            const raw = await muapi.callLLM(llmPrompt);
+            const raw = await muapi.callLLM(llmPrompt, { useCase: 'explainer' });
             scenes = parseScenesFromLLM(raw);
             if (!scenes.length) throw new Error('Could not parse script — try again.');
             status.textContent = `✓ ${scenes.length} scenes ready. Click Render All Scenes.`;

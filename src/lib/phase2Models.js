@@ -2,6 +2,8 @@
 
 export const GEMINI_OMNI_CHARACTER = 'gemini-omni-character';
 export const SEEDANCE_OMNI_TRAIN = 'seedance-2-omni-reference-train';
+/** Character sheet / costume builder (I2I) */
+export const SEEDANCE_CHARACTER_SHEET = 'seedance-2-character';
 
 /** Text-to-image model for Character Builder when no reference photo is uploaded */
 export const CHARACTER_PORTRAIT_T2I = 'kling-o3-image';

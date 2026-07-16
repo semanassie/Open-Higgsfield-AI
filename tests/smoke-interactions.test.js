@@ -59,9 +59,14 @@ async function testSettingsModal(page, errors) {
         document.querySelector('header button[title="Update API Key"]')?.click();
     });
     await new Promise(r => setTimeout(r, 400));
-    assert(await findByText(page, 'h2', 'API Keys'), 'Settings modal title');
+    assert(await findByText(page, 'h2', 'Settings'), 'Settings modal title');
     assert(await page.$('input[placeholder*="Muapi"]'), 'Muapi key input');
     assert(await page.$('input[placeholder*="Kling"]'), 'Kling key input');
+    const hasLlm = await page.evaluate(() => {
+        const sels = Array.from(document.querySelectorAll('.fixed select, [class*="fixed"] select, select'));
+        return sels.some(s => Array.from(s.options).some(o => (o.value || '').includes('gemini')));
+    });
+    assert(hasLlm || await bodyIncludes(page, 'Default text LLM'), 'Settings Default text LLM control');
     await page.evaluate(() => document.querySelector('.fixed.inset-0')?.click());
     await new Promise(r => setTimeout(r, 200));
     errors.drain('Settings modal', assert);

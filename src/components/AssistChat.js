@@ -4,6 +4,9 @@ import { ASSIST_SYSTEM_PROMPT, TOOL_LABELS } from '../lib/assistPrompt.js';
 import {
     parseToolCall, stripToolBlock, executeAssistTool, toolNeedsCreditConfirmation,
 } from '../lib/assistTools.js';
+import {
+    LLM_MODELS, LLM_PREF_KEY, resolveLlmModelId,
+} from '../lib/llmModels.js';
 
 export function AssistChat() {
     const container = document.createElement('div');
@@ -14,13 +17,17 @@ export function AssistChat() {
 
     let messages = [];
     let isLoading = false;
+    let selectedModel = resolveLlmModelId('assist');
 
     const hero = document.createElement('div');
     hero.style.padding = '1.5rem 2rem 0.75rem';
     hero.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
     hero.style.flexShrink = '0';
-    hero.innerHTML = `
-        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+
+    const heroRow = document.createElement('div');
+    heroRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-bottom:0.5rem;flex-wrap:wrap;';
+    heroRow.innerHTML = `
+        <div style="display:flex;align-items:center;gap:0.75rem;">
             <div style="width:40px;height:40px;border-radius:12px;background:rgba(217,255,0,0.1);border:1px solid rgba(217,255,0,0.2);display:flex;align-items:center;justify-content:center;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d9ff00" stroke-width="2">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -32,6 +39,34 @@ export function AssistChat() {
             </div>
         </div>
     `;
+
+    const modelWrap = document.createElement('div');
+    modelWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.25rem;min-width:180px;';
+    const modelLabel = document.createElement('label');
+    modelLabel.textContent = 'Model';
+    modelLabel.style.cssText = 'font-size:0.65rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.06em;';
+    const modelSelect = document.createElement('select');
+    modelSelect.style.cssText = 'padding:0.4rem 0.6rem;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.4);color:white;font-size:0.75rem;';
+    const groups = [...new Set(LLM_MODELS.map((m) => m.group || 'Other'))];
+    groups.forEach((group) => {
+        const og = document.createElement('optgroup');
+        og.label = group;
+        LLM_MODELS.filter((m) => (m.group || 'Other') === group).forEach((m) => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = m.badge ? `${m.name} · ${m.badge}` : m.name;
+            if (m.id === selectedModel) opt.selected = true;
+            og.appendChild(opt);
+        });
+        modelSelect.appendChild(og);
+    });
+    modelSelect.onchange = () => {
+        selectedModel = modelSelect.value;
+        try { localStorage.setItem(LLM_PREF_KEY, selectedModel); } catch { /* ignore */ }
+    };
+    modelWrap.append(modelLabel, modelSelect);
+    heroRow.appendChild(modelWrap);
+    hero.appendChild(heroRow);
     container.appendChild(hero);
 
     const chatArea = document.createElement('div');
@@ -302,7 +337,7 @@ export function AssistChat() {
         scrollDown();
 
         try {
-            const reply = await muapi.callLLMChat(messages, ASSIST_SYSTEM_PROMPT);
+            const reply = await muapi.callLLMChat(messages, ASSIST_SYSTEM_PROMPT, { model: selectedModel });
             loader.remove();
 
             const toolCall = parseToolCall(reply);

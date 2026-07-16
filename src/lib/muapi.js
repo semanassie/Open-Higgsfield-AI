@@ -1,5 +1,6 @@
 import { buildApiPayload, buildAppPayload, buildAudioPayload, getAudioModelDefinition, getEndpointForModel, validateModelParams } from './modelRequirements.js';
 import { CHARACTER_FACE_I2I, CHARACTER_PORTRAIT_T2I } from './phase2Models.js';
+import { getLlmRoute, resolveLlmModelId } from './llmModels.js';
 
 export class MuapiClient {
     constructor() {
@@ -607,19 +608,33 @@ export class MuapiClient {
     }
 
     /**
-     * Submit to MuAPI any-llm-models (Text to Text).
+     * Submit to a MuAPI text LLM endpoint (gateway or dedicated).
      * @see https://muapi.ai/playground/any-llm/llms.txt
+     * @param {Object} body
+     * @param {string} [body.prompt]
+     * @param {string} [body.system_prompt]
+     * @param {string} [body.model] - App LLM id or gateway model string
+     * @param {string} [useCase] - resolveLlmModelId use-case when model omitted
      */
-    async submitLLM(body) {
+    async submitLLM(body, useCase = 'global') {
         const key = this.getKey();
-        const url = `${this.baseUrl}/api/v1/any-llm-models`;
+        const modelId = resolveLlmModelId(useCase, body.model);
+        const route = getLlmRoute(modelId);
 
         const payload = {
-            model: 'google/gemini-2.5-flash',
             system_prompt: 'You are a helpful creative AI assistant.',
             ...body,
         };
+        delete payload.model;
         if (payload.system_prompt == null) payload.system_prompt = '';
+
+        let url;
+        if (route.route === 'dedicated') {
+            url = `${this.baseUrl}/api/v1/${route.endpoint || modelId}`;
+        } else {
+            url = `${this.baseUrl}/api/v1/any-llm-models`;
+            payload.model = route.gatewayModel || modelId || 'google/gemini-2.5-flash';
+        }
 
         const response = await fetch(url, {
             method: 'POST',
@@ -644,9 +659,8 @@ export class MuapiClient {
 
     /**
      * Calls an LLM (e.g. for backstory generation, prompt enhancement).
-     * Uses the any-llm-models endpoint on Muapi.
      * @param {string} prompt - The text prompt to send
-     * @param {{ systemPrompt?: string, model?: string }} [options]
+     * @param {{ systemPrompt?: string, model?: string, useCase?: string }} [options]
      * @returns {Promise<string>} The LLM's text response
      */
     async callLLM(prompt, options = {}) {
@@ -655,7 +669,7 @@ export class MuapiClient {
             system_prompt: options.systemPrompt ?? 'You are a helpful creative AI assistant.',
         };
         if (options.model) body.model = options.model;
-        return this.submitLLM(body);
+        return this.submitLLM(body, options.useCase || 'global');
     }
 
     /**
@@ -714,9 +728,10 @@ export class MuapiClient {
      * Multi-turn chat with an LLM (for Assist copilot).
      * @param {Array<{role: string, content: string}>} messages - Chat history
      * @param {string} [systemPrompt] - Optional system-level instruction
+     * @param {{ model?: string }} [options]
      * @returns {Promise<string>} The assistant's text reply
      */
-    async callLLMChat(messages, systemPrompt) {
+    async callLLMChat(messages, systemPrompt, options = {}) {
         const flatPrompt = messages.map(m => {
             const prefix = m.role === 'user' ? 'User' : m.role === 'assistant' ? 'Assistant' : 'System';
             return `${prefix}: ${m.content}`;
@@ -724,12 +739,12 @@ export class MuapiClient {
 
         const body = {
             prompt: flatPrompt,
-            model: 'google/gemini-2.5-flash',
         };
+        if (options.model) body.model = options.model;
         if (systemPrompt) body.system_prompt = systemPrompt;
 
         try {
-            return await this.submitLLM(body);
+            return await this.submitLLM(body, 'assist');
         } catch (err) {
             throw new Error(err.message.replace(/^LLM Failed:/, 'LLM Chat Failed:'));
         }

@@ -1,7 +1,7 @@
 import { muapi } from '../lib/muapi.js';
 import { getCharacters, saveCharacter, deleteCharacter } from '../lib/characterLibrary.js';
-import { validateAppParams } from '../lib/modelRequirements.js';
-import { SEEDANCE_OMNI_TRAIN, GEMINI_OMNI_CHARACTER } from '../lib/phase2Models.js';
+import { SEEDANCE_OMNI_TRAIN, GEMINI_OMNI_CHARACTER, SEEDANCE_CHARACTER_SHEET } from '../lib/phase2Models.js';
+import { validateAppParams, validateModelParams } from '../lib/modelRequirements.js';
 import { AuthModal } from './AuthModal.js';
 
 export function CharacterBuilder() {
@@ -179,7 +179,7 @@ Archetype: ${archetypeSelect.value}
 Appearance: ${appearanceInput.value}
 Respond with ONLY the backstory text, nothing else.`;
 
-            const backstory = await muapi.callLLM(backstoryPrompt);
+            const backstory = await muapi.callLLM(backstoryPrompt, { useCase: 'character_backstory' });
 
             // 4. Save character
             const character = {
@@ -278,7 +278,7 @@ Respond with ONLY the backstory text, nothing else.`;
 
             if (c.referenceImageUrl && !c.omniId) {
                 const btnRow = document.createElement('div');
-                btnRow.className = 'flex gap-2';
+                btnRow.className = 'flex gap-2 flex-wrap';
                 const regBtn = document.createElement('button');
                 regBtn.className = 'flex-1 py-1.5 text-[10px] font-bold rounded-lg border border-primary/30 text-primary hover:bg-primary/10';
                 regBtn.textContent = 'Seedance Omni ID';
@@ -325,7 +325,36 @@ Respond with ONLY the backstory text, nothing else.`;
                         gemBtn.disabled = false;
                     }
                 };
-                btnRow.append(regBtn, gemBtn);
+                const sheetBtn = document.createElement('button');
+                sheetBtn.className = 'flex-1 py-1.5 text-[10px] font-bold rounded-lg border border-white/10 text-secondary hover:bg-white/5';
+                sheetBtn.textContent = 'Character Sheet';
+                sheetBtn.title = 'Generate a Seedance 2 character costume sheet';
+                sheetBtn.onclick = async () => {
+                    try { muapi.getKey(); } catch { document.body.appendChild(AuthModal()); return; }
+                    sheetBtn.disabled = true;
+                    sheetBtn.textContent = 'Generating…';
+                    try {
+                        const check = validateModelParams('i2i', SEEDANCE_CHARACTER_SHEET, {
+                            prompt: c.appearance || `Character sheet for ${c.name}`,
+                            image_url: c.referenceImageUrl,
+                            character_name: c.name,
+                        });
+                        if (!check.valid) throw new Error(check.errors.join('\n'));
+                        const result = await muapi.generateI2I({
+                            model: SEEDANCE_CHARACTER_SHEET,
+                            ...check.normalized,
+                        });
+                        const url = result.url || result.outputs?.[0];
+                        if (!url) throw new Error('No character sheet image returned');
+                        saveCharacter({ ...c, sheetImageUrl: url });
+                        renderSavedCharacters();
+                    } catch (e) {
+                        alert(e.message);
+                        sheetBtn.disabled = false;
+                        sheetBtn.textContent = 'Character Sheet';
+                    }
+                };
+                btnRow.append(regBtn, gemBtn, sheetBtn);
                 card.appendChild(btnRow);
             }
 

@@ -4627,13 +4627,28 @@ export const i2vModels = [
     "name": "Seedance 2.0 Omni Ref No Video",
     "endpoint": "seedance-2-omni-reference-no-video",
     "family": "seedance-v2",
-    "imageField": "image_url",
+    "imageField": "images_list",
     "hasPrompt": true,
+    "maxImages": 9,
     "inputs": {
       "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video" },
       "aspect_ratio": { "enum": ["16:9", "9:16", "1:1"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
       "duration": { "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 },
       "resolution": { "enum": ["480p", "720p", "1080p"], "title": "Resolution", "name": "resolution", "type": "string", "description": "The resolution of the generated video.", "default": "720p" }
+    }
+  },
+  {
+    "id": "seedance-2-omni-reference-no-video-fast",
+    "name": "Seedance 2.0 Omni Ref No Video Fast",
+    "endpoint": "seedance-2-omni-reference-no-video-fast",
+    "family": "seedance-v2",
+    "imageField": "images_list",
+    "hasPrompt": true,
+    "maxImages": 9,
+    "inputs": {
+      "prompt": { "type": "string", "title": "Prompt", "name": "prompt", "description": "The prompt to generate the video. Reference images with @image1, @image2, etc." },
+      "aspect_ratio": { "enum": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"], "title": "Aspect Ratio", "name": "aspect_ratio", "type": "string", "description": "Aspect ratio of the output video.", "default": "16:9" },
+      "duration": { "enum": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], "title": "Duration", "name": "duration", "type": "int", "description": "The duration of the generated video in seconds", "default": 5 }
     }
   },
   {
@@ -7953,6 +7968,15 @@ export const v2vModels = [
     "videoField": "video_url",
     "hasPrompt": false,
     "description": "Remove watermarks, logos, captions, and unwanted text from videos."
+  },
+  {
+    "id": "seedance-2-watermark-remover",
+    "name": "Seedance 2 Watermark Remover",
+    "endpoint": "seedance-2-watermark-remover",
+    "family": "seedance-2",
+    "videoField": "video_url",
+    "hasPrompt": false,
+    "description": "Remove Seedance 2.0 watermarks from videos."
   }
 ];
 

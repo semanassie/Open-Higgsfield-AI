@@ -21,7 +21,7 @@ const ROUTES = [
     { nav: 'AI Influencer', check: () => 'AI Influencer' },
     { nav: 'Apps', check: () => 'Apps' },
     { nav: 'Assist', check: () => 'Assist' },
-    { nav: 'Seedance', check: () => 'Seedance 2.0 Studio', screenshot: 'smoke-04-seedance' },
+    { nav: 'Seedance', check: () => 'Seedance Studio', screenshot: 'smoke-04-seedance' },
 ];
 
 const UTILITY_APPS = [
@@ -29,8 +29,13 @@ const UTILITY_APPS = [
     'AI Clipping', 'Photo Pack', 'TikTok Carousel',
 ];
 
-const PHASE1_IMAGE_MODELS = ['Nano Banana 2 Lite', 'Flux Klein 4B Turbo', 'Kling O3 Image'];
-const PHASE1_VIDEO_MODELS = ['Seedance 2 Mini T2V', 'Seedance 2.5 T2V', 'Kling v3 Turbo Standard T2V'];
+const PHASE1_IMAGE_MODELS = [
+    'Nano Banana 2 Lite', 'Flux Klein 4B Turbo', 'Kling O3 Image', 'Seedream 5.0 Pro',
+];
+const PHASE1_VIDEO_MODELS = [
+    'Seedance 2 Mini T2V', 'Seedance 2.5 T2V', 'Seedance 2 VIP T2V',
+    'Kling v3 Turbo Standard T2V', 'Veo 4 T2V',
+];
 const PHASE1_I2V_MODELS = ['Seedance 2 Mini I2V', 'Seedance 2.5 I2V'];
 
 async function testAllRoutes(page, errors) {
@@ -95,9 +100,14 @@ async function testEditCanvas(page, errors) {
     const hasLiteEdit = await page.evaluate(() => {
         const sel = document.querySelector('select');
         if (!sel) return false;
-        return Array.from(sel.options).some(o => o.textContent.includes('Nano Banana 2 Lite Edit'));
+        const texts = Array.from(sel.options).map(o => o.textContent);
+        return {
+            lite: texts.some(t => t.includes('Nano Banana 2 Lite Edit')),
+            seedreamPro: texts.some(t => t.includes('Seedream 5.0 Pro Edit')),
+        };
     });
-    assert(hasLiteEdit, 'Edit model dropdown includes Nano Banana 2 Lite Edit');
+    assert(hasLiteEdit.lite, 'Edit model dropdown includes Nano Banana 2 Lite Edit');
+    assert(hasLiteEdit.seedreamPro, 'Edit model dropdown includes Seedream 5.0 Pro Edit');
     assert(await findByText(page, 'button', 'Inpaint'), 'Inpaint mode button visible');
 }
 
@@ -129,6 +139,21 @@ async function testSeedanceStudio(page, errors) {
     console.log('\n── Seedance Studio tabs ──────────────────────────────────────');
     await clickNav(page, 'Seedance');
     errors.drain('Seedance Studio load', assert);
+
+    assert(await bodyIncludes(page, 'Model tier'), 'Seedance model tier label visible');
+    assert(await findByText(page, 'button', 'Mini'), 'Tier button Mini');
+    assert(await findByText(page, 'button', '2.5'), 'Tier button 2.5');
+    assert(await findByText(page, 'button', 'VIP'), 'Tier button VIP');
+
+    await clickByText(page, 'button', 'VIP');
+    await new Promise(r => setTimeout(r, 200));
+    const vipSelected = await page.evaluate(() => {
+        const btns = Array.from(document.querySelectorAll('button'));
+        const vip = btns.find(b => b.textContent.trim() === 'VIP');
+        return vip ? vip.className.includes('bg-primary') : false;
+    });
+    assert(vipSelected, 'VIP tier selected after click');
+    await clickByText(page, 'button', 'Mini');
 
     assert(await findByText(page, 'button', 'Character Swap'), 'Character Swap tab');
     assert(await findByText(page, 'button', 'Generate Character Swap'), 'Generate Character Swap button');
@@ -197,10 +222,46 @@ async function testAssistAndCharacter(page, errors) {
     assert(await page.$('input[type="text"]'), 'Assist chat input');
     assert(await bodyIncludes(page, 'Assist'), 'Assist header visible');
 
+    const llmSelect = await page.evaluate(() => {
+        const sels = Array.from(document.querySelectorAll('select'));
+        const s = sels.find(el => Array.from(el.options).some(o =>
+            (o.value || '').includes('gemini') || (o.value || '').includes('claude') || (o.value || '').includes('gpt')
+        ));
+        if (!s) return null;
+        return {
+            count: s.options.length,
+            values: Array.from(s.options).map(o => o.value).slice(0, 8),
+            hasGemini35: Array.from(s.options).some(o => o.value.includes('gemini-3-5') || o.value.includes('gemini-3.5')),
+        };
+    });
+    assert(!!llmSelect && llmSelect.count >= 3, `Assist LLM model select present (options: ${llmSelect?.count ?? 0})`);
+    assert(llmSelect?.hasGemini35 || llmSelect?.values.some(v => v.includes('gemini')), 'Assist LLM list includes Gemini');
+
     await clickNav(page, 'Character');
     errors.drain('Character Builder', assert);
     assert(await findByText(page, 'button', 'Generate Character'), 'Generate Character button');
     assert(await bodyIncludes(page, 'Saved Characters'), 'Saved Characters panel');
+
+    await page.evaluate(() => {
+        localStorage.setItem('character_library', JSON.stringify([{
+            id: 'smoke-char-1',
+            name: 'Smoke Sheet Hero',
+            genre: 'Sci-Fi',
+            era: 'Futuristic',
+            archetype: 'Hero',
+            gender: 'Female',
+            age: '30',
+            appearance: 'Test',
+            outfit: 'Test',
+            details: 'Test',
+            backstory: 'Test backstory',
+            referenceImageUrl: 'https://example.com/face.png',
+            createdAt: new Date().toISOString(),
+        }]));
+    });
+    await clickNav(page, 'Character');
+    await new Promise(r => setTimeout(r, 400));
+    assert(await findByText(page, 'button', 'Character Sheet'), 'Character Sheet button on saved character');
 }
 
 async function run() {

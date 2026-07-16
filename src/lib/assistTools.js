@@ -84,6 +84,7 @@ export async function executeAssistTool(toolCall) {
             const target = params.target || 'image';
             const original = params.text || '';
             const enhanced = await muapi.callLLM(original, {
+                useCase: 'enhance_prompt',
                 systemPrompt: `Improve this ${target} generation prompt. Return ONLY the improved prompt, no explanation or preamble.`,
             });
             return { type: 'text', text: typeof enhanced === 'string' ? enhanced.trim() : String(enhanced) };

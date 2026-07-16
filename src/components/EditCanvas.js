@@ -6,9 +6,11 @@ const EDIT_MODELS = i2iModels.filter(m =>
 );
 
 const PREFERRED_ORDER = [
+    'seedream-5.0-pro-edit',
     'seedream-5.0-edit',
     'nano-banana-2-lite-edit',
     'nano-banana-2-edit',
+    'gpt-image-2-image-to-image',
     'flux-2-pro-edit',
     'gpt-image-1.5-edit',
     'bytedance-seedream-v4.5-edit',

@@ -42,6 +42,43 @@ export const PHASE1_T2I = [
     },
   },
   {
+    id: 'seedream-5.0-pro',
+    name: 'Seedream 5.0 Pro',
+    endpoint: 'seedream-5.0-pro',
+    family: 'seedream',
+    badge: 'Featured',
+    inputs: {
+      prompt: {
+        type: 'string', title: 'Prompt', name: 'prompt',
+        description: 'Seedream 5.0 Pro flagship T2I — higher fidelity and typography control.',
+      },
+      aspect_ratio: {
+        enum: ['1:1', '16:9', '9:16', '4:3', '3:4', '2:3', '3:2'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '1:1',
+      },
+      resolution: { enum: ['1K', '2K'], title: 'Resolution', name: 'resolution', type: 'string', default: '1K' },
+    },
+  },
+  {
+    id: 'gpt-image-2-text-to-image',
+    name: 'GPT Image 2',
+    endpoint: 'gpt-image-2-text-to-image',
+    family: 'gpt',
+    badge: 'Featured',
+    inputs: {
+      prompt: {
+        type: 'string', title: 'Prompt', name: 'prompt',
+        description: 'High-quality T2I with up to 20k character prompts.',
+      },
+      aspect_ratio: {
+        enum: ['auto', '1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '5:4', '4:5'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: 'auto',
+      },
+      resolution: { enum: ['1K', '2K', '4K'], title: 'Resolution', name: 'resolution', type: 'string', default: '2K' },
+      quality: { enum: ['low', 'medium', 'high'], title: 'Quality', name: 'quality', type: 'string', default: 'high' },
+    },
+  },
+  {
     id: 'flux-2-klein-4b-turbo',
     name: 'Flux Klein 4B Turbo',
     endpoint: 'flux-2-klein-4b-turbo',
@@ -102,6 +139,62 @@ export const PHASE1_I2I = [
     },
   },
   {
+    id: 'seedream-5.0-pro-edit',
+    name: 'Seedream 5.0 Pro Edit',
+    endpoint: 'seedream-5.0-pro-edit',
+    family: 'seedream',
+    imageField: 'images_list',
+    hasPrompt: true,
+    maxImages: 10,
+    badge: 'Featured',
+    inputs: {
+      prompt: { type: 'string', title: 'Prompt', name: 'prompt', description: 'Seedream 5.0 Pro image edit.' },
+      aspect_ratio: {
+        enum: ['1:1', '16:9', '9:16', '4:3', '3:4', '2:3', '3:2'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '1:1',
+      },
+      resolution: { enum: ['1K', '2K'], title: 'Resolution', name: 'resolution', type: 'string', default: '1K' },
+    },
+  },
+  {
+    id: 'gpt-image-2-image-to-image',
+    name: 'GPT Image 2 Edit',
+    endpoint: 'gpt-image-2-image-to-image',
+    family: 'gpt',
+    imageField: 'images_list',
+    hasPrompt: true,
+    maxImages: 10,
+    badge: 'Featured',
+    inputs: {
+      prompt: { type: 'string', title: 'Prompt', name: 'prompt', description: 'GPT Image 2 instruction-based edit.' },
+      aspect_ratio: {
+        enum: ['auto', '1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '5:4', '4:5'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: 'auto',
+      },
+      resolution: { enum: ['1K', '2K', '4K'], title: 'Resolution', name: 'resolution', type: 'string', default: '2K' },
+      quality: { enum: ['low', 'medium', 'high'], title: 'Quality', name: 'quality', type: 'string', default: 'high' },
+    },
+  },
+  {
+    id: 'seedance-2-character',
+    name: 'Seedance 2 Character Sheet',
+    endpoint: 'seedance-2-character',
+    family: 'seedance-2',
+    imageField: 'images_list',
+    hasPrompt: true,
+    maxImages: 3,
+    inputs: {
+      prompt: {
+        type: 'string', title: 'Prompt', name: 'prompt',
+        description: 'Describe the outfit or costume the character should wear.',
+      },
+      character_name: {
+        type: 'string', title: 'Character Name', name: 'character_name',
+        description: 'Optional label to identify this character.',
+      },
+    },
+  },
+  {
     id: 'flux-2-klein-4b-turbo-edit',
     name: 'Flux Klein 4B Turbo Edit',
     endpoint: 'flux-2-klein-4b-turbo-edit',
@@ -157,6 +250,43 @@ export const PHASE1_T2V = [
     },
   },
   {
+    id: 'seedance-2-vip-text-to-video',
+    name: 'Seedance 2 VIP T2V',
+    endpoint: 'seedance-2-vip-text-to-video',
+    family: 'seedance-2',
+    badge: 'VIP',
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: {
+        enum: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9',
+      },
+      duration: {
+        enum: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        title: 'Duration', name: 'duration', type: 'int', default: 5,
+      },
+      high_bitrate: {
+        type: 'boolean', title: 'High Bitrate', name: 'high_bitrate', default: false,
+        description: 'Higher visual fidelity (larger files).',
+      },
+    },
+  },
+  {
+    id: 'veo-4-text-to-video',
+    name: 'Veo 4 T2V',
+    endpoint: 'veo-4-text-to-video',
+    family: 'veo-4',
+    badge: 'Featured',
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: {
+        enum: ['16:9', '9:16', '1:1'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9',
+      },
+      duration: { title: 'Duration', name: 'duration', type: 'int', default: 8, description: 'Duration in seconds' },
+    },
+  },
+  {
     id: 'seedance-2.1-text-to-video',
     name: 'Seedance 2.1 T2V',
     endpoint: 'seedance-2.1-text-to-video',
@@ -183,6 +313,31 @@ export const PHASE1_T2V = [
       prompt: VIDEO_STD.prompt,
       aspect_ratio: { enum: ['16:9', '9:16', '1:1'], title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9' },
       duration: { enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], title: 'Duration', name: 'duration', type: 'int', default: 5 },
+    },
+  },
+  {
+    id: 'kling-v3.0-omni-standard-text-to-video',
+    name: 'Kling v3 Omni Standard T2V',
+    endpoint: 'kling-v3.0-omni-standard-text-to-video',
+    family: 'kling-v3-omni',
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: { enum: ['16:9', '9:16', '1:1'], title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9' },
+      duration: { enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], title: 'Duration', name: 'duration', type: 'int', default: 5 },
+      generate_audio: { type: 'boolean', title: 'Generate Audio', name: 'generate_audio', default: false },
+    },
+  },
+  {
+    id: 'kling-v3.0-omni-pro-text-to-video',
+    name: 'Kling v3 Omni Pro T2V',
+    endpoint: 'kling-v3.0-omni-pro-text-to-video',
+    family: 'kling-v3-omni',
+    badge: 'Featured',
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: { enum: ['16:9', '9:16', '1:1'], title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9' },
+      duration: { enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], title: 'Duration', name: 'duration', type: 'int', default: 5 },
+      generate_audio: { type: 'boolean', title: 'Generate Audio', name: 'generate_audio', default: false },
     },
   },
   {
@@ -215,13 +370,53 @@ export const PHASE1_I2V = [
     name: 'Seedance 2.5 I2V',
     endpoint: 'seedance-2.5-image-to-video',
     family: 'seedance-2',
-    imageField: 'images_list',
+    imageField: 'image_url',
     hasPrompt: true,
     badge: 'Featured',
     inputs: {
       ...VIDEO_STD,
       duration: { enum: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], title: 'Duration', name: 'duration', type: 'int', default: 8 },
       resolution: { enum: ['720p', '1080p', '4k'], title: 'Resolution', name: 'resolution', type: 'string', default: '1080p' },
+    },
+  },
+  {
+    id: 'seedance-2-vip-image-to-video',
+    name: 'Seedance 2 VIP I2V',
+    endpoint: 'seedance-2-vip-image-to-video',
+    family: 'seedance-2',
+    imageField: 'images_list',
+    hasPrompt: true,
+    badge: 'VIP',
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: {
+        enum: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9',
+      },
+      duration: {
+        enum: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        title: 'Duration', name: 'duration', type: 'int', default: 5,
+      },
+      high_bitrate: {
+        type: 'boolean', title: 'High Bitrate', name: 'high_bitrate', default: false,
+      },
+    },
+  },
+  {
+    id: 'veo-4-image-to-video',
+    name: 'Veo 4 I2V',
+    endpoint: 'veo-4-image-to-video',
+    family: 'veo-4',
+    imageField: 'images_list',
+    hasPrompt: true,
+    badge: 'Featured',
+    inputs: {
+      prompt: { type: 'string', title: 'Prompt', name: 'prompt', description: 'Optional motion guidance.' },
+      aspect_ratio: {
+        enum: ['16:9', '9:16', '1:1'],
+        title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9',
+      },
+      duration: { title: 'Duration', name: 'duration', type: 'int', default: 8, description: 'Duration in seconds' },
     },
   },
   {
@@ -266,6 +461,37 @@ export const PHASE1_I2V = [
       duration: { enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], title: 'Duration', name: 'duration', type: 'int', default: 5 },
     },
   },
+  {
+    id: 'kling-v3.0-omni-standard-image-to-video',
+    name: 'Kling v3 Omni Standard I2V',
+    endpoint: 'kling-v3.0-omni-standard-image-to-video',
+    family: 'kling-v3-omni',
+    imageField: 'images_list',
+    hasPrompt: true,
+    maxImages: 4,
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: { enum: ['16:9', '9:16', '1:1'], title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9' },
+      duration: { enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], title: 'Duration', name: 'duration', type: 'int', default: 5 },
+      generate_audio: { type: 'boolean', title: 'Generate Audio', name: 'generate_audio', default: false },
+    },
+  },
+  {
+    id: 'kling-v3.0-omni-pro-image-to-video',
+    name: 'Kling v3 Omni Pro I2V',
+    endpoint: 'kling-v3.0-omni-pro-image-to-video',
+    family: 'kling-v3-omni',
+    imageField: 'images_list',
+    hasPrompt: true,
+    maxImages: 4,
+    badge: 'Featured',
+    inputs: {
+      prompt: VIDEO_STD.prompt,
+      aspect_ratio: { enum: ['16:9', '9:16', '1:1'], title: 'Aspect Ratio', name: 'aspect_ratio', type: 'string', default: '16:9' },
+      duration: { enum: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], title: 'Duration', name: 'duration', type: 'int', default: 5 },
+      generate_audio: { type: 'boolean', title: 'Generate Audio', name: 'generate_audio', default: false },
+    },
+  },
 ];
 
 // Seedance models that support extend/remix chaining
@@ -276,6 +502,7 @@ export const SEEDANCE_EXTEND_MODEL_IDS = new Set([
   'seedance-2.1-text-to-video', 'seedance-2.1-image-to-video',
   'seedance-2.5-text-to-video', 'seedance-2.5-image-to-video',
   'seedance-2-text-to-video',
+  'seedance-2-vip-text-to-video', 'seedance-2-vip-image-to-video',
 ]);
 
 export const SEEDANCE_EXTEND_ENDPOINT = 'seedance-2-extend';

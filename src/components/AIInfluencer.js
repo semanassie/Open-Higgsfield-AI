@@ -350,7 +350,7 @@ export function AIInfluencer() {
                 genBtn.textContent = 'Generating caption...';
                 try {
                     const captionPrompt = `Write a short, engaging ${platform.name} caption for a ${contentType.name.toLowerCase()} photo of an influencer named "${character.name}". Include 5-8 relevant hashtags. Keep it under 200 characters plus hashtags. Be trendy and authentic.`;
-                    const captionText = await muapi.callLLM(captionPrompt);
+                    const captionText = await muapi.callLLM(captionPrompt, { useCase: 'influencer' });
 
                     const captionBox = document.createElement('div');
                     captionBox.style.width = '100%';
