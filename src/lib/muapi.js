@@ -552,6 +552,59 @@ export class MuapiClient {
             default: return [1024, 1024];
         }
     }
+
+    /**
+     * Calls MuAPI any-llm for planning / prompt work (Director, Assist, etc.).
+     * @param {string} prompt
+     * @param {{ systemPrompt?: string, model?: string, useCase?: string }} [options]
+     * @returns {Promise<string>}
+     */
+    async callLLM(prompt, options = {}) {
+        const key = this.getKey();
+        const url = `${this.baseUrl}/api/v1/any-llm`;
+        const body = {
+            prompt,
+            system_prompt: options.systemPrompt ?? 'You are a helpful creative AI assistant.',
+        };
+        if (options.model) body.model = options.model;
+
+        console.log('[Muapi] LLM Request:', options.useCase || 'global');
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`LLM Failed: ${response.status} - ${errText.slice(0, 200)}`);
+        }
+
+        const data = await response.json();
+        const requestId = data.request_id || data.id;
+
+        let result = data;
+        if (requestId && !data.output && !data.text && !data.response && !data.outputs) {
+            result = await this.pollForResult(requestId, key, 120, 1500);
+        }
+
+        const text =
+            result.output?.text ||
+            result.output ||
+            result.text ||
+            result.response ||
+            result.outputs?.[0] ||
+            (typeof result === 'string' ? result : null);
+
+        if (!text || typeof text !== 'string') {
+            // Some gateways wrap the reply in choices
+            const choice = result.choices?.[0]?.message?.content || result.choices?.[0]?.text;
+            if (choice) return String(choice);
+            throw new Error('LLM Failed: empty response');
+        }
+        return text;
+    }
 }
 
 export const muapi = new MuapiClient();
