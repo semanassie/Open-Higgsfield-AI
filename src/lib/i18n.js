@@ -53,6 +53,7 @@ const translations = {
         // Navigation
         'nav.image': 'Image',
         'nav.video': 'Video',
+        'nav.audio': 'Audio',
         'nav.lipsync': 'Lip Sync',
         'nav.cinema': 'Cinema Studio',
         'nav.director': 'Director',
@@ -210,6 +211,11 @@ const translations = {
         'workflows.title': 'Workflow Studio',
         'workflows.webOnly': 'Available in the web app at open-generative-ai.com',
 
+        // Audio Studio (Electron aperture → Next /studio/audio)
+        'audio.title': 'Audio Studio',
+        'audio.webOnly': 'Full audio generation (Suno & more) runs in the Next web shell. Open /studio/audio after npm run dev.',
+        'audio.openWeb': 'Open /studio/audio',
+
         // Local Model Manager
         'localModels.title': 'Local Models',
         'localModels.webOnly': 'Local model inference is only available in the desktop app (Electron build). Use npm run electron:build to build.',
@@ -306,6 +312,7 @@ const translations = {
         // Navigation
         'nav.image': '图像',
         'nav.video': '视频',
+        'nav.audio': '音频',
         'nav.lipsync': '唇语同步',
         'nav.cinema': '电影工作室',
         'nav.director': '导演',
@@ -462,6 +469,11 @@ const translations = {
         // Workflow Studio
         'workflows.title': '工作流工作室',
         'workflows.webOnly': '在网页应用 open-generative-ai.com 上可用',
+
+        // Audio Studio (Electron aperture → Next /studio/audio)
+        'audio.title': '音频工作室',
+        'audio.webOnly': '完整音频生成（Suno 等）在 Next Web shell 中运行。执行 npm run dev 后打开 /studio/audio。',
+        'audio.openWeb': '打开 /studio/audio',
 
         // Local Model Manager
         'localModels.title': '本地模型',

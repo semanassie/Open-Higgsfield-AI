@@ -31,6 +31,7 @@ export function Header(navigate) {
     const items = [
         { label: t('nav.image'),   page: 'image' },
         { label: t('nav.video'),   page: 'video' },
+        { label: t('nav.audio'),   page: 'audio' },
         { label: t('nav.lipsync'), page: 'lipsync' },
         { label: t('nav.cinema'),  page: 'cinema' },
         { label: t('nav.director'), page: 'director' },

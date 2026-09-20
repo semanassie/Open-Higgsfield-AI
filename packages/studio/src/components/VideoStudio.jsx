@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { generateVideo, generateI2V, processV2V, uploadFile } from "../muapi.js";
 import {
   t2vModels,
@@ -17,12 +17,60 @@ import {
   getModesForModel,
   getMaxImagesForI2VModel,
 } from "../models.js";
+import {
+  saveGeneration,
+  peekSendToPayload,
+  consumeSendToPayload,
+  SEND_TO_EVENT,
+  listAssets,
+} from "../lib/assetsStore.js";
+import FamilyModePicker, {
+  ModeChips,
+  findFamilyForModel,
+} from "./FamilyModePicker.jsx";
+import { VIDEO_FAMILY_PRIORITY } from "../modelFamilies.js";
+import { modelSupportsSeed } from "./ModelBadges.jsx";
+import SeedControls, { resolveGenerationSeed } from "./SeedControls.jsx";
+import PostGenActions from "./PostGenActions.jsx";
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
 
 function getQualitiesForModel(modelList, modelId) {
   const model = modelList.find((m) => m.id === modelId);
   return model?.inputs?.quality?.enum || [];
+}
+
+/** Prefer real I2V (not effects) for Send-to-Video / mode-switch defaults. */
+const DEFAULT_SEND_I2V_IDS = [
+  "seedance-2.5-image-to-video",
+  "wan3.0-image-to-video",
+  "seedance-v2.0-i2v",
+];
+
+function pickDefaultI2V() {
+  for (const id of DEFAULT_SEND_I2V_IDS) {
+    const m = i2vModels.find((x) => x.id === id);
+    if (m) return m;
+  }
+  for (const fam of VIDEO_FAMILY_PRIORITY) {
+    if (fam === "effects") continue;
+    const m = i2vModels.find(
+      (x) =>
+        x.family === fam &&
+        x.imageField &&
+        !/effect/i.test(x.id || ""),
+    );
+    if (m) return m;
+  }
+  return (
+    i2vModels.find(
+      (m) =>
+        m.hasPrompt &&
+        m.family &&
+        !String(m.family).includes("effect") &&
+        m.imageField,
+    ) || i2vModels.find((m) => m.hasPrompt && m.imageField)
+  );
 }
 
 async function downloadFile(url, filename) {
@@ -104,99 +152,31 @@ function DropdownItem({ label, selected, onClick }) {
   );
 }
 
-function ModelDropdown({ imageMode, selectedModel, onSelect, onClose }) {
-  const [search, setSearch] = useState("");
-
+function VideoModelPicker({ imageMode, selectedModel, onSelect, onClose }) {
   const generationModels = imageMode ? i2vModels : t2vModels;
 
-  const lf = search.toLowerCase();
-  const filteredMain = generationModels.filter(
-    (m) => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf),
-  );
-  const filteredV2V = v2vModels.filter(
-    (m) => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf),
-  );
-
-  const getIconColor = (m, isV2V) => {
-    if (isV2V) return "bg-orange-500/10 text-orange-400";
-    if (m.id.includes("kling")) return "bg-blue-500/10 text-blue-400";
-    if (m.id.includes("veo")) return "bg-purple-500/10 text-purple-400";
-    if (m.id.includes("sora")) return "bg-rose-500/10 text-rose-400";
-    return "bg-primary/10 text-primary";
-  };
-
-  const renderItem = (m, isV2V = false) => (
-    <div
-      key={m.id}
-      className={`flex items-center justify-between p-3.5 hover:bg-white/5 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-white/5 ${selectedModel === m.id ? "bg-white/5 border-white/5" : ""}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(m, isV2V);
-        onClose();
-      }}
-    >
-      <div className="flex items-center gap-3.5">
-        <div
-          className={`w-10 h-10 ${getIconColor(m, isV2V)} border border-white/5 rounded-xl flex items-center justify-center font-black text-sm shadow-inner uppercase`}
-        >
-          {m.name.charAt(0)}
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs font-bold text-white tracking-tight">
-            {m.name}
-          </span>
-          {isV2V && (
-            <span className="text-[9px] text-orange-400/70">
-              {m.imageField ? "Upload a video and image" : "Upload a video to use"}
-            </span>
-          )}
-        </div>
-      </div>
-      {selectedModel === m.id && <CheckSvg />}
-    </div>
-  );
-
   return (
-    <div className="flex flex-col h-full max-h-[70vh]">
-      <div className="px-2 pb-3 mb-2 border-b border-white/5 shrink-0">
-        <div className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-2.5 border border-white/5 focus-within:border-primary/50 transition-colors">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            className="text-muted"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search models..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-transparent border-none text-xs text-white focus:ring-0 w-full p-0 outline-none"
-          />
-        </div>
-      </div>
-      <div className="text-xs font-bold text-secondary px-3 py-2 shrink-0">
-        Video models
-      </div>
-      <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2">
-        {filteredMain.map((m) => renderItem(m, false))}
-        {filteredV2V.length > 0 && (
-          <>
-            <div className="text-xs font-bold text-orange-400/70 px-3 py-2 mt-1 border-t border-white/5">
-              Video Tools
-            </div>
-            {filteredV2V.map((m) => renderItem(m, true))}
-          </>
-        )}
-      </div>
-    </div>
+    <FamilyModePicker
+      models={generationModels}
+      selectedModelId={selectedModel}
+      preferredOrder={VIDEO_FAMILY_PRIORITY}
+      sectionTitle={imageMode ? "Image-to-video models" : "Text-to-video models"}
+      onSelect={(m, family) => onSelect(m, false, family)}
+      onClose={onClose}
+      extraSections={[
+        {
+          title: "Video Tools",
+          titleClassName: "text-orange-400/70",
+          models: v2vModels,
+          getRowAccent: () => "orange",
+          getRowHint: (m) =>
+            m.imageField
+              ? "Upload a video and image"
+              : "Upload a video to use",
+          onSelect: (m) => onSelect(m, true, null),
+        },
+      ]}
+    />
   );
 }
 
@@ -265,6 +245,8 @@ export default function VideoStudio({
   );
   const [selectedMode, setSelectedMode] = useState("");
   const [selectedEffect, setSelectedEffect] = useState("");
+  const [seed, setSeed] = useState(-1);
+  const [variationMode, setVariationMode] = useState("new"); // 'new' | 'reuse'
 
   // ── upload progress ──
   const [imageProgress, setImageProgress] = useState(0);
@@ -481,6 +463,146 @@ export default function VideoStudio({
     }
   }, [applyControlsForModel, defaultModel.id]);
 
+  // Merge IndexedDB assets missing from localHistory (dual-write transition)
+  useEffect(() => {
+    if (historyItems) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const idb = await listAssets({ studio: "video", type: "video", limit: 30 });
+        if (cancelled || !idb.length) return;
+        setLocalHistory((prev) => {
+          const urls = new Set(prev.map((e) => e.url).filter(Boolean));
+          const additions = idb
+            .filter((a) => a.url && !urls.has(a.url))
+            .map((a) => ({
+              id: a.id,
+              url: a.url,
+              prompt: a.prompt || "",
+              model: a.model,
+              aspect_ratio: a.aspect_ratio,
+              duration: a.duration,
+              seed: a.seed,
+              timestamp: a.createdAt,
+              refs: a.refs || [],
+            }));
+          if (!additions.length) return prev;
+          return [...additions, ...prev]
+            .sort(
+              (a, b) =>
+                new Date(b.timestamp || 0).getTime() -
+                new Date(a.timestamp || 0).getTime(),
+            )
+            .slice(0, 30);
+        });
+      } catch (err) {
+        console.warn("[VideoStudio] IDB history merge failed:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [historyItems]);
+
+  // ── Post-gen: apply Send to Video (I2V prefill) ───────────────────────────
+  const applyPostGenImage = useCallback(
+    (url, meta = {}) => {
+      if (!url) return;
+      const target = pickDefaultI2V();
+      if (!target) return;
+      setV2vMode(false);
+      setImageMode(true);
+      setSelectedModel(target.id);
+      setSelectedModelName(target.name);
+      applyControlsForModel(target.id, true, false);
+      setUploadedImageUrl(url);
+      setUploadedImageUrls([url]);
+      setUploadedVideoUrl(null);
+      setUploadedVideoName(null);
+      setPromptDisabled(false);
+      if (meta.prompt != null) setPrompt(meta.prompt);
+      if (meta.aspect_ratio) {
+        const ars = getAspectRatiosForI2VModel(target.id);
+        if (!ars.length || ars.includes(meta.aspect_ratio)) {
+          setSelectedAr(meta.aspect_ratio);
+        }
+      }
+    },
+    [applyControlsForModel],
+  );
+
+  useEffect(() => {
+    const applyPayload = (payload) => {
+      if (!payload || payload.target !== "video") return;
+      const asset = payload.asset || payload;
+      const url = asset.url || payload.url;
+      const meta = payload.meta || asset;
+      applyPostGenImage(url, meta);
+    };
+
+    // Defer so localStorage restore finishes first, then override with handoff.
+    const timer = setTimeout(() => {
+      const pending = peekSendToPayload();
+      if (pending?.target === "video") {
+        consumeSendToPayload();
+        applyPayload(pending);
+      }
+    }, 0);
+
+    const onSend = (e) => {
+      if (e.detail?.target === "video") applyPayload(e.detail);
+    };
+    window.addEventListener(SEND_TO_EVENT, onSend);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener(SEND_TO_EVENT, onSend);
+    };
+  }, [applyPostGenImage]);
+
+  const handleReuseEntry = useCallback(
+    (entry) => {
+      if (!entry) return;
+      if (entry.prompt != null) setPrompt(entry.prompt);
+      if (entry.seed !== undefined && entry.seed !== null) setSeed(entry.seed);
+
+      const refs = Array.isArray(entry.refs) ? entry.refs.filter(Boolean) : [];
+      const i2vMatch = entry.model
+        ? i2vModels.find((m) => m.id === entry.model)
+        : null;
+      const t2vMatch = entry.model
+        ? t2vModels.find((m) => m.id === entry.model)
+        : null;
+
+      if (i2vMatch || refs.length > 0) {
+        const m = i2vMatch || pickDefaultI2V();
+        if (m) {
+          setV2vMode(false);
+          setImageMode(true);
+          setSelectedModel(m.id);
+          setSelectedModelName(m.name);
+          applyControlsForModel(m.id, true, false);
+          if (entry.aspect_ratio) setSelectedAr(entry.aspect_ratio);
+          if (entry.duration) setSelectedDuration(entry.duration);
+          if (refs.length > 0) {
+            setUploadedImageUrl(refs[0]);
+            setUploadedImageUrls(refs);
+          }
+          setPromptDisabled(false);
+        }
+      } else if (t2vMatch) {
+        setV2vMode(false);
+        setImageMode(false);
+        setSelectedModel(t2vMatch.id);
+        setSelectedModelName(t2vMatch.name);
+        applyControlsForModel(t2vMatch.id, false, false);
+        if (entry.aspect_ratio) setSelectedAr(entry.aspect_ratio);
+        if (entry.duration) setSelectedDuration(entry.duration);
+        setPromptDisabled(false);
+      }
+    },
+    [applyControlsForModel],
+  );
+
   // ── Adjust height on load ────────────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -565,12 +687,14 @@ export default function VideoStudio({
         const sibling = currentT2V?.family
           ? i2vModels.find((m) => m.family === currentT2V.family)
           : null;
-        const target = sibling || i2vModels[0];
-        targetModelId = target.id;
-        setImageMode(true);
-        setSelectedModel(target.id);
-        setSelectedModelName(target.name);
-        applyControlsForModel(target.id, true, false);
+        const target = sibling || pickDefaultI2V();
+        if (target) {
+          targetModelId = target.id;
+          setImageMode(true);
+          setSelectedModel(target.id);
+          setSelectedModelName(target.name);
+          applyControlsForModel(target.id, true, false);
+        }
       }
 
       const maxImgs = getMaxImagesForI2VModel(targetModelId);
@@ -699,12 +823,14 @@ export default function VideoStudio({
           const sibling = currentT2V?.family
             ? i2vModels.find((m) => m.family === currentT2V.family)
             : null;
-          const target = sibling || i2vModels[0];
-          targetModelId = target.id;
-          setImageMode(true);
-          setSelectedModel(target.id);
-          setSelectedModelName(target.name);
-          applyControlsForModel(target.id, true, false);
+          const target = sibling || pickDefaultI2V();
+          if (target) {
+            targetModelId = target.id;
+            setImageMode(true);
+            setSelectedModel(target.id);
+            setSelectedModelName(target.name);
+            applyControlsForModel(target.id, true, false);
+          }
         }
 
         const maxImgs = getMaxImagesForI2VModel(targetModelId);
@@ -843,7 +969,13 @@ export default function VideoStudio({
 
   // ── model selection from dropdown ─────────────────────────────────────────
   const handleModelSelect = useCallback(
-    (m, isV2V) => {
+    (m, isV2V, family = null) => {
+      const displayName =
+        family?.name ||
+        findFamilyForModel(isV2V ? v2vModels : imageMode ? i2vModels : t2vModels, m.id)
+          ?.name ||
+        m.name;
+
       if (isV2V) {
         setV2vMode(true);
         setImageMode(false);
@@ -853,7 +985,7 @@ export default function VideoStudio({
           setUploadedImageUrl(null);
         }
         setSelectedModel(m.id);
-        setSelectedModelName(m.name);
+        setSelectedModelName(displayName);
         applyControlsForModel(m.id, false, true);
         if (isMC) {
           // Motion-control: prompt is editable, video+image are needed
@@ -870,17 +1002,49 @@ export default function VideoStudio({
           setPromptDisabled(false);
         }
         setSelectedModel(m.id);
-        setSelectedModelName(m.name);
+        setSelectedModelName(displayName);
         applyControlsForModel(m.id, imageMode, false);
       }
     },
     [v2vMode, imageMode, applyControlsForModel],
   );
 
+  const handleModeChipSelect = useCallback(
+    (m) => {
+      if (!m) return;
+      setSelectedModel(m.id);
+      applyControlsForModel(m.id, imageMode, v2vMode);
+    },
+    [imageMode, v2vMode, applyControlsForModel],
+  );
+
+  const selectedFamily = useMemo(() => {
+    if (v2vMode) return null;
+    return findFamilyForModel(imageMode ? i2vModels : t2vModels, selectedModel);
+  }, [v2vMode, imageMode, selectedModel]);
+
   // ── add to local history ──────────────────────────────────────────────────
   const addToLocalHistory = useCallback((entry) => {
     setLocalHistory((prev) => [entry, ...prev].slice(0, 30));
     setActiveHistoryIdx(0);
+  }, []);
+
+  /** Persist generation to unified Assets IndexedDB (non-blocking). */
+  const persistAsset = useCallback((entry, refs = []) => {
+    saveGeneration({
+      id: entry.id,
+      url: entry.url,
+      type: "video",
+      prompt: entry.prompt || "",
+      model: entry.model,
+      aspect_ratio: entry.aspect_ratio || "",
+      seed: entry.seed ?? null,
+      duration: entry.duration ?? null,
+      refs,
+      studio: "video",
+    }).catch((err) =>
+      console.warn("[VideoStudio] assetsStore save failed:", err),
+    );
   }, []);
 
   // ── show result in canvas ─────────────────────────────────────────────────
@@ -940,6 +1104,13 @@ export default function VideoStudio({
     setGenerateError(null);
 
     let hadError = false;
+    const seedSupported = modelSupportsSeed(currentModel);
+    const genSeed = seedSupported
+      ? resolveGenerationSeed(variationMode, seed)
+      : undefined;
+    if (seedSupported && variationMode === "new" && genSeed !== undefined) {
+      setSeed(genSeed);
+    }
 
     try {
       let res;
@@ -957,6 +1128,7 @@ export default function VideoStudio({
         if (currentModel?.hasPrompt && trimmedPrompt) {
           v2vParams.prompt = trimmedPrompt;
         }
+        if (genSeed !== undefined) v2vParams.seed = genSeed;
         res = await processV2V(apiKey, v2vParams);
         if (!res?.url) throw new Error("No video URL returned by API");
 
@@ -968,9 +1140,11 @@ export default function VideoStudio({
           url: res.url,
           prompt: currentModel?.hasPrompt ? trimmedPrompt : "",
           model: selectedModel,
+          seed: res.seed ?? genSeed,
           timestamp: new Date().toISOString(),
         };
         addToLocalHistory(entry);
+        persistAsset(entry, uploadedImageUrl ? [uploadedImageUrl] : []);
         showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
           onGenerationComplete({
@@ -978,6 +1152,7 @@ export default function VideoStudio({
             model: selectedModel,
             prompt: currentModel?.hasPrompt ? trimmedPrompt : "",
             type: "video",
+            seed: entry.seed,
           });
       } else if (imageMode) {
         const maxImgs = getMaxImagesForI2VModel(selectedModel);
@@ -1000,6 +1175,7 @@ export default function VideoStudio({
         if (selectedQuality) i2vParams.quality = selectedQuality;
         if (selectedMode) i2vParams.mode = selectedMode;
         if (showEffect && selectedEffect) i2vParams.name = selectedEffect;
+        if (genSeed !== undefined) i2vParams.seed = genSeed;
 
         res = await generateI2V(apiKey, i2vParams);
         if (!res?.url) throw new Error("No video URL returned by API");
@@ -1012,6 +1188,13 @@ export default function VideoStudio({
           setLastGenerationId(null);
           setLastGenerationModel(null);
         }
+        const i2vRefs =
+          uploadedImageUrls.length > 0
+            ? [...uploadedImageUrls]
+            : uploadedImageUrl
+              ? [uploadedImageUrl]
+              : [];
+        if (uploadedEndImageUrl) i2vRefs.push(uploadedEndImageUrl);
         const entry = {
           id: genId,
           url: res.url,
@@ -1019,9 +1202,12 @@ export default function VideoStudio({
           model: selectedModel,
           aspect_ratio: selectedAr,
           duration: selectedDuration,
+          seed: res.seed ?? genSeed,
           timestamp: new Date().toISOString(),
+          refs: i2vRefs,
         };
         addToLocalHistory(entry);
+        persistAsset(entry, i2vRefs);
         showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
           onGenerationComplete({
@@ -1029,6 +1215,7 @@ export default function VideoStudio({
             model: selectedModel,
             prompt: trimmedPrompt,
             type: "video",
+            seed: entry.seed,
           });
       } else {
         // T2V (including extend mode)
@@ -1047,6 +1234,7 @@ export default function VideoStudio({
         if (resolutions.length > 0) params.resolution = selectedResolution;
         if (selectedQuality) params.quality = selectedQuality;
         if (selectedMode) params.mode = selectedMode;
+        if (genSeed !== undefined) params.seed = genSeed;
 
         res = await generateVideo(apiKey, params);
         if (!res?.url) throw new Error("No video URL returned by API");
@@ -1069,9 +1257,11 @@ export default function VideoStudio({
           model: selectedModel,
           aspect_ratio: selectedAr,
           duration: selectedDuration,
+          seed: res.seed ?? genSeed,
           timestamp: new Date().toISOString(),
         };
         addToLocalHistory(entry);
+        persistAsset(entry);
         showVideoInCanvas(res.url, selectedModel);
         if (onGenerationComplete)
           onGenerationComplete({
@@ -1079,6 +1269,7 @@ export default function VideoStudio({
             model: selectedModel,
             prompt: trimmedPrompt,
             type: "video",
+            seed: entry.seed,
           });
       }
     } catch (e) {
@@ -1104,10 +1295,14 @@ export default function VideoStudio({
     showEffect,
     uploadedImageUrl,
     uploadedImageUrls,
+    uploadedEndImageUrl,
     uploadedVideoUrl,
     lastGenerationId,
+    seed,
+    variationMode,
     getCurrentModel,
     addToLocalHistory,
+    persistAsset,
     showVideoInCanvas,
     onGenerationComplete,
   ]);
@@ -1270,6 +1465,14 @@ export default function VideoStudio({
                         )}
                       </div>
                     </div>
+                    <PostGenActions
+                      entry={entry}
+                      mediaType="video"
+                      history={history}
+                      onReuse={handleReuseEntry}
+                      showSendToVideo={false}
+                      showEnhance={false}
+                    />
                   </div>
                 </div>
               );
@@ -1644,7 +1847,7 @@ export default function VideoStudio({
                     onClick={(e) => e.stopPropagation()}
                     className="absolute bottom-[calc(100%+12px)] left-0 z-50 bg-[#0a0a0a] rounded-[1.5rem] p-3 shadow-2xl border border-white/[0.05] w-[calc(100vw-3rem)] max-w-xs"
                   >
-                    <ModelDropdown
+                    <VideoModelPicker
                       imageMode={imageMode}
                       selectedModel={selectedModel}
                       onSelect={handleModelSelect}
@@ -1653,6 +1856,23 @@ export default function VideoStudio({
                   </div>
                 )}
               </div>
+
+              <ModeChips
+                family={selectedFamily}
+                selectedModelId={selectedModel}
+                onSelectMode={(model) => handleModeChipSelect(model)}
+                className="shrink-0"
+              />
+
+              {/* Seed & variations (catalog inputs.seed only) */}
+              <SeedControls
+                visible={modelSupportsSeed(getCurrentModel())}
+                seed={seed}
+                onSeedChange={setSeed}
+                variationMode={variationMode}
+                onVariationModeChange={setVariationMode}
+                compact
+              />
 
               {/* Aspect ratio btn */}
               {showAr && (

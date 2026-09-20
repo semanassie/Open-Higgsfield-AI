@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ImageStudio, VideoStudio, ClippingStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, AudioStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, getUserBalance } from 'studio';
+import { ImageStudio, EnhanceStudio, VideoStudio, ClippingStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, AudioStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, AssetsPanel, getUserBalance, POSTGEN_NAV_EVENT, SEND_TO_EVENT } from 'studio';
 
 const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignAgentStudio), {
   ssr: false,
@@ -14,7 +14,9 @@ import ApiKeyModal from './ApiKeyModal';
 
 const TABS = [
   { id: 'image',   label: 'Image Studio' },
+  { id: 'enhance', label: 'Enhancer' },
   { id: 'video',   label: 'Video Studio' },
+  { id: 'assets',  label: 'Assets' },
   { id: 'audio',   label: 'Audio Studio' },
   { id: 'clipping', label: 'AI Clipping' },
   { id: 'vibe-motion', label: 'Vibe Motion' },
@@ -102,6 +104,27 @@ export default function StandaloneShell() {
     router.push(`/studio/${tabId}`);
     // setActiveTab(tabId);
   };
+
+  // Cross-tab navigation from PostGenActions / Assets Send to…
+  useEffect(() => {
+    const goToTab = (tabId) => {
+      if (!tabId || !TABS.find((t) => t.id === tabId)) return;
+      setActiveTab(tabId);
+      router.push(`/studio/${tabId}`);
+    };
+    const onPostGenNav = (e) => {
+      if (e.detail?.tab) goToTab(e.detail.tab);
+    };
+    const onSendTo = (e) => {
+      if (e.detail?.target) goToTab(e.detail.target);
+    };
+    window.addEventListener(POSTGEN_NAV_EVENT, onPostGenNav);
+    window.addEventListener(SEND_TO_EVENT, onSendTo);
+    return () => {
+      window.removeEventListener(POSTGEN_NAV_EVENT, onPostGenNav);
+      window.removeEventListener(SEND_TO_EVENT, onSendTo);
+    };
+  }, [router]);
 
   // Auto-hide header when inside a specific workflow view or design agent
   useEffect(() => {
@@ -359,7 +382,13 @@ export default function StandaloneShell() {
       {/* Studio Content */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
         {activeTab === 'image'   && <ImageStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'enhance' && <EnhanceStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'video'   && <VideoStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'assets' && (
+          <div className="h-full w-full p-4 md:p-6 overflow-hidden">
+            <AssetsPanel className="max-w-7xl mx-auto h-full" />
+          </div>
+        )}
         {activeTab === 'clipping' && <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'vibe-motion' && <VibeMotionStudio apiKey={apiKey} />}
         {activeTab === 'lipsync' && <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}

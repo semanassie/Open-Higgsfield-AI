@@ -99,6 +99,22 @@ export async function generateI2I(apiKey, params) {
     if (modelInfo?.inputs?.name) {
         payload.name = params.name || modelInfo.inputs.name.default;
     }
+    // TechLead S1.3: topaz upscale_factor (+ optional seed) must reach the API
+    if (params.upscale_factor != null && params.upscale_factor !== '') {
+        payload.upscale_factor = params.upscale_factor;
+    }
+    if (params.seed != null && params.seed !== '' && params.seed !== -1) {
+        payload.seed = params.seed;
+    }
+    // Pass remaining schema-defined inputs when provided by UI
+    if (modelInfo?.inputs) {
+        for (const key of Object.keys(modelInfo.inputs)) {
+            if (payload[key] !== undefined) continue;
+            if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+                payload[key] = params[key];
+            }
+        }
+    }
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 60);
 }
 
@@ -113,6 +129,7 @@ export async function generateVideo(apiKey, params) {
     if (params.quality) payload.quality = params.quality;
     if (params.mode) payload.mode = params.mode;
     if (params.image_url) payload.image_url = params.image_url;
+    if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 
@@ -148,6 +165,7 @@ export async function generateI2V(apiKey, params) {
     if (modelInfo?.inputs?.name) {
         payload.name = params.name || modelInfo.inputs.name.default;
     }
+    if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 
@@ -174,6 +192,7 @@ export async function processV2V(apiKey, params) {
     if (modelInfo?.hasPrompt && params.prompt) {
         payload.prompt = params.prompt;
     }
+    if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 

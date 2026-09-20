@@ -16,6 +16,22 @@ import {
   getDefaultEffectForI2IModel,
   getI2IModelById,
 } from "../models.js";
+import MarketingPresetPanel from "./MarketingPresetPanel.jsx";
+import {
+  getMarketingPreset,
+  expandMarketingPrompt,
+  resolveMarketingPresetApplication,
+  getMarketingPresetSeedPrompt,
+} from "../lib/marketingPresets.js";
+import { modelSupportsSeed } from "./ModelBadges.jsx";
+import SeedControls, { resolveGenerationSeed } from "./SeedControls.jsx";
+import FamilyModePicker, {
+  ModeChips,
+  findFamilyForModel,
+} from "./FamilyModePicker.jsx";
+import { IMAGE_FAMILY_PRIORITY } from "../modelFamilies.js";
+import { saveGeneration, listAssets } from "../lib/assetsStore.js";
+import PostGenActions from "./PostGenActions.jsx";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -604,96 +620,6 @@ function UploadButton({ apiKey, maxImages, onSelect, onClear, initialUrls = [], 
   );
 }
 
-// ─── ModelDropdown ────────────────────────────────────────────────────────────
-
-function ModelDropdown({ models, selectedModel, onSelect, onClose }) {
-  const [search, setSearch] = useState("");
-
-  const filtered = models.filter(
-    (m) =>
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.id.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  return (
-    <div className="flex flex-col gap-2 h-full max-h-[60vh]">
-      <div className="border-b border-white/5 shrink-0">
-        <div className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-2.5 border border-white/5 focus-within:border-primary/50 transition-colors">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            className="text-muted"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search models..."
-            value={search}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none text-xs text-white focus:ring-0 w-full p-0 focus:outline-none"
-          />
-        </div>
-      </div>
-      <div className="text-xs font-medium text-secondary py-2 shrink-0">
-        Available models
-      </div>
-      <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 pb-2">
-        {filtered.map((m) => (
-          <div
-            key={m.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(m);
-              onClose();
-            }}
-            className={`flex items-center justify-between p-3.5 hover:bg-white/5 rounded-lg cursor-pointer transition-all border border-transparent hover:border-white/5 ${
-              selectedModel === m.id ? "bg-white/5 border-white/5" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3.5">
-              <div
-                className={`w-10 h-10 ${
-                  m.family === "kontext"
-                    ? "bg-blue-500/10 text-blue-400"
-                    : m.family === "effects"
-                      ? "bg-purple-500/10 text-purple-400"
-                      : "bg-primary/10 text-primary"
-                } border border-white/5 rounded-full flex items-center justify-center font-bold text-xs shadow-inner uppercase`}
-              >
-                {m.name.charAt(0)}
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-xs font-bold text-white tracking-tight">
-                  {m.name}
-                </span>
-              </div>
-            </div>
-            {selectedModel === m.id && (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#22d3ee"
-                strokeWidth="4"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── SimpleDropdown ───────────────────────────────────────────────────────────
 
 function SimpleDropdown({ title, options, selected, onSelect, onClose }) {
@@ -764,6 +690,7 @@ export default function ImageStudio({
   const [prompt, setPrompt] = useState("");
   const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
   const [swapImageUrl, setSwapImageUrl] = useState(null);
+  const [activeMarketingPresetId, setActiveMarketingPresetId] = useState(null);
 
   // ── UI state ────────────────────────────────────────────────────────────
   const [dropdownOpen, setDropdownOpen] = useState(null); // 'model' | 'ar' | 'quality' | null
@@ -775,7 +702,9 @@ export default function ImageStudio({
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
   const [activeHistoryIdx, setActiveHistoryIdx] = useState(0);
   const [batchSize, setBatchSize] = useState(1);
-  const [localHistory, setLocalHistory] = useState([]); // [{id,url,prompt,model,aspect_ratio,timestamp}]
+  const [seed, setSeed] = useState(-1);
+  const [variationMode, setVariationMode] = useState("new"); // 'new' | 'reuse'
+  const [localHistory, setLocalHistory] = useState([]); // [{id,url,prompt,model,seed,aspect_ratio,timestamp}]
 
   // Use prop history if provided, otherwise local
   const history = historyItems ?? localHistory;
@@ -819,6 +748,46 @@ export default function ImageStudio({
       console.warn("Failed to load ImageStudio persistence:", err);
     }
   }, []);
+
+  // Merge IndexedDB assets missing from localHistory (dual-write transition)
+  useEffect(() => {
+    if (historyItems) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const idb = await listAssets({ studio: "image", type: "image", limit: 50 });
+        if (cancelled || !idb.length) return;
+        setLocalHistory((prev) => {
+          const urls = new Set(prev.map((e) => e.url).filter(Boolean));
+          const additions = idb
+            .filter((a) => a.url && !urls.has(a.url))
+            .map((a) => ({
+              id: a.id,
+              url: a.url,
+              prompt: a.prompt || "",
+              model: a.model,
+              aspect_ratio: a.aspect_ratio,
+              seed: a.seed,
+              timestamp: a.createdAt,
+              refs: a.refs || [],
+            }));
+          if (!additions.length) return prev;
+          return [...additions, ...prev]
+            .sort(
+              (a, b) =>
+                new Date(b.timestamp || 0).getTime() -
+                new Date(a.timestamp || 0).getTime(),
+            )
+            .slice(0, 50);
+        });
+      } catch (err) {
+        console.warn("[ImageStudio] IDB history merge failed:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [historyItems]);
 
   // ── Adjust height on load ────────────────────────────────────────────────
   useEffect(() => {
@@ -927,6 +896,10 @@ export default function ImageStudio({
   const showQualityBtn = currentResolutions.length > 0;
   const currentEffects = imageMode ? getEffectsForI2IModel(selectedModelId) : [];
   const showEffectBtn = currentEffects.length > 0;
+  const currentModelObj =
+    currentModels.find((m) => m.id === selectedModelId) || null;
+  const seedSupported = modelSupportsSeed(currentModelObj);
+  const selectedFamily = findFamilyForModel(currentModels, selectedModelId);
 
   // ── Textarea auto-resize ─────────────────────────────────────────────────
   const handleTextareaInput = () => {
@@ -944,20 +917,54 @@ export default function ImageStudio({
       setUploadedImageUrls(newUrls);
 
       if (!imageMode) {
-        const firstI2I = i2iModels[0];
-        const ars = getAspectRatiosForI2IModel(firstI2I.id);
-        const resolutions = getResolutionsForI2IModel(firstI2I.id);
-        const effects = getEffectsForI2IModel(firstI2I.id);
-        setImageMode(true);
-        setSelectedModelId(firstI2I.id);
-        setSelectedModelName(firstI2I.name);
-        setSelectedAr(ars[0] || "1:1");
-        setSelectedQuality(resolutions[0] || null);
-        setSelectedEffect(effects.length > 0 ? (getDefaultEffectForI2IModel(firstI2I.id) || effects[0]) : "");
-        setMaxImages(getMaxImagesForI2IModel(firstI2I.id));
+        const preset = getMarketingPreset(activeMarketingPresetId);
+        if (preset) {
+          const { modelId, aspectRatio } = resolveMarketingPresetApplication(
+            preset,
+            { hasImage: true },
+          );
+          const m =
+            i2iModels.find((x) => x.id === modelId) ||
+            i2iModels.find((x) => x.hasPrompt) ||
+            i2iModels[0];
+          const ars = getAspectRatiosForI2IModel(m.id);
+          const resolutions = getResolutionsForI2IModel(m.id);
+          const effects = getEffectsForI2IModel(m.id);
+          const preferredAr =
+            aspectRatio && ars.includes(aspectRatio)
+              ? aspectRatio
+              : ars[0] || aspectRatio || "1:1";
+          setImageMode(true);
+          setSelectedModelId(m.id);
+          setSelectedModelName(m.name);
+          setSelectedAr(preferredAr);
+          setSelectedQuality(resolutions[0] || null);
+          setSelectedEffect(
+            effects.length > 0
+              ? getDefaultEffectForI2IModel(m.id) || effects[0]
+              : "",
+          );
+          setMaxImages(getMaxImagesForI2IModel(m.id));
+        } else {
+          const firstI2I = i2iModels[0];
+          const ars = getAspectRatiosForI2IModel(firstI2I.id);
+          const resolutions = getResolutionsForI2IModel(firstI2I.id);
+          const effects = getEffectsForI2IModel(firstI2I.id);
+          setImageMode(true);
+          setSelectedModelId(firstI2I.id);
+          setSelectedModelName(firstI2I.name);
+          setSelectedAr(ars[0] || "1:1");
+          setSelectedQuality(resolutions[0] || null);
+          setSelectedEffect(
+            effects.length > 0
+              ? getDefaultEffectForI2IModel(firstI2I.id) || effects[0]
+              : "",
+          );
+          setMaxImages(getMaxImagesForI2IModel(firstI2I.id));
+        }
       }
     },
-    [imageMode],
+    [imageMode, activeMarketingPresetId],
   );
 
   const handleUploadClear = useCallback(() => {
@@ -975,7 +982,7 @@ export default function ImageStudio({
   }, []);
 
   // ── Model selection ──────────────────────────────────────────────────────
-  const handleModelSelect = (m) => {
+  const handleModelSelect = (m, family = null) => {
     const ars = imageMode
       ? getAspectRatiosForI2IModel(m.id)
       : getAspectRatiosForModel(m.id);
@@ -983,7 +990,11 @@ export default function ImageStudio({
       ? getResolutionsForI2IModel(m.id)
       : getResolutionsForModel(m.id);
     setSelectedModelId(m.id);
-    setSelectedModelName(m.name);
+    setSelectedModelName(
+      family?.name ||
+        findFamilyForModel(imageMode ? i2iModels : t2iModels, m.id)?.name ||
+        m.name,
+    );
     setSelectedAr(ars[0] || "1:1");
     setSelectedQuality(resolutions[0] || null);
     setSwapImageUrl(null);
@@ -995,6 +1006,149 @@ export default function ImageStudio({
       setSelectedEffect("");
     }
   };
+
+  const handleModeChipSelect = (m) => {
+    if (!m) return;
+    handleModelSelect(m, selectedFamily);
+  };
+
+  // ── Post-gen Reuse (prompt + settings + refs) ─────────────────────────────
+  const handleReuseEntry = useCallback((entry) => {
+    if (!entry) return;
+    if (entry.prompt != null) setPrompt(entry.prompt);
+    if (entry.seed !== undefined && entry.seed !== null) setSeed(entry.seed);
+
+    const refs = Array.isArray(entry.refs) ? entry.refs.filter(Boolean) : [];
+    const i2iMatch = entry.model
+      ? i2iModels.find((m) => m.id === entry.model)
+      : null;
+    const t2iMatch = entry.model
+      ? t2iModels.find((m) => m.id === entry.model)
+      : null;
+    const wantI2I = Boolean(i2iMatch) || refs.length > 0;
+
+    if (wantI2I) {
+      const m = i2iMatch || i2iModels[0];
+      if (m) {
+        const ars = getAspectRatiosForI2IModel(m.id);
+        const resolutions = getResolutionsForI2IModel(m.id);
+        const preferredAr =
+          entry.aspect_ratio && ars.includes(entry.aspect_ratio)
+            ? entry.aspect_ratio
+            : ars[0] || entry.aspect_ratio || "1:1";
+        setImageMode(true);
+        setSelectedModelId(m.id);
+        setSelectedModelName(m.name);
+        setSelectedAr(preferredAr);
+        setSelectedQuality(resolutions[0] || null);
+        setMaxImages(getMaxImagesForI2IModel(m.id));
+        const effects = getEffectsForI2IModel(m.id);
+        setSelectedEffect(
+          effects.length > 0
+            ? getDefaultEffectForI2IModel(m.id) || effects[0]
+            : "",
+        );
+      }
+      if (refs.length > 0) setUploadedImageUrls(refs);
+    } else if (t2iMatch) {
+      const ars = getAspectRatiosForModel(t2iMatch.id);
+      const resolutions = getResolutionsForModel(t2iMatch.id);
+      const preferredAr =
+        entry.aspect_ratio && ars.includes(entry.aspect_ratio)
+          ? entry.aspect_ratio
+          : ars[0] || entry.aspect_ratio || "1:1";
+      setImageMode(false);
+      setSelectedModelId(t2iMatch.id);
+      setSelectedModelName(t2iMatch.name);
+      setSelectedAr(preferredAr);
+      setSelectedQuality(resolutions[0] || null);
+      setSelectedEffect("");
+      setMaxImages(1);
+    } else if (entry.aspect_ratio) {
+      setSelectedAr(entry.aspect_ratio);
+    }
+
+    setTimeout(() => {
+      const el = textareaRef.current;
+      if (el) {
+        el.style.height = "auto";
+        el.style.height = `${el.scrollHeight}px`;
+      }
+    }, 50);
+  }, []);
+
+  // ── Marketing presets (P1.6) ─────────────────────────────────────────────
+  const applyMarketingModel = useCallback((wantI2I, modelId, aspectRatio) => {
+    if (wantI2I) {
+      const m =
+        i2iModels.find((x) => x.id === modelId) ||
+        i2iModels.find((x) => x.hasPrompt) ||
+        i2iModels[0];
+      if (!m) return;
+      const ars = getAspectRatiosForI2IModel(m.id);
+      const resolutions = getResolutionsForI2IModel(m.id);
+      const effects = getEffectsForI2IModel(m.id);
+      const preferredAr =
+        aspectRatio && ars.includes(aspectRatio) ? aspectRatio : ars[0] || aspectRatio || "1:1";
+      setImageMode(true);
+      setSelectedModelId(m.id);
+      setSelectedModelName(m.name);
+      setSelectedAr(preferredAr);
+      setSelectedQuality(resolutions[0] || null);
+      setSelectedEffect(
+        effects.length > 0 ? getDefaultEffectForI2IModel(m.id) || effects[0] : "",
+      );
+      setMaxImages(getMaxImagesForI2IModel(m.id));
+      setSwapImageUrl(null);
+    } else {
+      const m = t2iModels.find((x) => x.id === modelId) || t2iModels[0];
+      if (!m) return;
+      const ars = getAspectRatiosForModel(m.id);
+      const resolutions = getResolutionsForModel(m.id);
+      const preferredAr =
+        aspectRatio && ars.includes(aspectRatio) ? aspectRatio : ars[0] || aspectRatio || "1:1";
+      setImageMode(false);
+      setSelectedModelId(m.id);
+      setSelectedModelName(m.name);
+      setSelectedAr(preferredAr);
+      setSelectedQuality(resolutions[0] || null);
+      setSelectedEffect("");
+      setMaxImages(1);
+      setSwapImageUrl(null);
+    }
+  }, []);
+
+  const handleSelectMarketingPreset = useCallback(
+    (presetId) => {
+      const preset = getMarketingPreset(presetId);
+      if (!preset) return;
+      setActiveMarketingPresetId(preset.id);
+      const { imageMode: wantI2I, modelId, aspectRatio } =
+        resolveMarketingPresetApplication(preset, {
+          hasImage: uploadedImageUrls.length > 0,
+        });
+      applyMarketingModel(wantI2I, modelId, aspectRatio);
+      const current = prompt.trim();
+      const brief =
+        !current || current.includes("[oh-mkt:")
+          ? getMarketingPresetSeedPrompt(preset)
+          : current;
+      setPrompt(expandMarketingPrompt(preset, brief));
+      setTimeout(() => handleTextareaInput(), 50);
+    },
+    [uploadedImageUrls.length, prompt, applyMarketingModel],
+  );
+
+  const handleEnhanceMarketingPrompt = useCallback(() => {
+    const preset = getMarketingPreset(activeMarketingPresetId);
+    if (!preset) return;
+    setPrompt(expandMarketingPrompt(preset, prompt));
+    setTimeout(() => handleTextareaInput(), 50);
+  }, [activeMarketingPresetId, prompt]);
+
+  const handleClearMarketingPreset = useCallback(() => {
+    setActiveMarketingPresetId(null);
+  }, []);
 
   // ── History helpers ──────────────────────────────────────────────────────
   const addToHistory = useCallback(
@@ -1030,6 +1184,16 @@ export default function ImageStudio({
   const handleGenerate = async () => {
     if (generating) return;
 
+    const marketingPreset = getMarketingPreset(activeMarketingPresetId);
+    const finalPrompt = marketingPreset
+      ? expandMarketingPrompt(marketingPreset, prompt)
+      : prompt.trim();
+
+    if (marketingPreset?.requiresImage && uploadedImageUrls.length === 0) {
+      alert("This marketing preset needs a product image. Upload one first.");
+      return;
+    }
+
     if (imageMode) {
       if (uploadedImageUrls.length === 0) {
         alert("Please upload a reference image first.");
@@ -1041,7 +1205,7 @@ export default function ImageStudio({
         return;
       }
     } else {
-      if (!prompt.trim()) {
+      if (!finalPrompt) {
         alert("Please enter a prompt to generate an image.");
         return;
       }
@@ -1051,8 +1215,23 @@ export default function ImageStudio({
     setGenerateError(null);
 
     try {
+      // Resolve seeds synchronously so batch order stays stable
+      const seedsForBatch = Array.from({ length: batchSize }, () =>
+        seedSupported
+          ? resolveGenerationSeed(variationMode, seed)
+          : undefined,
+      );
+      if (
+        seedSupported &&
+        variationMode === "new" &&
+        seedsForBatch.length > 0
+      ) {
+        setSeed(seedsForBatch[seedsForBatch.length - 1]);
+      }
+
       const results = await Promise.all(
-        Array.from({ length: batchSize }).map(async () => {
+        Array.from({ length: batchSize }).map(async (_, i) => {
+          const genSeed = seedsForBatch[i];
           if (imageMode) {
             const genParams = {
               model: selectedModelId,
@@ -1061,42 +1240,62 @@ export default function ImageStudio({
               aspect_ratio: selectedAr,
             };
             if (swapImageUrl) genParams.swap_url = swapImageUrl;
-            if (prompt.trim()) genParams.prompt = prompt.trim();
+            if (finalPrompt) genParams.prompt = finalPrompt;
             if (currentQualityField && selectedQuality) {
               genParams[currentQualityField] = selectedQuality;
             }
             if (showEffectBtn && selectedEffect) genParams.name = selectedEffect;
+            if (genSeed !== undefined) genParams.seed = genSeed;
             return await generateI2I(apiKey, genParams);
           } else {
             const genParams = {
               model: selectedModelId,
-              prompt: prompt.trim(),
+              prompt: finalPrompt,
               aspect_ratio: selectedAr,
             };
             if (currentQualityField && selectedQuality) {
               genParams[currentQualityField] = selectedQuality;
             }
+            if (genSeed !== undefined) genParams.seed = genSeed;
             return await generateImage(apiKey, genParams);
           }
         })
       );
 
-      results.forEach((res) => {
+      results.forEach((res, i) => {
         if (res && res.url) {
+          const entrySeed = res.seed ?? seedsForBatch[i];
           const entry = {
             id: res.id || Math.random().toString(36).substring(7),
             url: res.url,
-            prompt: prompt.trim(),
+            prompt: finalPrompt,
             model: selectedModelId,
             aspect_ratio: selectedAr,
+            seed: entrySeed,
             timestamp: new Date().toISOString(),
+            refs: imageMode ? [...uploadedImageUrls] : [],
           };
           addToHistory(entry);
+          // Persist to unified Assets IndexedDB (remix/compare source of truth)
+          saveGeneration({
+            id: entry.id,
+            url: entry.url,
+            type: "image",
+            prompt: entry.prompt,
+            model: entry.model,
+            aspect_ratio: entry.aspect_ratio,
+            seed: entry.seed,
+            refs: entry.refs,
+            studio: "image",
+          }).catch((err) =>
+            console.warn("[ImageStudio] assetsStore save failed:", err),
+          );
           onGenerationComplete?.({
             url: res.url,
             model: selectedModelId,
-            prompt: prompt.trim(),
+            prompt: finalPrompt,
             type: "image",
+            seed: entrySeed,
           });
         }
       });
@@ -1109,12 +1308,14 @@ export default function ImageStudio({
     }
   };
 
+  const activeMarketingPreset = getMarketingPreset(activeMarketingPresetId);
   const placeholderText =
-    uploadedImageUrls.length > 1
+    activeMarketingPreset?.placeholder ||
+    (uploadedImageUrls.length > 1
       ? `${uploadedImageUrls.length} images selected — describe the transformation (optional)`
       : imageMode
         ? "Describe how to transform this image (optional)"
-        : "Describe the image you want to create";
+        : "Describe the image you want to create");
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -1180,43 +1381,56 @@ export default function ImageStudio({
                     </span>
                     <span className="text-[10px] text-white/40">{entry.aspect_ratio}</span>
                   </div>
+                  <PostGenActions
+                    entry={entry}
+                    mediaType="image"
+                    history={history}
+                    onReuse={handleReuseEntry}
+                  />
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh]">
-            <div className="mb-12 relative group">
-              <div className="absolute inset-0 bg-primary/10 blur-[120px] rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-1000" />
-              <div className="relative w-24 h-24 md:w-32 md:h-32 bg-white/[0.02] rounded-[2rem] flex items-center justify-center border border-white/[0.05] overflow-hidden backdrop-blur-sm">
-                <div className="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center border border-primary/10 relative z-10 transition-transform duration-500 group-hover:scale-110">
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    className="text-primary opacity-80"
-                  >
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                </div>
-                <div className="absolute top-4 right-4 text-[10px] text-primary/40 animate-pulse">
-                  ✨
+          <div className="flex flex-col items-center justify-center h-full animate-fade-in-up transition-all duration-700 min-h-[50vh] gap-10">
+            <div className="flex flex-col items-center">
+              <div className="mb-10 relative group">
+                <div className="absolute inset-0 bg-primary/10 blur-[120px] rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-1000" />
+                <div className="relative w-20 h-20 md:w-28 md:h-28 bg-white/[0.02] rounded-[2rem] flex items-center justify-center border border-white/[0.05] overflow-hidden backdrop-blur-sm">
+                  <div className="w-14 h-14 bg-primary/5 rounded-2xl flex items-center justify-center border border-primary/10 relative z-10 transition-transform duration-500 group-hover:scale-110">
+                    <svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="text-primary opacity-80"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  </div>
                 </div>
               </div>
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-3 text-center px-4">
+                <span className="text-white/40 font-medium">START CREATING WITH</span>
+                <br />
+                <span className="text-white">IMAGE STUDIO</span>
+              </h1>
+              <p className="text-white/40 text-sm md:text-base font-medium tracking-wide text-center max-w-lg leading-relaxed">
+                Pick a marketing workflow or describe a scene — generate with existing models
+              </p>
             </div>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight mb-4 text-center px-4">
-              <span className="text-white/40 font-medium">START CREATING WITH</span>
-              <br />
-              <span className="text-white">IMAGE STUDIO</span>
-            </h1>
-            <p className="text-white/40 text-sm md:text-base font-medium tracking-wide text-center max-w-lg leading-relaxed">
-              Describe a scene, character, mood, or style — and watch it come to life
-            </p>
+
+            <MarketingPresetPanel
+              activePresetId={activeMarketingPresetId}
+              onSelectPreset={handleSelectMarketingPreset}
+              onEnhancePrompt={handleEnhanceMarketingPrompt}
+              onClearPreset={handleClearMarketingPreset}
+              hasImage={uploadedImageUrls.length > 0}
+            />
           </div>
         )}
       </div>
@@ -1226,6 +1440,18 @@ export default function ImageStudio({
         className="absolute bottom-4 w-full max-w-[95%] lg:max-w-4xl z-40 animate-fade-in-up" 
         style={{ animationDelay: "0.2s" }}
       >
+        {history.length > 0 && (
+          <div className="mb-2 px-1">
+            <MarketingPresetPanel
+              compact
+              activePresetId={activeMarketingPresetId}
+              onSelectPreset={handleSelectMarketingPreset}
+              onEnhancePrompt={handleEnhanceMarketingPrompt}
+              onClearPreset={handleClearMarketingPreset}
+              hasImage={uploadedImageUrls.length > 0}
+            />
+          </div>
+        )}
         <div className="w-full bg-[#0a0a0a]/80 backdrop-blur-3xl rounded-md border border-white/10 p-4 flex flex-col gap-2 shadow-2xl">
           {/* Top row: upload picker + textarea */}
           <div className="flex items-center gap-2">
@@ -1298,15 +1524,36 @@ export default function ImageStudio({
                     onClick={(e) => e.stopPropagation()}
                     className="absolute bottom-[calc(100%+12px)] left-0 z-50 bg-[#0a0a0a] rounded-lg p-3 shadow-2xl border border-white/[0.05] w-[calc(100vw-3rem)] max-w-xs"
                   >
-                    <ModelDropdown
+                    <FamilyModePicker
                       models={currentModels}
-                      selectedModel={selectedModelId}
+                      selectedModelId={selectedModelId}
+                      preferredOrder={IMAGE_FAMILY_PRIORITY}
+                      sectionTitle={
+                        imageMode ? "Image-to-image models" : "Text-to-image models"
+                      }
                       onSelect={handleModelSelect}
                       onClose={() => setDropdownOpen(null)}
                     />
                   </div>
                 )}
               </div>
+
+              <ModeChips
+                family={selectedFamily}
+                selectedModelId={selectedModelId}
+                onSelectMode={(model) => handleModeChipSelect(model)}
+                className="shrink-0"
+              />
+
+              {/* Seed & variations (only when catalog inputs.seed exists) */}
+              <SeedControls
+                visible={seedSupported}
+                seed={seed}
+                onSeedChange={setSeed}
+                variationMode={variationMode}
+                onVariationModeChange={setVariationMode}
+                compact
+              />
 
               {/* Aspect ratio button */}
               <div className="relative">

@@ -1,6 +1,15 @@
 "use client";
 
 export { default as ImageStudio } from './components/ImageStudio';
+export { default as EnhanceStudio, ENHANCE_PAYLOAD_KEY } from './components/EnhanceStudio';
+export { default as PostGenActions } from './components/PostGenActions.jsx';
+export {
+  POSTGEN_NAV_EVENT,
+  POSTGEN_STORAGE_KEY,
+  ENHANCE_IMAGE_KEY,
+  readPostGenPayload,
+  navigateWithPostGen,
+} from './lib/postGenTransfer.js';
 export { default as VideoStudio } from './components/VideoStudio';
 export { default as ClippingStudio } from './components/ClippingStudio';
 export { default as VibeMotionStudio } from './components/VibeMotionStudio';
@@ -14,4 +23,10 @@ export { default as AgentStudio } from './components/AgentStudio';
 export { default as DesignAgentStudio } from './components/DesignAgentStudio';
 export { default as AppsStudio } from './components/AppsStudio';
 export { default as McpCliStudio } from './components/McpCliStudio';
+export { default as AssetsPanel } from './components/AssetsPanel';
+export { default as CompareView } from './components/CompareView';
 export * from './muapi';
+export * from './lib/assetsStore';
+export { useRemix } from './hooks/useRemix';
+export { useCompare } from './hooks/useCompare';
+export { useAssets } from './hooks/useAssets';
