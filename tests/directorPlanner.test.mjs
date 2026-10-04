@@ -9,7 +9,18 @@ import {
     parseScreenplay,
     normalizeShots,
     fallbackShotsFromScreenplay,
+    runPass1Screenplay,
+    runPass2Shots,
+    runPass3Polish,
+    planShortFilm,
 } from '../src/lib/directorPlanner.js';
+import {
+    llmModels,
+    LLM_FAMILY_PRIORITY,
+    LLM_FAMILY_DEFAULT_ID,
+    getLlmModelById,
+} from 'studio/src/llmModels.js';
+import { getFamilies } from 'studio/src/modelFamilies.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -203,5 +214,252 @@ test('DirectorStudio mounts with dataset.studio = director and restores session'
     assert.equal(loadDirectorProject(), null);
     saveDirectorProject({ ...createEmptyDirectorProject(), prompt: 'test restore' });
     assert.equal(loadDirectorProject().prompt, 'test restore');
+    clearDirectorProject();
+});
+
+const P1_SLUGS = [
+    'gpt-6-astra',
+    'gpt-6-1-sol',
+    'gpt-6-sol',
+    'gpt-6-luna',
+    'gpt-5-6-sol',
+    'gpt-5-6-terra',
+    'gpt-5-6-luna',
+    'gpt-5-5',
+    'claude-fable-5',
+    'claude-fable-5-1',
+    'claude-opus-5-5',
+    'claude-opus-5',
+    'claude-sonnet-5-5',
+    'claude-sonnet-5',
+    'gemini-3-8-flash',
+    'gemini-3-pro',
+    'gemini-3-1-pro',
+    'grok-4-7',
+    'kimi-k3',
+    'deepseek-v4-pro',
+    'deepseek-v4-1-flash',
+    'deepseek-v4-flash',
+];
+
+test('P1 llm catalog is 22 slug entries in 11 families', () => {
+    assert.equal(llmModels.length, 22);
+    assert.deepEqual(llmModels.map((m) => m.id), P1_SLUGS);
+    for (const model of llmModels) {
+        assert.equal(model.transport, 'slug');
+        assert.equal(model.endpoint, model.id);
+        assert.equal(model.id, getLlmModelById(model.id).id);
+        assert.equal('model' in model, false);
+        assert.ok(model.family);
+        assert.ok(model.modeKey);
+        assert.ok(model.modeLabel);
+        assert.equal(/abliterated|llama-4|qwen3-vl|openrouter/i.test(model.id), false);
+    }
+    assert.deepEqual(Object.keys(LLM_FAMILY_DEFAULT_ID), LLM_FAMILY_PRIORITY);
+    assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-6'], 'gpt-6-astra');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-5.6'], 'gpt-5-6-sol');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-5.5'], 'gpt-5-5');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['claude-fable'], 'claude-fable-5-1');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['claude-opus'], 'claude-opus-5-5');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['claude-sonnet'], 'claude-sonnet-5-5');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['gemini-3.8'], 'gemini-3-8-flash');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['gemini-3-pro'], 'gemini-3-1-pro');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['grok-4'], 'grok-4-7');
+    assert.equal(LLM_FAMILY_DEFAULT_ID.kimi, 'kimi-k3');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['deepseek-v4'], 'deepseek-v4-pro');
+    for (const [family, id] of Object.entries(LLM_FAMILY_DEFAULT_ID)) {
+        assert.equal(getLlmModelById(id).family, family);
+    }
+
+    const families = getFamilies(llmModels, { preferredOrder: LLM_FAMILY_PRIORITY });
+    assert.deepEqual(families.map((f) => f.id), LLM_FAMILY_PRIORITY);
+    const modeCount = Object.fromEntries(families.map((f) => [f.id, f.modes.length]));
+    assert.equal(modeCount['gpt-6'], 4);
+    assert.equal(modeCount['gpt-5.6'], 3);
+    assert.equal(modeCount['claude-fable'], 2);
+    assert.equal(modeCount['claude-opus'], 2);
+    assert.equal(modeCount['claude-sonnet'], 2);
+    assert.equal(modeCount['gemini-3-pro'], 2);
+    assert.equal(modeCount['deepseek-v4'], 3);
+    for (const id of ['gpt-5.5', 'gemini-3.8', 'grok-4', 'kimi']) {
+        assert.equal(modeCount[id], 1);
+    }
+    assert.equal(families.find((f) => f.id === 'gemini-3-pro').name, 'Gemini 3 Pro');
+    assert.equal(families.find((f) => f.id === 'grok-4').name, 'Grok 4.7');
+
+    const modelsSrc = readFileSync(join(root, 'packages/studio/src/models.js'), 'utf8');
+    assert.equal(modelsSrc.includes('gpt-6-astra'), false);
+    assert.equal(modelsSrc.includes('claude-fable-5-1'), false);
+    const indexSrc = readFileSync(join(root, 'packages/studio/src/index.js'), 'utf8');
+    assert.equal(indexSrc.includes('llmModels'), false);
+    const webMuapi = readFileSync(join(root, 'packages/studio/src/muapi.js'), 'utf8');
+    assert.equal(webMuapi.includes('callLLM'), false);
+});
+
+function recordingLlm(payloads) {
+    const calls = [];
+    return {
+        calls,
+        async callLLM(prompt, options) {
+            calls.push({ prompt, options: { ...options } });
+            const next = payloads[calls.length - 1];
+            return typeof next === 'string' ? next : JSON.stringify(next);
+        },
+    };
+}
+
+function assertNoGatewayModel(options) {
+    assert.equal('model' in options, false);
+    assert.equal('messages' in options, false);
+}
+
+test('director passes omit model when no catalog id is selected', async () => {
+    const screenplay = {
+        title: 'Rain',
+        logline: 'A chase',
+        characters: [],
+        scenesText: 'Kai runs.',
+    };
+    const shots = [{ id: 'shot_1', action: 'run', camera: 'wide', imagePrompt: 'still', visualPrompt: 'move', dialogue: '', continuity: '' }];
+    const llm = recordingLlm(['Title: Rain\n', [{ id: 'shot_1', action: 'run' }], [{ id: 'shot_1', imagePrompt: 'still', visualPrompt: 'move' }]]);
+    await runPass1Screenplay(llm, { prompt: 'idea', shotCount: 1 });
+    await runPass2Shots(llm, { screenplay, shotCount: 1 });
+    await runPass3Polish(llm, { shots, screenplay, qualityTier: 'budget' });
+    assert.equal(llm.calls.length, 3);
+    for (const call of llm.calls) {
+        assertNoGatewayModel(call.options);
+        assert.equal('modelId' in call.options, false);
+    }
+});
+
+test('director passes forward a P1 id and do not set model', async () => {
+    const store = new Map();
+    globalThis.localStorage = {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, String(v)),
+        removeItem: (k) => store.delete(k),
+        clear: () => store.clear(),
+    };
+    const llm = recordingLlm([
+        {
+            title: 'Rain',
+            logline: 'A chase',
+            characters: [{ id: 'c1', name: 'Kai', appearance: 'coat', role: 'protagonist' }],
+            scenes: [{ heading: 'EXT. STREET', action: 'Kai runs.', dialogue: '' }],
+        },
+        [{ id: 'shot_1', action: 'Kai runs', camera: 'wide', durationSec: 5, characterIds: ['c1'] }],
+        [{ id: 'shot_1', imagePrompt: 'still of Kai', visualPrompt: 'Kai runs forward' }],
+    ]);
+    await planShortFilm(llm, { prompt: 'idea', shotCount: 1, modelId: 'gpt-6-astra' });
+    assert.equal(llm.calls.length, 3);
+    for (const call of llm.calls) {
+        assert.equal(call.options.modelId, 'gpt-6-astra');
+        assertNoGatewayModel(call.options);
+    }
+});
+
+test('callLLM keeps any-llm unless modelId is a slug catalog entry', async () => {
+    const store = new Map();
+    globalThis.localStorage = {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, String(v)),
+        removeItem: (k) => store.delete(k),
+        clear: () => store.clear(),
+    };
+    globalThis.window = globalThis;
+    localStorage.setItem('muapi_key', 'test-key');
+    const { MuapiClient } = await import('../src/lib/muapi.js');
+    const client = new MuapiClient();
+    const calls = [];
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, init) => {
+        calls.push({ url: String(url), body: JSON.parse(init.body) });
+        return {
+            ok: true,
+            json: async () => ({ output: { text: 'hello' } }),
+            text: async () => '',
+        };
+    };
+    try {
+        const text = await client.callLLM('hi', { useCase: 'test' });
+        assert.equal(text, 'hello');
+        assert.match(calls[0].url, /\/api\/v1\/any-llm$/);
+        assert.equal(calls[0].body.prompt, 'hi');
+        assert.equal(calls[0].body.system_prompt, 'You are a helpful creative AI assistant.');
+        assert.equal('model' in calls[0].body, false);
+        assert.equal('messages' in calls[0].body, false);
+        assert.equal('image_url' in calls[0].body, false);
+
+        await client.callLLM('hi', { modelId: 'claude-fable-5-1', systemPrompt: 'sys' });
+        assert.match(calls[1].url, /\/api\/v1\/claude-fable-5-1$/);
+        assert.equal(calls[1].body.prompt, 'hi');
+        assert.equal(calls[1].body.system_prompt, 'sys');
+        assert.equal('model' in calls[1].body, false);
+        assert.equal('messages' in calls[1].body, false);
+
+        await client.callLLM('hi', { modelId: 'gpt-6-astra', model: 'openai/gpt-4o' });
+        assert.match(calls[2].url, /\/api\/v1\/gpt-6-astra$/);
+        assert.equal('model' in calls[2].body, false);
+
+        await client.callLLM('hi', { model: 'openai/gpt-4o' });
+        assert.match(calls[3].url, /\/api\/v1\/any-llm$/);
+        assert.equal(calls[3].body.model, 'openai/gpt-4o');
+
+        await client.callLLM('hi', { modelId: 'meta-llama/llama-4-maverick' });
+        assert.match(calls[4].url, /\/api\/v1\/any-llm$/);
+        assert.equal('model' in calls[4].body, false);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+function walk(node, acc = []) {
+    if (!node || typeof node !== 'object') return acc;
+    acc.push(node);
+    for (const child of node.children || []) walk(child, acc);
+    return acc;
+}
+
+test('Director LLM picker starts on Current and selects a family default slug', async () => {
+    installDomStub();
+    const { DirectorStudio } = await import('../src/components/DirectorStudio.js');
+    const { saveDirectorProject, createEmptyDirectorProject, clearDirectorProject } =
+        await import('../src/lib/directorProject.js');
+    clearDirectorProject();
+    const root = DirectorStudio();
+    const picker = walk(root).find((n) => n.dataset?.testid === 'director-llm-picker');
+    assert.ok(picker);
+    assert.equal(picker.dataset.llmModel, '');
+    const families = walk(picker).filter((n) => n.dataset?.family);
+    assert.deepEqual(families.map((n) => n.dataset.family), LLM_FAMILY_PRIORITY);
+    const current = walk(picker).find((n) => n.dataset?.llmChoice === 'current');
+    assert.equal(current.getAttribute('aria-pressed'), 'true');
+    assert.equal(walk(picker).some((n) => n.dataset?.testid === 'mode-chips'), false);
+
+    families.find((n) => n.dataset.family === 'claude-fable').onclick();
+    const afterFable = walk(picker);
+    assert.equal(picker.dataset.llmModel, 'claude-fable-5-1');
+    const fableChip = afterFable.find((n) => n.dataset?.modelId === 'claude-fable-5-1');
+    assert.equal(fableChip.getAttribute('aria-pressed'), 'true');
+    assert.equal(afterFable.filter((n) => n.dataset?.modeKey).length, 2);
+
+    afterFable.find((n) => n.dataset?.modelId === 'claude-fable-5').onclick();
+    assert.equal(picker.dataset.llmModel, 'claude-fable-5');
+
+    walk(picker).find((n) => n.dataset?.family === 'grok-4').onclick();
+    assert.equal(picker.dataset.llmModel, 'grok-4-7');
+    assert.equal(walk(picker).some((n) => n.dataset?.testid === 'mode-chips'), false);
+
+    walk(picker).find((n) => n.dataset?.family === 'gemini-3-pro').onclick();
+    assert.equal(picker.dataset.llmModel, 'gemini-3-1-pro');
+
+    walk(picker).find((n) => n.dataset?.llmChoice === 'current').onclick();
+    assert.equal(picker.dataset.llmModel, '');
+    assert.equal(walk(picker).find((n) => n.dataset?.llmChoice === 'current').getAttribute('aria-pressed'), 'true');
+
+    saveDirectorProject({ ...createEmptyDirectorProject(), llmModelId: 'not-a-slug' });
+    const restored = DirectorStudio();
+    const restoredPicker = walk(restored).find((n) => n.dataset?.testid === 'director-llm-picker');
+    assert.equal(restoredPicker.dataset.llmModel, '');
     clearDirectorProject();
 });

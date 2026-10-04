@@ -1,4 +1,5 @@
 import { getModelById, getVideoModelById, getI2IModelById, getI2VModelById, getV2VModelById, getLipSyncModelById } from './models.js';
+import { buildLlmCall } from './llmModels.js';
 
 export class MuapiClient {
     constructor() {
@@ -554,19 +555,22 @@ export class MuapiClient {
     }
 
     /**
-     * Calls MuAPI any-llm for planning / prompt work (Director, Assist, etc.).
+     * Text call for Director planning.
+     * No modelId: POST /api/v1/any-llm (model field only if options.model is set).
+     * modelId of a slug catalog entry: POST /api/v1/{endpoint} with prompt + system_prompt.
      * @param {string} prompt
-     * @param {{ systemPrompt?: string, model?: string, useCase?: string }} [options]
+     * @param {{ systemPrompt?: string, model?: string, modelId?: string, useCase?: string }} [options]
      * @returns {Promise<string>}
      */
     async callLLM(prompt, options = {}) {
         const key = this.getKey();
-        const url = `${this.baseUrl}/api/v1/any-llm`;
-        const body = {
+        const { url, body } = buildLlmCall({
+            baseUrl: this.baseUrl,
             prompt,
-            system_prompt: options.systemPrompt ?? 'You are a helpful creative AI assistant.',
-        };
-        if (options.model) body.model = options.model;
+            systemPrompt: options.systemPrompt,
+            model: options.model,
+            modelId: options.modelId,
+        });
 
         console.log('[Muapi] LLM Request:', options.useCase || 'global');
 

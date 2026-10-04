@@ -19,6 +19,7 @@ export function createEmptyDirectorProject() {
         status: '',
         pass: 0,
         modelIds: null,
+        llmModelId: null,
         updatedAt: null,
     };
 }
