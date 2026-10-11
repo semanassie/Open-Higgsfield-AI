@@ -12,7 +12,7 @@
  */
 
 const DB_NAME = "hf_assets";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_ASSETS = "assets";
 const STORE_MOODBOARD = "moodboard";
 const STORE_ELEMENTS = "elements";

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { generateImage, uploadFile } from "../muapi.js";
+import { GRADE_IDS, gradePromptClause } from "../lib/cinemaGrades.js";
 
 // ─── Constants (inlined from promptUtils) ───────────────────────────────────
 
@@ -80,11 +81,16 @@ function buildNanoBananaPrompt(
   lens,
   focalLength,
   aperture,
+  gradeClause,
 ) {
   const cameraDesc = CAMERA_MAP[camera] || camera;
   const lensDesc = LENS_MAP[lens] || lens;
   const perspective = FOCAL_PERSPECTIVE[focalLength] || "";
   const depthEffect = APERTURE_EFFECT[aperture] || "";
+  const colorScience =
+    gradeClause && String(gradeClause).trim() !== ""
+      ? String(gradeClause).trim()
+      : "natural color science";
   const qualityTags = [
     "professional photography",
     "ultra-detailed",
@@ -97,7 +103,7 @@ function buildNanoBananaPrompt(
     `aperture ${aperture}`,
     depthEffect,
     "cinematic lighting",
-    "natural color science",
+    colorScience,
     "high dynamic range",
     qualityTags.join(", "),
   ];
@@ -456,6 +462,7 @@ export default function CinemaStudio({
     lens: LENSES[0],
     focal: 35,
     aperture: "f/1.4",
+    gradeId: "neutral-print",
   });
   const [resolution, setResolution] = useState("2K");
 
@@ -474,9 +481,10 @@ export default function CinemaStudio({
   const [internalHistory, setInternalHistory] = useState([]);
 
   // ── Dropdown state ──
-  const [openDropdown, setOpenDropdown] = useState(null); // 'ar' | 'res' | null
+  const [openDropdown, setOpenDropdown] = useState(null); // 'ar' | 'res' | 'grade' | null
   const arBtnRef = useRef(null);
   const resBtnRef = useRef(null);
+  const gradeBtnRef = useRef(null);
 
   // ── Textarea auto-grow ──
   const textareaRef = useRef(null);
@@ -513,7 +521,14 @@ export default function CinemaStudio({
       const stored = localStorage.getItem(PERSIST_KEY);
       if (stored) {
         const data = JSON.parse(stored);
-        if (data.settings) setSettings(data.settings);
+        if (data.settings) {
+          setSettings((prev) => ({
+            ...prev,
+            ...data.settings,
+            // Old saves without gradeId keep the default look (neutral-print)
+            gradeId: data.settings.gradeId || prev.gradeId || "neutral-print",
+          }));
+        }
         if (data.resolution) setResolution(data.resolution);
         if (data.internalHistory) setInternalHistory(data.internalHistory);
         if (data.uploadedImage) setUploadedImage(data.uploadedImage);
@@ -579,12 +594,14 @@ export default function CinemaStudio({
 
     setIsGenerating(true);
 
+    const gradeClause = gradePromptClause(settings.gradeId);
     const finalPrompt = buildNanoBananaPrompt(
       basePrompt,
       settings.camera,
       settings.lens,
       settings.focal,
       settings.aperture,
+      gradeClause,
     );
 
     try {
@@ -608,6 +625,7 @@ export default function CinemaStudio({
             focal: settings.focal,
             aperture: settings.aperture,
             aspect_ratio: settings.aspect_ratio,
+            gradeId: settings.gradeId,
             resolution,
           },
         };
@@ -682,6 +700,7 @@ export default function CinemaStudio({
         aperture: entry.settings.aperture ?? prev.aperture,
         aspect_ratio: entry.settings.aspect_ratio ?? prev.aspect_ratio,
         prompt: entry.settings.prompt ?? prev.prompt,
+        gradeId: entry.settings.gradeId ?? prev.gradeId,
       }));
       if (entry.settings.resolution) setResolution(entry.settings.resolution);
 
@@ -951,6 +970,34 @@ export default function CinemaStudio({
                       selected={resolution}
                       onSelect={setResolution}
                       triggerRef={resBtnRef}
+                      onClose={() => setOpenDropdown(null)}
+                    />
+                  )}
+                </div>
+
+                {/* Grade Button */}
+                <div className="relative">
+                  <button
+                    ref={gradeBtnRef}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-white/[0.03] hover:bg-white/10 text-xs font-bold text-white/40 hover:text-white transition-colors rounded-md border border-white/[0.03]"
+                    onClick={() =>
+                      setOpenDropdown((d) => (d === "grade" ? null : "grade"))
+                    }
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-40">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                    </svg>
+                    {settings.gradeId || "neutral-print"}
+                  </button>
+                  {openDropdown === "grade" && (
+                    <Dropdown
+                      items={GRADE_IDS}
+                      selected={settings.gradeId || "neutral-print"}
+                      onSelect={(val) =>
+                        setSettings((prev) => ({ ...prev, gradeId: val }))
+                      }
+                      triggerRef={gradeBtnRef}
                       onClose={() => setOpenDropdown(null)}
                     />
                   )}

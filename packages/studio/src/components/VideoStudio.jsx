@@ -29,6 +29,7 @@ import FamilyModePicker, {
   findFamilyForModel,
 } from "./FamilyModePicker.jsx";
 import { VIDEO_FAMILY_PRIORITY } from "../modelFamilies.js";
+import { resolveVideoModelQuery } from "../lib/resolveModelQuery.js";
 import { modelSupportsSeed } from "./ModelBadges.jsx";
 import SeedControls, { resolveGenerationSeed } from "./SeedControls.jsx";
 import PostGenActions from "./PostGenActions.jsx";
@@ -220,6 +221,7 @@ export default function VideoStudio({
   historyItems,
   droppedFiles,
   onFilesHandled,
+  initialModelQuery,
 }) {
   const PERSIST_KEY = "hg_video_studio_persistent";
 
@@ -462,6 +464,33 @@ export default function VideoStudio({
       hasRestored.current = true;
     }
   }, [applyControlsForModel, defaultModel.id]);
+
+  // ?model= deep-link — applied after persistence load so query wins this open
+  useEffect(() => {
+    if (!initialModelQuery) return;
+    const resolved = resolveVideoModelQuery(
+      initialModelQuery,
+      t2vModels,
+      i2vModels,
+      v2vModels,
+    );
+    if (!resolved) return;
+    setSelectedModel(resolved.modelId);
+    setImageMode(resolved.imageMode);
+    setV2vMode(resolved.v2vMode);
+    const list = resolved.v2vMode
+      ? v2vModels
+      : resolved.imageMode
+        ? i2vModels
+        : t2vModels;
+    const model = list.find((m) => m.id === resolved.modelId);
+    if (model?.name) setSelectedModelName(model.name);
+    applyControlsForModel(
+      resolved.modelId,
+      resolved.imageMode,
+      resolved.v2vMode,
+    );
+  }, [initialModelQuery, applyControlsForModel]);
 
   // Merge IndexedDB assets missing from localHistory (dual-write transition)
   useEffect(() => {

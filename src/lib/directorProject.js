@@ -1,5 +1,7 @@
 /** Director Studio project — survives page refresh (CDN URLs only; no blob:). */
 
+import { validateTimeline } from './directorTimeline.js';
+
 const STORAGE_KEY = 'director_project';
 
 export function createEmptyDirectorProject() {
@@ -15,6 +17,7 @@ export function createEmptyDirectorProject() {
         shots: [],
         stillUrls: [],
         videoUrls: [],
+        timeline: null,
         combinedVideoUrl: null,
         status: '',
         pass: 0,
@@ -31,6 +34,12 @@ export function loadDirectorProject() {
         const combined = data.combinedVideoUrl?.startsWith('blob:')
             ? null
             : (data.combinedVideoUrl || null);
+        let timeline = Object.prototype.hasOwnProperty.call(data, 'timeline')
+            ? data.timeline
+            : null;
+        if (timeline != null && !validateTimeline(timeline)) {
+            timeline = null;
+        }
         return {
             ...createEmptyDirectorProject(),
             ...data,
@@ -39,6 +48,7 @@ export function loadDirectorProject() {
             shots: Array.isArray(data.shots) ? data.shots : [],
             stillUrls: Array.isArray(data.stillUrls) ? data.stillUrls : [],
             videoUrls: Array.isArray(data.videoUrls) ? data.videoUrls : [],
+            timeline,
             combinedVideoUrl: combined,
         };
     } catch {

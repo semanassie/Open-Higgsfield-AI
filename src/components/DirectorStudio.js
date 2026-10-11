@@ -15,6 +15,8 @@ import {
 } from '../lib/directorPlanner.js';
 import { renderAllShots, renderShotStill, renderShotVideo } from '../lib/directorRender.js';
 import { combineVideosLocally, copySceneUrls } from '../lib/clientVideoCombine.js';
+import { timelineFromShots } from '../lib/directorTimeline.js';
+import { exportTimelineLocally } from '../lib/directorTimelineExport.js';
 import {
     DIRECTOR_DEFAULT_SHOT_COUNT,
     DIRECTOR_MAX_SHOT_COUNT,
@@ -456,6 +458,8 @@ export function DirectorStudio() {
                 state.stillUrls[i] = res.url;
                 state.shots[i].error = res.error;
                 state.shots[i].status = res.error ? 'error' : 'still_done';
+                state.timeline = null;
+                state.combinedVideoUrl = null;
                 persist();
                 renderShots();
                 status.textContent = res.error ? `✗ ${res.error}` : tf('director.statusStillDone', i + 1);
@@ -475,6 +479,8 @@ export function DirectorStudio() {
                 state.videoUrls[i] = res.url;
                 state.shots[i].error = res.error;
                 state.shots[i].status = res.error ? 'error' : 'done';
+                state.timeline = null;
+                state.combinedVideoUrl = null;
                 persist();
                 renderShots();
                 syncButtonStates();
@@ -487,6 +493,8 @@ export function DirectorStudio() {
                 if (!state.stillUrls) state.stillUrls = [];
                 state.videoUrls[i] = null;
                 state.shots[i].status = 'skipped';
+                state.timeline = null;
+                state.combinedVideoUrl = null;
                 persist();
                 renderShots();
                 syncButtonStates();
@@ -521,6 +529,7 @@ export function DirectorStudio() {
         state.shots = [];
         state.stillUrls = [];
         state.videoUrls = [];
+        state.timeline = null;
         state.combinedVideoUrl = null;
         updateCostHint();
         renderShots();
@@ -575,6 +584,7 @@ export function DirectorStudio() {
             state.shots = shots;
             state.stillUrls = [];
             state.videoUrls = [];
+            state.timeline = null;
             state.combinedVideoUrl = null;
             state.pass = 2;
             status.textContent = usedFallback
@@ -628,6 +638,7 @@ export function DirectorStudio() {
         if (!(state.shots || []).length) return;
         cancelFlag = false;
         setBusy(true);
+        state.timeline = null;
         state.combinedVideoUrl = null;
         try {
             const result = await renderAllShots(state.shots, {
@@ -697,6 +708,7 @@ export function DirectorStudio() {
             state.modelIds = planned.models;
             state.stillUrls = [];
             state.videoUrls = [];
+            state.timeline = null;
             state.combinedVideoUrl = null;
             state.pass = 3;
             persist();
@@ -719,10 +731,17 @@ export function DirectorStudio() {
         if (urls.length < 2) return;
         setBusy(true);
         status.textContent = t('director.statusCombine');
+        const onStatus = (m) => { status.textContent = `⏳ ${m}`; };
         try {
-            state.combinedVideoUrl = await combineVideosLocally(urls, {
-                onStatus: (m) => { status.textContent = `⏳ ${m}`; },
-            });
+            if (!state.timeline) {
+                state.timeline = timelineFromShots(state.shots, state.videoUrls);
+            }
+            try {
+                state.combinedVideoUrl = await exportTimelineLocally(state.timeline, { onStatus });
+            } catch {
+                // WebAV unsupported / export failure → keep ffmpeg concat as fallback
+                state.combinedVideoUrl = await combineVideosLocally(urls, { onStatus });
+            }
             showCombined();
             status.textContent = t('director.statusCombineDone');
             persist();

@@ -1,9 +1,30 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ImageStudio, EnhanceStudio, VideoStudio, ClippingStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, AudioStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, AssetsPanel, getUserBalance, POSTGEN_NAV_EVENT, SEND_TO_EVENT } from 'studio';
+import {
+  ImageStudio,
+  EnhanceStudio,
+  VideoStudio,
+  ClippingStudio,
+  VibeMotionStudio,
+  LipSyncStudio,
+  RecastStudio,
+  CinemaStudio,
+  AudioStudio,
+  MarketingStudio,
+  WorkflowStudio,
+  AgentStudio,
+  AppsStudio,
+  AssetsPanel,
+  McpCliStudio,
+  StudioCatalog,
+  MoodboardPanel,
+  getUserBalance,
+  POSTGEN_NAV_EVENT,
+  SEND_TO_EVENT,
+} from 'studio';
 
 const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignAgentStudio), {
   ssr: false,
@@ -16,7 +37,9 @@ const TABS = [
   { id: 'image',   label: 'Image Studio' },
   { id: 'enhance', label: 'Enhancer' },
   { id: 'video',   label: 'Video Studio' },
+  { id: 'studios', label: 'Studios' },
   { id: 'assets',  label: 'Assets' },
+  { id: 'moodboard', label: 'Moodboard' },
   { id: 'audio',   label: 'Audio Studio' },
   { id: 'clipping', label: 'AI Clipping' },
   { id: 'vibe-motion', label: 'Vibe Motion' },
@@ -27,14 +50,17 @@ const TABS = [
   { id: 'workflows', label: 'Workflows' },
   { id: 'agents', label: 'Agents' },
   { id: 'design-agent', label: 'Design Agent' },
+  { id: 'mcp-cli', label: 'MCP & CLI' },
   { id: 'apps', label: 'Explore Apps' },
 ];
 
 const STORAGE_KEY = 'muapi_key';
 
-export default function StandaloneShell() {
+function StandaloneShellInner() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const modelQuery = searchParams?.get('model') || null;
   const slug = params?.slug || []; 
   const idFromParams = params?.id;
   const tabFromParams = params?.tab;
@@ -381,12 +407,32 @@ export default function StandaloneShell() {
 
       {/* Studio Content */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
-        {activeTab === 'image'   && <ImageStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'image'   && (
+          <ImageStudio
+            apiKey={apiKey}
+            droppedFiles={droppedFiles}
+            onFilesHandled={handleFilesHandled}
+            initialModelQuery={modelQuery}
+          />
+        )}
         {activeTab === 'enhance' && <EnhanceStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-        {activeTab === 'video'   && <VideoStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'video'   && (
+          <VideoStudio
+            apiKey={apiKey}
+            droppedFiles={droppedFiles}
+            onFilesHandled={handleFilesHandled}
+            initialModelQuery={modelQuery}
+          />
+        )}
+        {activeTab === 'studios' && <StudioCatalog onOpenStudio={handleTabChange} />}
         {activeTab === 'assets' && (
           <div className="h-full w-full p-4 md:p-6 overflow-hidden">
             <AssetsPanel className="max-w-7xl mx-auto h-full" />
+          </div>
+        )}
+        {activeTab === 'moodboard' && (
+          <div className="h-full w-full p-4 md:p-6 overflow-hidden">
+            <MoodboardPanel className="max-w-7xl mx-auto h-full" />
           </div>
         )}
         {activeTab === 'clipping' && <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
@@ -399,6 +445,7 @@ export default function StandaloneShell() {
         {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         {activeTab === 'agents' && <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         {activeTab === 'design-agent' && <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'mcp-cli' && <McpCliStudio />}
         {activeTab === 'apps' && <AppsStudio apiKey={apiKey} />}
       </div>
 
@@ -440,5 +487,19 @@ export default function StandaloneShell() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StandaloneShell() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+          <div className="animate-spin text-[#22d3ee] text-3xl">◌</div>
+        </div>
+      }
+    >
+      <StandaloneShellInner />
+    </Suspense>
   );
 }

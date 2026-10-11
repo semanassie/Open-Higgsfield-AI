@@ -23,10 +23,16 @@ export { default as AgentStudio } from './components/AgentStudio';
 export { default as DesignAgentStudio } from './components/DesignAgentStudio';
 export { default as AppsStudio } from './components/AppsStudio';
 export { default as McpCliStudio } from './components/McpCliStudio';
+export { default as StudioCatalog } from './components/StudioCatalog';
+export { default as MoodboardPanel } from './components/MoodboardPanel';
 export { default as AssetsPanel } from './components/AssetsPanel';
 export { default as CompareView } from './components/CompareView';
 export * from './muapi';
 export * from './lib/assetsStore';
+export {
+  resolveImageModelQuery,
+  resolveVideoModelQuery,
+} from './lib/resolveModelQuery';
 export { useRemix } from './hooks/useRemix';
 export { useCompare } from './hooks/useCompare';
 export { useAssets } from './hooks/useAssets';

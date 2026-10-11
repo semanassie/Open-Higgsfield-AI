@@ -31,6 +31,7 @@ import FamilyModePicker, {
 } from "./FamilyModePicker.jsx";
 import { IMAGE_FAMILY_PRIORITY } from "../modelFamilies.js";
 import { saveGeneration, listAssets } from "../lib/assetsStore.js";
+import { resolveImageModelQuery } from "../lib/resolveModelQuery.js";
 import PostGenActions from "./PostGenActions.jsx";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -669,6 +670,7 @@ export default function ImageStudio({
   historyItems,
   droppedFiles,
   onFilesHandled,
+  initialModelQuery,
 }) {
   const PERSIST_KEY = "hg_image_studio_persistent";
 
@@ -748,6 +750,22 @@ export default function ImageStudio({
       console.warn("Failed to load ImageStudio persistence:", err);
     }
   }, []);
+
+  // ?model= deep-link — applied after persistence load so query wins this open
+  useEffect(() => {
+    if (!initialModelQuery) return;
+    const resolved = resolveImageModelQuery(
+      initialModelQuery,
+      t2iModels,
+      i2iModels,
+    );
+    if (!resolved) return;
+    setSelectedModelId(resolved.modelId);
+    setImageMode(resolved.imageMode);
+    const list = resolved.imageMode ? i2iModels : t2iModels;
+    const model = list.find((m) => m.id === resolved.modelId);
+    if (model?.name) setSelectedModelName(model.name);
+  }, [initialModelQuery]);
 
   // Merge IndexedDB assets missing from localHistory (dual-write transition)
   useEffect(() => {
