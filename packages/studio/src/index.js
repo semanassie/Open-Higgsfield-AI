@@ -25,6 +25,7 @@ export { default as AppsStudio } from './components/AppsStudio';
 export { default as McpCliStudio } from './components/McpCliStudio';
 export { default as StudioCatalog } from './components/StudioCatalog';
 export { default as MoodboardPanel } from './components/MoodboardPanel';
+export { default as ProductionStudio } from './components/ProductionStudio';
 export { default as AssetsPanel } from './components/AssetsPanel';
 export { default as CompareView } from './components/CompareView';
 export * from './muapi';

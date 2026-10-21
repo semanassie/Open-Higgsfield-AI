@@ -21,6 +21,7 @@ import {
   McpCliStudio,
   StudioCatalog,
   MoodboardPanel,
+  ProductionStudio,
   getUserBalance,
   POSTGEN_NAV_EVENT,
   SEND_TO_EVENT,
@@ -46,6 +47,7 @@ const TABS = [
   { id: 'lipsync', label: 'Lip Sync' },
   { id: 'body-swap', label: 'Body Swap' },
   { id: 'cinema',  label: 'Cinema Studio' },
+  { id: 'production', label: 'Production' },
   { id: 'marketing', label: 'Marketing Studio' },
   { id: 'workflows', label: 'Workflows' },
   { id: 'agents', label: 'Agents' },
@@ -440,6 +442,7 @@ function StandaloneShellInner() {
         {activeTab === 'lipsync' && <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'body-swap' && <RecastStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'cinema'  && <CinemaStudio  apiKey={apiKey} />}
+        {activeTab === 'production' && <ProductionStudio apiKey={apiKey} />}
         {activeTab === 'audio'   && <AudioStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'marketing' && <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}

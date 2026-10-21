@@ -14,9 +14,16 @@ import {
   FaProjectDiagram,
   FaRobot,
   FaPalette,
+  FaLayerGroup,
 } from "react-icons/fa";
 
 const STUDIOS = [
+  {
+    tabId: "production",
+    label: "Production",
+    description: "Reference → figures → beats → generate → assemble.",
+    icon: FaLayerGroup,
+  },
   {
     tabId: "image",
     label: "Image Studio",

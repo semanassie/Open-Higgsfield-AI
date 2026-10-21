@@ -1,4 +1,5 @@
 import { getModelById, getVideoModelById, getI2IModelById, getI2VModelById, getV2VModelById, getRecastModelById, getLipSyncModelById, getAudioModelById } from './models.js';
+import { buildLlmCall } from './llmModels.js';
 
 // In an http(s) browser we route through the host app's proxy (Next.js routes
 // under /api/* re-issue the call server-side) so api.muapi.ai CORS is bypassed.
@@ -745,4 +746,59 @@ export async function runMotionGraphicsEdit(apiKey, params) {
         duration_seconds: params.duration_seconds || 6,
     };
     return submitAndPoll("motion-graphics-edit", payload, apiKey, params.onRequestId, 900);
+}
+
+/**
+ * Text LLM call for Production Studio (and similar).
+ * Mirrors Electron MuapiClient.callLLM via buildLlmCall.
+ * @param {string} apiKey
+ * @param {{ prompt: string, systemPrompt?: string, model?: string, modelId?: string, useCase?: string }} options
+ * @returns {Promise<string>}
+ */
+export async function callLlm(apiKey, options = {}) {
+    const prompt = String(options.prompt || "");
+    if (!prompt.trim()) throw new Error("callLlm needs a prompt");
+    if (!apiKey) throw new Error("Missing API key for LLM call");
+
+    const { url, body } = buildLlmCall({
+        baseUrl: BASE_URL,
+        prompt,
+        systemPrompt: options.systemPrompt,
+        model: options.model,
+        modelId: options.modelId,
+    });
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
+        throw new Error(`LLM Failed: ${response.status} - ${errText.slice(0, 200)}`);
+    }
+
+    const data = await response.json();
+    const requestId = data.request_id || data.id;
+    let result = data;
+    if (requestId && !data.output && !data.text && !data.response && !data.outputs) {
+        result = await pollForResult(requestId, apiKey, 120, 1500);
+    }
+
+    const text =
+        result.output?.text ||
+        result.output ||
+        result.text ||
+        result.response ||
+        result.outputs?.[0] ||
+        (typeof result === "string" ? result : null);
+
+    if (!text || typeof text !== "string") {
+        const choice =
+            result.choices?.[0]?.message?.content || result.choices?.[0]?.text;
+        if (choice) return String(choice);
+        throw new Error("LLM Failed: empty response");
+    }
+    return text;
 }
