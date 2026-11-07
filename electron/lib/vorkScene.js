@@ -57,11 +57,43 @@ function pathsFor(platform) {
 function defaultBinaryCandidates({ platform, env = {}, homedir }) {
     if (!homedir) throw new Error('homedir is required');
     const p = pathsFor(platform);
+    const prefix = typeof env.PREFIX === 'string' ? env.PREFIX.trim() : '';
     if (platform === 'win32') {
         const localAppData = env.LOCALAPPDATA || p.join(homedir, 'AppData', 'Local');
-        return [p.join(localAppData, 'Programs', 'vork', 'vork.exe')];
+        const programFiles = env.ProgramFiles || p.join('C:', 'Program Files');
+        const list = [
+            p.join(localAppData, 'Programs', 'vork', 'vork.exe'),
+            p.join(homedir, '.local', 'bin', 'vork.exe'),
+            p.join(homedir, '.local', 'lib', 'vork', 'vork.exe'),
+            p.join(programFiles, 'vork', 'vork.exe'),
+        ];
+        if (prefix) {
+            list.push(p.join(prefix, 'bin', 'vork.exe'));
+            list.push(p.join(prefix, 'lib', 'vork', 'vork.exe'));
+        }
+        return list;
     }
-    return [p.join(homedir, '.local', 'bin', 'vork')];
+    const list = [
+        p.join(homedir, '.local', 'bin', 'vork'),
+        p.join(homedir, '.local', 'lib', 'vork', 'vork'),
+        p.join(homedir, 'bin', 'vork'),
+        '/usr/local/bin/vork',
+        '/usr/bin/vork',
+        '/opt/vork/vork',
+        '/opt/homebrew/bin/vork',
+    ];
+    if (prefix) {
+        list.push(p.join(prefix, 'bin', 'vork'));
+        list.push(p.join(prefix, 'lib', 'vork', 'vork'));
+    }
+    return list;
+}
+
+function missingBinaryMessage({ platform = process.platform } = {}) {
+    if (platform === 'win32') {
+        return 'vork was not found. Install the official release from https://github.com/voyager-so/vork/releases so vork.exe is at %LOCALAPPDATA%\\Programs\\vork\\vork.exe, or paste that path in VFX Studio. You can also set the VORK_BIN environment variable.';
+    }
+    return 'vork was not found. Install the official release from https://github.com/voyager-so/vork/releases so the binary is at ~/.local/bin/vork or ~/.local/lib/vork/vork, or paste that path in VFX Studio. You can also set the VORK_BIN environment variable.';
 }
 
 function pathDirectories(env = {}, platform) {
@@ -79,10 +111,12 @@ function discoverBinary({
 } = {}) {
     if (typeof existsSync !== 'function') throw new Error('existsSync is required');
     const p = pathsFor(platform);
-    const names = platform === 'win32' ? ['vork.exe'] : ['vork'];
+    const names = platform === 'win32' ? ['vork.exe', 'vork'] : ['vork'];
     const saved = typeof savedPath === 'string' ? savedPath.trim() : '';
+    const fromEnv = typeof env.VORK_BIN === 'string' ? env.VORK_BIN.trim() : '';
     const candidates = [];
     if (saved) candidates.push(saved);
+    if (fromEnv) candidates.push(fromEnv);
     candidates.push(...defaultBinaryCandidates({ platform, env, homedir }));
     for (const dir of pathDirectories(env, platform)) {
         for (const name of names) candidates.push(p.join(dir, name));
@@ -224,6 +258,7 @@ module.exports = {
     pathsFor,
     defaultBinaryCandidates,
     discoverBinary,
+    missingBinaryMessage,
     validateScene,
     upsertAsset,
     glbFiles,

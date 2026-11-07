@@ -13,6 +13,7 @@ const {
     GLB_FILE,
     discoverBinary,
     glbFiles,
+    missingBinaryMessage,
     planRender,
     stubScene,
     upsertAsset,
@@ -101,11 +102,9 @@ function probeBinary(binaryPath, spawnImpl = spawn) {
     });
 }
 
-function requireBinary(binaryPath, paths) {
-    const binary = binaryPath || resolveBinary(paths);
-    if (!binary) {
-        throw new Error('vork binary was not found. Install the official release or set its path.');
-    }
+function requireBinary(binaryPath, paths, lookup) {
+    const binary = binaryPath || (typeof lookup === 'function' ? lookup() : resolveBinary(paths));
+    if (!binary) throw new Error(missingBinaryMessage({ platform: process.platform }));
     return binary;
 }
 
@@ -182,8 +181,9 @@ function runRender({
     frameEnd,
     spawnImpl = spawn,
     onProgress,
+    lookup,
 }) {
-    const binary = requireBinary(binaryPath, paths);
+    const binary = requireBinary(binaryPath, paths, lookup);
     const plan = planRender({
         shotsRoot: paths.shotsRoot,
         scene: scene || readCurrentScene(paths),
@@ -207,10 +207,26 @@ function runRender({
         onProgress,
         task: 'render',
     }).then(() => {
-        if (!fs.existsSync(plan.outPath)) {
-            throw new Error(plan.kind === 'video'
-                ? 'vork finished without an output video'
-                : 'vork finished without an output image');
+        let outputStat = null;
+        try {
+            outputStat = fs.statSync(plan.outPath);
+        } catch {
+            outputStat = null;
+        }
+        if (!outputStat || !outputStat.isFile() || outputStat.size === 0) {
+            const message = plan.kind === 'video'
+                ? 'vork finished without an output video. Install ffmpeg, then render the clip again.'
+                : 'vork finished without an output image. Check the binary path, then run Preview again.';
+            return {
+                kind: plan.kind,
+                missing: true,
+                message,
+                profile,
+                shotPath: plan.shotPath,
+                outPath: plan.outPath,
+                frameStart: plan.frameStart,
+                frameEnd: plan.frameEnd,
+            };
         }
         onProgress?.({ engine: 'vork', task: 'render', status: 'done', progress: 1 });
         if (plan.kind === 'video') {
@@ -334,7 +350,7 @@ function register() {
 
     ipcMain.handle('vork:probe', () => {
         const binaryPath = resolveBinary(paths());
-        if (!binaryPath) return { ok: false, binaryPath: '', error: 'vork binary was not found' };
+        if (!binaryPath) return { ok: false, binaryPath: '', error: missingBinaryMessage({ platform: process.platform }) };
         return probeBinary(binaryPath);
     });
 

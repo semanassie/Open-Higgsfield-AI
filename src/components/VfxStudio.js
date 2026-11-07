@@ -67,6 +67,7 @@ export function VfxStudio() {
         if (!status.found) {
             statusEl.textContent = t('vfx.binaryMissing');
             pathRow.classList.remove('hidden');
+            showPlaceholder(t('vfx.binaryMissing'));
             return;
         }
         pathRow.classList.add('hidden');
@@ -95,7 +96,28 @@ export function VfxStudio() {
         }
     };
 
+    const showPlaceholder = (message) => {
+        resultEl.innerHTML = '';
+        const card = document.createElement('div');
+        card.dataset.placeholder = 'render';
+        card.className = 'rounded-xl border border-dashed border-white/15 bg-white/5 px-5 py-6 flex flex-col gap-2';
+        const title = document.createElement('div');
+        title.className = 'text-sm font-bold text-white';
+        title.textContent = t('vfx.outputMissingTitle');
+        const body = document.createElement('p');
+        body.className = 'text-xs leading-relaxed text-white/70 m-0 whitespace-pre-wrap';
+        body.textContent = message || t('vfx.outputMissing');
+        card.append(title, body);
+        resultEl.appendChild(card);
+        resultEl.classList.remove('hidden');
+    };
+
     const showResult = (result) => {
+        if (!result || result.missing || (result.kind !== 'video' && !result.url)) {
+            showPlaceholder(result?.message || t('vfx.outputMissing'));
+            statusEl.textContent = result?.message || t('vfx.outputMissing');
+            return;
+        }
         resultEl.innerHTML = '';
         if (result.kind === 'video') {
             const video = document.createElement('video');
@@ -131,7 +153,9 @@ export function VfxStudio() {
             await showScene();
             await showStatus();
         } catch (err) {
-            statusEl.textContent = err.message || String(err);
+            const message = err.message || String(err);
+            statusEl.textContent = message;
+            showPlaceholder(message);
         } finally {
             setBusy(false);
         }

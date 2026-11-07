@@ -7,6 +7,7 @@ const { EventEmitter } = require('events');
 
 const {
     discoverBinary,
+    missingBinaryMessage,
     planRender,
     stubScene,
     validateScene,
@@ -63,6 +64,43 @@ test('discoverBinary searches PATH after the default location', () => {
         existsSync: exists([fromPath]),
     });
     assert.equal(found, path.resolve(fromPath));
+});
+
+test('discoverBinary finds the install tree, VORK_BIN, and common prefixes', () => {
+    const home = '/home/ada';
+    const cases = [
+        { platform: 'linux', env: {}, file: path.posix.join(home, '.local', 'lib', 'vork', 'vork') },
+        { platform: 'linux', env: {}, file: path.posix.join(home, 'bin', 'vork') },
+        { platform: 'linux', env: {}, file: '/usr/local/bin/vork' },
+        { platform: 'linux', env: {}, file: '/opt/vork/vork' },
+        { platform: 'linux', env: {}, file: '/opt/homebrew/bin/vork' },
+        { platform: 'linux', env: { VORK_BIN: '/opt/custom/vork' }, file: '/opt/custom/vork' },
+        { platform: 'linux', env: { PREFIX: '/opt/prefix' }, file: '/opt/prefix/lib/vork/vork' },
+        {
+            platform: 'win32',
+            env: { LOCALAPPDATA: 'C:\\Users\\ada\\AppData\\Local' },
+            file: path.win32.join('C:\\Users\\ada\\AppData\\Local', 'Programs', 'vork', 'vork.exe'),
+            resolver: path.win32.resolve,
+        },
+    ];
+    for (const entry of cases) {
+        const resolver = entry.resolver || path.resolve;
+        const found = discoverBinary({
+            platform: entry.platform,
+            env: entry.env,
+            homedir: entry.platform === 'win32' ? 'C:\\Users\\ada' : home,
+            existsSync: exists([entry.file], resolver),
+        });
+        assert.equal(found, resolver(entry.file), entry.file);
+    }
+});
+
+test('missing binary message tells the user how to install vork', () => {
+    const message = missingBinaryMessage({ platform: 'linux' });
+    assert.match(message, /github\.com\/voyager-so\/vork\/releases/);
+    assert.match(message, /\.local\/bin\/vork/);
+    assert.match(message, /VORK_BIN/);
+    assert.doesNotMatch(message, /not found\. Install the official release or set its path/);
 });
 
 test('discoverBinary returns null when nothing is installed', () => {
@@ -226,6 +264,48 @@ test('runRender launches an mp4 with the default frame range and does not inline
     assert.equal(result.url, undefined);
     assert.equal(result.outPath, path.join(paths.shotsRoot, 'current', 'clip.mp4'));
     assert.match(result.fileUrl, /^file:/);
+});
+
+test('runRender reports a missing still instead of throwing when vork writes nothing', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vork-missing-'));
+    const paths = vorkPaths(path.join(dir, 'user-data'), {});
+    const binary = path.join(dir, 'vork');
+    fs.writeFileSync(binary, '');
+    const result = await runRender({
+        binaryPath: binary,
+        paths,
+        scene: stubScene(),
+        profile: 'std/previs',
+        spawnImpl(file, args) {
+            const child = new EventEmitter();
+            child.stdout = new EventEmitter();
+            child.stderr = new EventEmitter();
+            child.kill = () => {};
+            assert.equal(file, binary);
+            assert.equal(args[0], 'render');
+            process.nextTick(() => child.emit('close', 0));
+            return child;
+        },
+    });
+    assert.equal(result.missing, true);
+    assert.equal(result.kind, 'image');
+    assert.equal(result.url, undefined);
+    assert.match(result.message, /without an output image/);
+    assert.equal(fs.existsSync(path.join(paths.shotsRoot, 'current', 'shot.json')), true);
+});
+
+test('runRender without a binary names the install location', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vork-nobin-'));
+    const paths = vorkPaths(path.join(dir, 'user-data'), {});
+    assert.throws(
+        () => runRender({
+            paths,
+            scene: stubScene(),
+            profile: 'std/previs',
+            lookup: () => null,
+        }),
+        /github\.com\/voyager-so\/vork\/releases/
+    );
 });
 
 test('runSetup launches vork setup and records completion', async () => {
