@@ -59,6 +59,7 @@ const translations = {
         'nav.workflows': 'Workflows',
         'nav.agents': 'Agents',
         'nav.mcpcli': 'MCP & CLI',
+        'nav.vfx': 'VFX',
         'nav.settings': 'Settings',
 
         // Sidebar
@@ -301,6 +302,22 @@ const translations = {
         'director.statusCombineDone': 'Combined film ready',
         'director.statusCombineFail': (err) => `Combine failed: ${err}`,
         'director.statusCopied': (n) => `Copied ${n} clip URL(s)`,
+
+        'vfx.kicker': 'Desktop',
+        'vfx.title': 'VFX Studio',
+        'vfx.subtitle': 'The agent writes the scene. Electron launches the official vork binary. This page does not render.',
+        'vfx.desktopOnly': 'Vork runs in the desktop app. The browser does not render.',
+        'vfx.binaryMissing': 'vork was not found in the default locations. Point to the official binary.',
+        'vfx.binaryFound': (version) => `vork ready: ${version}`,
+        'vfx.binaryUnusable': (error) => `vork was found but did not start: ${error}`,
+        'vfx.pathPlaceholder': 'Path to the vork binary',
+        'vfx.savePath': 'Use this binary',
+        'vfx.previs': 'Preview',
+        'vfx.final': 'Final',
+        'vfx.rendering': 'Rendering…',
+        'vfx.renderingFor': (seconds) => `Rendering… ${seconds}s`,
+        'vfx.done': 'Still ready',
+        'vfx.cancelled': 'Render cancelled',
     },
     zh: {
         // Navigation
@@ -312,6 +329,7 @@ const translations = {
         'nav.workflows': '工作流',
         'nav.agents': '智能体',
         'nav.mcpcli': 'MCP & CLI',
+        'nav.vfx': '特效',
         'nav.settings': '设置',
 
         // Sidebar
@@ -554,6 +572,22 @@ const translations = {
         'director.statusCombineDone': '合成影片已就绪',
         'director.statusCombineFail': (err) => `合成失败：${err}`,
         'director.statusCopied': (n) => `已复制 ${n} 个片段链接`,
+
+        'vfx.kicker': '桌面',
+        'vfx.title': '特效工作室',
+        'vfx.subtitle': '代理编写场景。Electron 启动官方 vork 程序。此页面本身不渲染。',
+        'vfx.desktopOnly': 'Vork 只在桌面应用中运行。浏览器不渲染。',
+        'vfx.binaryMissing': '默认位置未找到 vork。请指向官方程序。',
+        'vfx.binaryFound': (version) => `vork 就绪：${version}`,
+        'vfx.binaryUnusable': (error) => `找到了 vork，但无法启动：${error}`,
+        'vfx.pathPlaceholder': 'vork 程序路径',
+        'vfx.savePath': '使用此程序',
+        'vfx.previs': '预览',
+        'vfx.final': '成片',
+        'vfx.rendering': '正在渲染…',
+        'vfx.renderingFor': (seconds) => `正在渲染… ${seconds} 秒`,
+        'vfx.done': '静帧已就绪',
+        'vfx.cancelled': '已取消渲染',
     },
 };
 

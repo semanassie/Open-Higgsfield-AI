@@ -27,6 +27,17 @@ contextBridge.exposeInMainWorld('localAI', {
         uploadFile: (payload) => ipcRenderer.invoke('wan2gp:upload-file', payload),
     },
 
+    // ── vork engine (official local binary, stills only in this slice) ──
+    vork: {
+        getStatus: () => ipcRenderer.invoke('vork:get-status'),
+        setBinaryPath: (binaryPath) => ipcRenderer.invoke('vork:set-binary-path', binaryPath),
+        probe: () => ipcRenderer.invoke('vork:probe'),
+        getScene: () => ipcRenderer.invoke('vork:get-scene'),
+        writeScene: (scene) => ipcRenderer.invoke('vork:write-scene', scene),
+        render: (params) => ipcRenderer.invoke('vork:render', params),
+        cancel: () => ipcRenderer.invoke('vork:cancel'),
+    },
+
     // Progress events — both engines emit on local-ai:progress
     onProgress: (callback) => {
         const listener = (_, data) => callback(data);

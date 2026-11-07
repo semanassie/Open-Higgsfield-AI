@@ -1,5 +1,6 @@
 import { SettingsModal } from './SettingsModal.js';
 import { t, getLang, setLang } from '../lib/i18n.js';
+import { isLocalAIAvailable } from '../lib/localInferenceClient.js';
 
 export function Header(navigate) {
     const header = document.createElement('header');
@@ -37,6 +38,7 @@ export function Header(navigate) {
         { label: t('nav.workflows'), page: 'workflows' },
         { label: t('nav.agents'),  page: 'agents' },
         { label: t('nav.mcpcli'),  page: 'mcp-cli' },
+        ...(isLocalAIAvailable() ? [{ label: t('nav.vfx'), page: 'vfx' }] : []),
     ];
 
     items.forEach(({ label, page }, idx) => {
