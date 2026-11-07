@@ -37,9 +37,26 @@ export const vork = {
         return window.localAI.vork.writeScene(scene);
     },
 
-    async render({ profile, scene } = {}) {
+    async setup() {
         if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.render({ profile, scene });
+        return window.localAI.vork.setup();
+    },
+
+    // Copies a .glb into the shot folder as model.glb and adds the asset node.
+    // Without a path, the desktop app opens the file dialog itself.
+    async importGltf(sourcePath) {
+        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
+        return window.localAI.vork.importGltf(sourcePath);
+    },
+
+    async render({ profile, scene, output, frameStart, frameEnd } = {}) {
+        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
+        return window.localAI.vork.render({ profile, scene, output, frameStart, frameEnd });
+    },
+
+    async openOutput(outPath) {
+        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
+        return window.localAI.vork.openOutput(outPath);
     },
 
     cancel() {

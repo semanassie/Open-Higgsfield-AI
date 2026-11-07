@@ -34,7 +34,10 @@ contextBridge.exposeInMainWorld('localAI', {
         probe: () => ipcRenderer.invoke('vork:probe'),
         getScene: () => ipcRenderer.invoke('vork:get-scene'),
         writeScene: (scene) => ipcRenderer.invoke('vork:write-scene', scene),
+        setup: () => ipcRenderer.invoke('vork:setup'),
+        importGltf: (sourcePath) => ipcRenderer.invoke('vork:import-gltf', sourcePath ? { sourcePath } : {}),
         render: (params) => ipcRenderer.invoke('vork:render', params),
+        openOutput: (outPath) => ipcRenderer.invoke('vork:open-output', outPath),
         cancel: () => ipcRenderer.invoke('vork:cancel'),
     },
 

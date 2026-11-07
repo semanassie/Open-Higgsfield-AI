@@ -1,12 +1,18 @@
 // Pure vork scene and launch planning. No Electron, no process spawn.
 // The desktop provider writes this JSON and launches the official binary.
-// MP4 frame ranges, glTF assets, and `vork setup` are intentionally absent.
+// Stills and frame-range MP4 share one scene. glTF is a .glb beside that JSON.
 
 const path = require('path');
 
 const PROFILES = Object.freeze(['std/previs', 'std/final']);
+const OUTPUTS = Object.freeze(['png', 'mp4']);
 const DEFAULT_SHOT_ID = 'current';
+const DEFAULT_FRAME_START = 0;
+const DEFAULT_FRAME_END = 47;
+const MAX_FRAME = 10000;
+const MAX_FRAME_SPAN = 600;
 const MAX_SCENE_BYTES = 512 * 1024;
+const GLB_FILE = 'model.glb';
 
 const STUB_SCENE = Object.freeze({
     version: 2,
@@ -92,21 +98,17 @@ function discoverBinary({
     return null;
 }
 
-function rejectGltf(value) {
-    if (Array.isArray(value)) {
-        value.forEach(rejectGltf);
-        return;
+function assertGlbBasename(file) {
+    if (typeof file !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.glb$/i.test(file)) {
+        throw new Error('glTF file must be a .glb in the shot folder');
     }
-    if (!value || typeof value !== 'object') return;
-    if (value.type === 'asset') {
-        throw new Error('glTF import is not part of this slice');
-    }
-    for (const entry of Object.values(value)) {
-        if (typeof entry === 'string' && /\.gl(b|tf)$/i.test(entry.trim())) {
-            throw new Error('glTF import is not part of this slice');
-        }
-        rejectGltf(entry);
-    }
+    return file;
+}
+
+function glbFiles(scene) {
+    return scene.nodes
+        .filter((node) => node && node.type === 'asset')
+        .map((node) => assertGlbBasename(node.file));
 }
 
 function validateScene(scene) {
@@ -117,12 +119,34 @@ function validateScene(scene) {
     if (!Array.isArray(scene.nodes) || scene.nodes.length === 0) {
         throw new Error('scene.nodes must be a non-empty array');
     }
-    rejectGltf(scene);
+    glbFiles(scene);
     const encoded = JSON.stringify(scene);
     if (Buffer.byteLength(encoded) > MAX_SCENE_BYTES) {
         throw new Error('scene JSON is too large');
     }
     return JSON.parse(encoded);
+}
+
+function upsertAsset(scene, file = GLB_FILE) {
+    const name = assertGlbBasename(file);
+    const nodes = (scene.nodes || []).filter((node) => !(node && node.type === 'asset' && node.file === name));
+    nodes.push({ type: 'asset', file: name });
+    return validateScene({ ...scene, nodes });
+}
+
+function normalizeFrames(frameStart, frameEnd) {
+    const start = frameStart == null ? DEFAULT_FRAME_START : frameStart;
+    const end = frameEnd == null ? DEFAULT_FRAME_END : frameEnd;
+    if (!Number.isInteger(start) || !Number.isInteger(end)) {
+        throw new Error('frame range must be integers');
+    }
+    if (start < 0 || end > MAX_FRAME || end < start) {
+        throw new Error('frame range is out of bounds');
+    }
+    if ((end - start + 1) > MAX_FRAME_SPAN) {
+        throw new Error(`frame range is longer than ${MAX_FRAME_SPAN} frames`);
+    }
+    return { frameStart: start, frameEnd: end };
 }
 
 function assertShotId(shotId) {
@@ -142,34 +166,66 @@ function assertInside(root, target) {
     return resolved;
 }
 
-function planRender({ shotsRoot, scene, profile, shotId = DEFAULT_SHOT_ID } = {}) {
+function planRender({
+    shotsRoot,
+    scene,
+    profile,
+    shotId = DEFAULT_SHOT_ID,
+    output = 'png',
+    frameStart,
+    frameEnd,
+} = {}) {
     if (!shotsRoot) throw new Error('shotsRoot is required');
     if (!PROFILES.includes(profile)) {
         throw new Error('profile must be std/previs or std/final');
     }
+    if (!OUTPUTS.includes(output)) throw new Error('output must be png or mp4');
     const validated = validateScene(scene);
     const id = assertShotId(shotId);
     const shotDir = assertInside(shotsRoot, path.join(shotsRoot, id));
     const shotPath = assertInside(shotDir, path.join(shotDir, 'shot.json'));
-    const outPath = assertInside(shotDir, path.join(shotDir, 'out.png'));
+    const frames = output === 'mp4' ? normalizeFrames(frameStart, frameEnd) : null;
+    if (output === 'png' && (frameStart != null || frameEnd != null)) {
+        throw new Error('frame range is only for mp4');
+    }
+    const outPath = assertInside(shotDir, path.join(shotDir, output === 'mp4' ? 'clip.mp4' : 'out.png'));
+    for (const file of glbFiles(validated)) {
+        assertInside(shotDir, path.join(shotDir, file));
+    }
+    const args = ['render', shotPath, '--profile', profile];
+    if (frames) {
+        args.push('--frame-start', String(frames.frameStart), '--frame-end', String(frames.frameEnd));
+    }
+    args.push('--out', outPath);
     return {
         shotDir,
         shotPath,
         outPath,
-        args: ['render', shotPath, '--profile', profile, '--out', outPath],
+        kind: output === 'mp4' ? 'video' : 'image',
+        output,
+        frameStart: frames ? frames.frameStart : null,
+        frameEnd: frames ? frames.frameEnd : null,
+        args,
         scene: validated,
     };
 }
 
 module.exports = {
     PROFILES,
+    OUTPUTS,
     DEFAULT_SHOT_ID,
+    DEFAULT_FRAME_START,
+    DEFAULT_FRAME_END,
+    MAX_FRAME_SPAN,
     MAX_SCENE_BYTES,
+    GLB_FILE,
     STUB_SCENE,
     stubScene,
     pathsFor,
     defaultBinaryCandidates,
     discoverBinary,
     validateScene,
+    upsertAsset,
+    glbFiles,
     planRender,
 };

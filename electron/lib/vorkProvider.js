@@ -1,18 +1,21 @@
 // Desktop-only vork engine. Electron launches the official binary.
-// The renderer never renders and never receives a shell. This slice covers
-// binary discovery, scene JSON written by the agent, and a still PNG launch.
-// No MP4, no glTF, no `vork setup` button.
+// The page does not render. Stills, frame-range MP4, glTF copy, and
+// `vork setup` all go through this process with shell disabled.
 
 const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { pathToFileURL } = require('url');
 const { resolveLocalAiPaths } = require('./localInferencePaths');
 const {
     DEFAULT_SHOT_ID,
+    GLB_FILE,
     discoverBinary,
+    glbFiles,
     planRender,
     stubScene,
+    upsertAsset,
     validateScene,
 } = require('./vorkScene');
 
@@ -98,35 +101,31 @@ function probeBinary(binaryPath, spawnImpl = spawn) {
     });
 }
 
-function runRender({
-    binaryPath,
-    paths,
-    scene,
-    profile,
-    spawnImpl = spawn,
-    onProgress,
-}) {
-    if (activeChild) throw new Error('A vork render is already running');
+function requireBinary(binaryPath, paths) {
     const binary = binaryPath || resolveBinary(paths);
     if (!binary) {
         throw new Error('vork binary was not found. Install the official release or set its path.');
     }
-    const plan = planRender({
-        shotsRoot: paths.shotsRoot,
-        scene: scene || readCurrentScene(paths),
-        profile,
-        shotId: DEFAULT_SHOT_ID,
-    });
-    fs.mkdirSync(plan.shotDir, { recursive: true });
-    fs.mkdirSync(paths.cacheDir, { recursive: true });
-    fs.writeFileSync(plan.shotPath, JSON.stringify(plan.scene, null, 2));
+    return binary;
+}
 
+function spawnTracked({
+    binary,
+    args,
+    cacheDir,
+    spawnImpl = spawn,
+    onProgress,
+    task,
+}) {
+    if (activeChild) throw new Error('A vork task is already running');
     return new Promise((resolve, reject) => {
+        let settled = false;
         const startedAt = Date.now();
         const send = (extra = {}) => {
             onProgress?.({
                 engine: 'vork',
-                status: 'rendering',
+                task,
+                status: task,
                 progress: 0,
                 elapsedMs: Date.now() - startedAt,
                 ...extra,
@@ -134,12 +133,11 @@ function runRender({
         };
         send({ status: 'starting' });
         const heartbeat = setInterval(() => send(), 5000);
-
         let child;
         try {
-            child = spawnImpl(binary, plan.args, {
+            child = spawnImpl(binary, args, {
                 shell: false,
-                env: { ...process.env, VORK_CACHE_DIR: paths.cacheDir },
+                env: { ...process.env, VORK_CACHE_DIR: cacheDir },
             });
         } catch (err) {
             clearInterval(heartbeat);
@@ -151,33 +149,149 @@ function runRender({
         const collect = (chunk) => { output += chunk.toString(); };
         child.stdout?.on('data', collect);
         child.stderr?.on('data', collect);
-        child.on('error', (err) => {
+        const finish = (fn, value) => {
+            if (settled) return;
+            settled = true;
             clearInterval(heartbeat);
             if (activeChild === child) activeChild = null;
-            reject(err);
-        });
+            fn(value);
+        };
+        child.on('error', (err) => finish(reject, err));
         child.on('close', (code) => {
-            clearInterval(heartbeat);
-            if (activeChild === child) activeChild = null;
             if (code !== 0) {
                 const tail = output.trim().split('\n').slice(-20).join('\n');
-                reject(new Error(tail || `vork exited ${code ?? 'signal'}`));
+                finish(reject, new Error(tail || `vork exited ${code ?? 'signal'}`));
                 return;
             }
-            if (!fs.existsSync(plan.outPath)) {
-                reject(new Error('vork finished without an output image'));
-                return;
-            }
-            try {
-                const img = fs.readFileSync(plan.outPath);
-                const url = `data:image/png;base64,${img.toString('base64')}`;
-                onProgress?.({ engine: 'vork', status: 'done', progress: 1 });
-                resolve({ url, profile, shotPath: plan.shotPath, outPath: plan.outPath });
-            } catch (err) {
-                reject(err);
-            }
+            finish(resolve, undefined);
         });
     });
+}
+
+function missingGlb(plan) {
+    return glbFiles(plan.scene).find((file) => !fs.existsSync(path.join(plan.shotDir, file)));
+}
+
+function runRender({
+    binaryPath,
+    paths,
+    scene,
+    profile,
+    output = 'png',
+    frameStart,
+    frameEnd,
+    spawnImpl = spawn,
+    onProgress,
+}) {
+    const binary = requireBinary(binaryPath, paths);
+    const plan = planRender({
+        shotsRoot: paths.shotsRoot,
+        scene: scene || readCurrentScene(paths),
+        profile,
+        shotId: DEFAULT_SHOT_ID,
+        output,
+        frameStart,
+        frameEnd,
+    });
+    fs.mkdirSync(plan.shotDir, { recursive: true });
+    fs.mkdirSync(paths.cacheDir, { recursive: true });
+    fs.writeFileSync(plan.shotPath, JSON.stringify(plan.scene, null, 2));
+    const missing = missingGlb(plan);
+    if (missing) throw new Error(`glTF file ${missing} is not in the shot folder`);
+
+    return spawnTracked({
+        binary,
+        args: plan.args,
+        cacheDir: paths.cacheDir,
+        spawnImpl,
+        onProgress,
+        task: 'render',
+    }).then(() => {
+        if (!fs.existsSync(plan.outPath)) {
+            throw new Error(plan.kind === 'video'
+                ? 'vork finished without an output video'
+                : 'vork finished without an output image');
+        }
+        onProgress?.({ engine: 'vork', task: 'render', status: 'done', progress: 1 });
+        if (plan.kind === 'video') {
+            return {
+                kind: 'video',
+                profile,
+                shotPath: plan.shotPath,
+                outPath: plan.outPath,
+                fileUrl: pathToFileURL(plan.outPath).href,
+                frameStart: plan.frameStart,
+                frameEnd: plan.frameEnd,
+            };
+        }
+        const img = fs.readFileSync(plan.outPath);
+        return {
+            kind: 'image',
+            url: `data:image/png;base64,${img.toString('base64')}`,
+            profile,
+            shotPath: plan.shotPath,
+            outPath: plan.outPath,
+        };
+    });
+}
+
+function runSetup({
+    binaryPath,
+    paths,
+    spawnImpl = spawn,
+    onProgress,
+}) {
+    const binary = requireBinary(binaryPath, paths);
+    fs.mkdirSync(paths.cacheDir, { recursive: true });
+    return spawnTracked({
+        binary,
+        args: ['setup'],
+        cacheDir: paths.cacheDir,
+        spawnImpl,
+        onProgress,
+        task: 'setup',
+    }).then(() => {
+        writeConfig(paths.configPath, {
+            ...readConfig(paths.configPath),
+            setupComplete: true,
+            setupCompletedAt: new Date().toISOString(),
+        });
+        onProgress?.({ engine: 'vork', task: 'setup', status: 'done', progress: 1 });
+        return { ok: true };
+    });
+}
+
+function importGltf({ paths, sourcePath, scene }) {
+    if (typeof sourcePath !== 'string' || !sourcePath.trim()) {
+        throw new Error('glTF file was not found');
+    }
+    const source = path.resolve(sourcePath.trim());
+    if (!/\.glb$/i.test(source)) throw new Error('only .glb files can be imported');
+    if (!fs.existsSync(source) || !fs.statSync(source).isFile()) {
+        throw new Error('glTF file was not found');
+    }
+    const next = upsertAsset(scene || readCurrentScene(paths), GLB_FILE);
+    const plan = planRender({
+        shotsRoot: paths.shotsRoot,
+        scene: next,
+        profile: 'std/previs',
+        shotId: DEFAULT_SHOT_ID,
+    });
+    fs.mkdirSync(plan.shotDir, { recursive: true });
+    const dest = path.join(plan.shotDir, GLB_FILE);
+    fs.copyFileSync(source, dest);
+    fs.writeFileSync(plan.shotPath, JSON.stringify(plan.scene, null, 2));
+    return { ok: true, file: GLB_FILE, scene: plan.scene, shotPath: plan.shotPath };
+}
+
+function assertShotFile(paths, target) {
+    if (typeof target !== 'string' || !target.trim()) throw new Error('output path is required');
+    const root = path.resolve(paths.shotsRoot);
+    const resolved = path.resolve(target);
+    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+        throw new Error('path escapes the shot directory');
+    }
+    return resolved;
 }
 
 function cancelRender() {
@@ -199,7 +313,12 @@ function register() {
     ipcMain.handle('vork:get-status', () => {
         const store = paths();
         const binaryPath = resolveBinary(store);
-        return { found: Boolean(binaryPath), binaryPath: binaryPath || '' };
+        const config = readConfig(store.configPath);
+        return {
+            found: Boolean(binaryPath),
+            binaryPath: binaryPath || '',
+            setupComplete: Boolean(config.setupComplete),
+        };
     });
 
     ipcMain.handle('vork:set-binary-path', (_event, binaryPath) => {
@@ -234,15 +353,57 @@ function register() {
         return { ok: true, shotPath: plan.shotPath, scene: plan.scene };
     });
 
-    ipcMain.handle('vork:render', (_event, params = {}) => {
+    ipcMain.handle('vork:setup', () => {
         const store = paths();
-        return runRender({
+        return runSetup({
             binaryPath: resolveBinary(store),
+            paths: store,
+            onProgress: sendProgress,
+        });
+    });
+
+    ipcMain.handle('vork:import-gltf', async (_event, params = {}) => {
+        const store = paths();
+        let sourcePath = params.sourcePath;
+        if (!sourcePath) {
+            const { dialog, BrowserWindow } = require('electron');
+            const win = BrowserWindow.getAllWindows()[0] || null;
+            const dialogOptions = {
+                title: 'Import glTF',
+                properties: ['openFile'],
+                filters: [{ name: 'glTF', extensions: ['glb'] }],
+            };
+            const picked = win
+                ? await dialog.showOpenDialog(win, dialogOptions)
+                : await dialog.showOpenDialog(dialogOptions);
+            if (picked.canceled || !picked.filePaths[0]) return { ok: false, cancelled: true };
+            sourcePath = picked.filePaths[0];
+        }
+        return importGltf({ paths: store, sourcePath });
+    });
+
+    ipcMain.handle('vork:render', async (_event, params = {}) => {
+        const store = paths();
+        const binaryPath = resolveBinary(store);
+        if (!readConfig(store.configPath).setupComplete) {
+            await runSetup({ binaryPath, paths: store, onProgress: sendProgress });
+        }
+        return runRender({
+            binaryPath,
             paths: store,
             scene: params.scene,
             profile: params.profile,
+            output: params.output,
+            frameStart: params.frameStart,
+            frameEnd: params.frameEnd,
             onProgress: sendProgress,
         });
+    });
+
+    ipcMain.handle('vork:open-output', (_event, outPath) => {
+        const { shell } = require('electron');
+        const target = assertShotFile(paths(), outPath);
+        return shell.openPath(target);
     });
 
     ipcMain.handle('vork:cancel', () => cancelRender());
@@ -255,5 +416,7 @@ module.exports = {
     readCurrentScene,
     probeBinary,
     runRender,
+    runSetup,
+    importGltf,
     cancelRender,
 };

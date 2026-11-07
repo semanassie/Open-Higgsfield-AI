@@ -48,6 +48,8 @@ Asetukset: `userData/local-ai/vork.json`. Kohtaukset: `userData/local-ai/vork/sh
 
 Haku: tallennettu polku, sitten `~/.local/bin/vork` tai `%LOCALAPPDATA%\Programs\vork\vork.exe`, sitten `PATH`.
 
-## Vielä myöhemmin
+## Toteutettu hyväksynnän jälkeen
 
-`vork setup` -nappi, ruutuvälin MP4, glTF-tuonti. Agentti täyttää saman `shot.json`-tiedoston. Videossa vain liput ja tulostiedosto vaihtuvat.
+Still-kuva, ruutuvälin MP4 samasta `shot.json`-tiedostosta, `.glb`-tuonti nimellä `model.glb`, ja `vork setup` napista. Ensimmäinen renderöinti ajaa setupin itse, jos sitä ei ole vielä tehty.
+
+Pilveä, vendoroitua binääriä ja Next-studion välilehteä ei lisätä.

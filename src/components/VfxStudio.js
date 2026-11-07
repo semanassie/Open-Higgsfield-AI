@@ -22,8 +22,11 @@ export function VfxStudio() {
         <pre id="vfx-scene" class="text-xs leading-relaxed rounded-xl border border-white/10 bg-black/40 p-4 overflow-auto max-h-80 text-white/80"></pre>
         <div id="vfx-result" class="hidden"></div>
         <div class="flex flex-wrap gap-2">
+            <button id="vfx-setup" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80">${t('vfx.setup')}</button>
+            <button id="vfx-import" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80">${t('vfx.import')}</button>
             <button id="vfx-previs" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.previs')}</button>
             <button id="vfx-final" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.final')}</button>
+            <button id="vfx-clip" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.clip')}</button>
             <button id="vfx-cancel" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-white/70">${t('common.cancel')}</button>
         </div>
     `;
@@ -32,14 +35,17 @@ export function VfxStudio() {
     const pathRow = inner.querySelector('#vfx-path');
     const sceneEl = inner.querySelector('#vfx-scene');
     const resultEl = inner.querySelector('#vfx-result');
+    const setupBtn = inner.querySelector('#vfx-setup');
+    const importBtn = inner.querySelector('#vfx-import');
     const previsBtn = inner.querySelector('#vfx-previs');
     const finalBtn = inner.querySelector('#vfx-final');
+    const clipBtn = inner.querySelector('#vfx-clip');
     const cancelBtn = inner.querySelector('#vfx-cancel');
+    const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn];
 
     if (!isLocalAIAvailable()) {
         statusEl.textContent = t('vfx.desktopOnly');
-        previsBtn.disabled = true;
-        finalBtn.disabled = true;
+        actionBtns.forEach((btn) => { btn.disabled = true; });
         cancelBtn.disabled = true;
         return container;
     }
@@ -48,8 +54,7 @@ export function VfxStudio() {
 
     const setBusy = (busy) => {
         rendering = busy;
-        previsBtn.disabled = busy;
-        finalBtn.disabled = busy;
+        actionBtns.forEach((btn) => { btn.disabled = busy; });
     };
 
     const showScene = async () => {
@@ -66,9 +71,13 @@ export function VfxStudio() {
         }
         pathRow.classList.add('hidden');
         const probe = await vork.probe();
-        statusEl.textContent = probe.ok
-            ? tf('vfx.binaryFound', probe.version || status.binaryPath)
-            : tf('vfx.binaryUnusable', probe.error || status.binaryPath);
+        if (!probe.ok) {
+            statusEl.textContent = tf('vfx.binaryUnusable', probe.error || status.binaryPath);
+            return;
+        }
+        statusEl.textContent = status.setupComplete
+            ? `${tf('vfx.binaryFound', probe.version || status.binaryPath)} · ${t('vfx.setupDone')}`
+            : tf('vfx.binaryFound', probe.version || status.binaryPath);
     };
 
     pathRow.innerHTML = `
@@ -86,22 +95,41 @@ export function VfxStudio() {
         }
     };
 
-    const renderProfile = async (profile) => {
+    const showResult = (result) => {
+        resultEl.innerHTML = '';
+        if (result.kind === 'video') {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.className = 'w-full rounded-xl border border-white/10';
+            video.src = result.fileUrl;
+            resultEl.appendChild(video);
+            const open = document.createElement('button');
+            open.className = 'mt-2 px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80';
+            open.textContent = t('vfx.openClip');
+            open.onclick = () => vork.openOutput(result.outPath);
+            resultEl.appendChild(open);
+            statusEl.textContent = t('vfx.clipDone');
+        } else {
+            const img = document.createElement('img');
+            img.src = result.url;
+            img.alt = t('vfx.title');
+            img.className = 'w-full rounded-xl border border-white/10';
+            resultEl.appendChild(img);
+            statusEl.textContent = t('vfx.done');
+        }
+        resultEl.classList.remove('hidden');
+    };
+
+    const renderJob = async (params) => {
         if (rendering) return;
         setBusy(true);
         statusEl.textContent = t('vfx.rendering');
         resultEl.classList.add('hidden');
         try {
-            const result = await vork.render({ profile });
-            const img = document.createElement('img');
-            img.src = result.url;
-            img.alt = t('vfx.title');
-            img.className = 'w-full rounded-xl border border-white/10';
-            resultEl.innerHTML = '';
-            resultEl.appendChild(img);
-            resultEl.classList.remove('hidden');
-            statusEl.textContent = t('vfx.done');
+            const result = await vork.render(params);
+            showResult(result);
             await showScene();
+            await showStatus();
         } catch (err) {
             statusEl.textContent = err.message || String(err);
         } finally {
@@ -109,8 +137,40 @@ export function VfxStudio() {
         }
     };
 
-    previsBtn.onclick = () => renderProfile('std/previs');
-    finalBtn.onclick = () => renderProfile('std/final');
+    setupBtn.onclick = async () => {
+        if (rendering) return;
+        setBusy(true);
+        statusEl.textContent = t('vfx.setup');
+        try {
+            await vork.setup();
+            statusEl.textContent = t('vfx.setupDone');
+            await showStatus();
+        } catch (err) {
+            statusEl.textContent = err.message || String(err);
+        } finally {
+            setBusy(false);
+        }
+    };
+    importBtn.onclick = async () => {
+        if (rendering) return;
+        setBusy(true);
+        try {
+            const imported = await vork.importGltf();
+            if (imported && imported.cancelled) {
+                statusEl.textContent = t('vfx.cancelled');
+            } else {
+                statusEl.textContent = t('vfx.imported');
+                await showScene();
+            }
+        } catch (err) {
+            statusEl.textContent = err.message || String(err);
+        } finally {
+            setBusy(false);
+        }
+    };
+    previsBtn.onclick = () => renderJob({ profile: 'std/previs' });
+    finalBtn.onclick = () => renderJob({ profile: 'std/final' });
+    clipBtn.onclick = () => renderJob({ profile: 'std/final', output: 'mp4' });
     cancelBtn.onclick = () => {
         vork.cancel();
         setBusy(false);
@@ -121,7 +181,9 @@ export function VfxStudio() {
         if (data?.engine !== 'vork') return;
         if (data.status === 'done') return;
         const seconds = Math.round((data.elapsedMs || 0) / 1000);
-        statusEl.textContent = tf('vfx.renderingFor', seconds);
+        statusEl.textContent = data.task === 'setup'
+            ? tf('vfx.setupFor', seconds)
+            : tf('vfx.renderingFor', seconds);
     });
 
     const detach = new MutationObserver(() => {
