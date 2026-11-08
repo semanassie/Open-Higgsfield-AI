@@ -63,4 +63,37 @@ export const vork = {
         if (!isLocalAIAvailable()) return;
         window.localAI.vork.cancel();
     },
+
+    async runpodStatus() {
+        const fallback = unavailable({
+            encryptionAvailable: false,
+            hasKey: false,
+            publicKey: '',
+            billingUrl: 'https://console.runpod.io/user/billing',
+            desktopOnly: true,
+        });
+        if (fallback) return fallback;
+        return window.localAI.vork.runpodStatus();
+    },
+
+    async setRunpodKey(apiKey) {
+        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
+        return window.localAI.vork.setRunpodKey(apiKey);
+    },
+
+    async runpodQuote() {
+        const fallback = unavailable({ ok: false, error: 'Vork is only available in the desktop app.' });
+        if (fallback) return fallback;
+        return window.localAI.vork.runpodQuote();
+    },
+
+    async renderRunpod({ profile, scene } = {}) {
+        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
+        return window.localAI.vork.renderRunpod({ profile, scene });
+    },
+
+    async openRunpodBilling() {
+        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
+        return window.localAI.vork.openRunpodBilling();
+    },
 };

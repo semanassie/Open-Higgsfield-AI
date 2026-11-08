@@ -8,6 +8,7 @@ const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const { resolveLocalAiPaths } = require('./localInferencePaths');
+const runpod = require('./vorkRunpod');
 const {
     DEFAULT_SHOT_ID,
     GLB_FILE,
@@ -315,6 +316,7 @@ function cancelRender() {
         activeChild.kill('SIGTERM');
         activeChild = null;
     }
+    runpod.cancelRemote();
     return { ok: true };
 }
 
@@ -399,6 +401,7 @@ function register() {
     });
 
     ipcMain.handle('vork:render', async (_event, params = {}) => {
+        if (runpod.isRemoteBusy()) throw new Error('A vork task is already running');
         const store = paths();
         const binaryPath = resolveBinary(store);
         if (!readConfig(store.configPath).setupComplete) {
@@ -420,6 +423,39 @@ function register() {
         const { shell } = require('electron');
         const target = assertShotFile(paths(), outPath);
         return shell.openPath(target);
+    });
+
+    ipcMain.handle('vork:runpod-status', () => {
+        const { safeStorage } = require('electron');
+        return runpod.localStatus({ paths: paths(), safeStorage });
+    });
+
+    ipcMain.handle('vork:runpod-set-key', (_event, apiKey) => {
+        const { safeStorage } = require('electron');
+        return runpod.storeApiKey({ paths: paths(), apiKey, safeStorage });
+    });
+
+    ipcMain.handle('vork:runpod-quote', () => {
+        const { safeStorage } = require('electron');
+        return runpod.accountQuote({ paths: paths(), safeStorage });
+    });
+
+    ipcMain.handle('vork:runpod-render', (_event, params = {}) => {
+        if (activeChild) throw new Error('A vork task is already running');
+        const { safeStorage } = require('electron');
+        return runpod.runRemoteStill({
+            paths: paths(),
+            scene: params.scene,
+            profile: params.profile,
+            safeStorage,
+            onProgress: sendProgress,
+            keepPod: params.keepPod === true,
+        });
+    });
+
+    ipcMain.handle('vork:runpod-open-billing', () => {
+        const { shell } = require('electron');
+        return shell.openExternal(runpod.BILLING_URL);
     });
 
     ipcMain.handle('vork:cancel', () => cancelRender());

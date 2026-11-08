@@ -29,6 +29,18 @@ export function VfxStudio() {
             <button id="vfx-clip" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.clip')}</button>
             <button id="vfx-cancel" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-white/70">${t('common.cancel')}</button>
         </div>
+        <div id="vfx-runpod" class="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3">
+            <div class="text-[11px] font-bold uppercase tracking-widest text-secondary">${t('vfx.runpodTitle')}</div>
+            <p class="text-xs text-white/70 m-0">${t('vfx.runpodHint')}</p>
+            <div id="vfx-runpod-balance" class="text-sm text-white/80"></div>
+            <div id="vfx-runpod-keyrow" class="hidden flex gap-2"></div>
+            <div id="vfx-runpod-confirm" class="hidden rounded-lg border border-white/10 bg-black/30 p-3 flex flex-col gap-2"></div>
+            <div class="flex flex-wrap gap-2">
+                <button id="vfx-runpod-previs" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.runpodPrevis')}</button>
+                <button id="vfx-runpod-final" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.runpodFinal')}</button>
+                <button id="vfx-runpod-billing" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80">${t('vfx.runpodTopUp')}</button>
+            </div>
+        </div>
     `;
 
     const statusEl = inner.querySelector('#vfx-status');
@@ -41,12 +53,20 @@ export function VfxStudio() {
     const finalBtn = inner.querySelector('#vfx-final');
     const clipBtn = inner.querySelector('#vfx-clip');
     const cancelBtn = inner.querySelector('#vfx-cancel');
-    const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn];
+    const runpodBalance = inner.querySelector('#vfx-runpod-balance');
+    const runpodKeyRow = inner.querySelector('#vfx-runpod-keyrow');
+    const runpodConfirm = inner.querySelector('#vfx-runpod-confirm');
+    const runpodPrevis = inner.querySelector('#vfx-runpod-previs');
+    const runpodFinal = inner.querySelector('#vfx-runpod-final');
+    const runpodBilling = inner.querySelector('#vfx-runpod-billing');
+    const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn, runpodPrevis, runpodFinal];
 
     if (!isLocalAIAvailable()) {
         statusEl.textContent = t('vfx.desktopOnly');
         actionBtns.forEach((btn) => { btn.disabled = true; });
         cancelBtn.disabled = true;
+        runpodBilling.disabled = true;
+        runpodBalance.textContent = t('vfx.desktopOnly');
         return container;
     }
 
@@ -143,15 +163,19 @@ export function VfxStudio() {
     };
 
     const renderJob = async (params) => {
-        if (rendering) return;
+        if (rendering && !params.remote) return;
         setBusy(true);
+        runpodConfirm.classList.add('hidden');
         statusEl.textContent = t('vfx.rendering');
         resultEl.classList.add('hidden');
         try {
-            const result = await vork.render(params);
+            const result = params.remote
+                ? await vork.renderRunpod({ profile: params.profile })
+                : await vork.render(params);
             showResult(result);
             await showScene();
             await showStatus();
+            if (params.remote) await refreshRunpod();
         } catch (err) {
             const message = err.message || String(err);
             statusEl.textContent = message;
@@ -195,19 +219,133 @@ export function VfxStudio() {
     previsBtn.onclick = () => renderJob({ profile: 'std/previs' });
     finalBtn.onclick = () => renderJob({ profile: 'std/final' });
     clipBtn.onclick = () => renderJob({ profile: 'std/final', output: 'mp4' });
+    runpodPrevis.onclick = () => askRunpod('std/previs');
+    runpodFinal.onclick = () => askRunpod('std/final');
     cancelBtn.onclick = () => {
         vork.cancel();
         setBusy(false);
         statusEl.textContent = t('vfx.cancelled');
     };
 
+    const progressText = (data) => {
+        const seconds = Math.round((data.elapsedMs || 0) / 1000);
+        const key = {
+            setup: 'vfx.setupFor',
+            rent: 'vfx.runpodRenting',
+            wait: 'vfx.runpodWaiting',
+            install: 'vfx.runpodInstalling',
+            transfer: 'vfx.runpodTransfer',
+            fetch: 'vfx.runpodFetch',
+            shutdown: 'vfx.runpodStopping',
+        }[data.task];
+        if (key) return tf(key, seconds);
+        return tf('vfx.renderingFor', seconds);
+    };
+
+    const showRunpodBalance = (quote) => {
+        runpodBalance.classList.remove('text-amber-300');
+        if (!quote || quote.ok === false) {
+            runpodBalance.textContent = quote?.error || t('vfx.runpodBalanceUnknown');
+            return;
+        }
+        const amount = `${quote.amount} ${quote.currency || 'USD'}`;
+        const price = quote.hourlyPrice == null
+            ? t('vfx.runpodPriceUnknown')
+            : tf('vfx.runpodPrice', quote.hourlyPrice, quote.currency || 'USD');
+        runpodBalance.textContent = `${tf('vfx.runpodBalance', amount)} · ${price}`;
+        if (quote.low) runpodBalance.classList.add('text-amber-300');
+    };
+
+    const refreshRunpod = async () => {
+        const status = await vork.runpodStatus();
+        if (!status.encryptionAvailable) {
+            runpodBalance.textContent = t('vfx.runpodNoEncryption');
+            runpodPrevis.disabled = true;
+            runpodFinal.disabled = true;
+            runpodKeyRow.classList.add('hidden');
+            return;
+        }
+        runpodKeyRow.classList.remove('hidden');
+        if (!status.hasKey) {
+            runpodBalance.textContent = t('vfx.runpodKeyMissing');
+            return;
+        }
+        const quote = await vork.runpodQuote();
+        showRunpodBalance(quote);
+        if (status.publicKey && status.sshRegistered === false) {
+            statusEl.textContent = t('vfx.runpodKeyUnregistered');
+        }
+    };
+
+    runpodKeyRow.innerHTML = `
+        <input id="vfx-runpod-key" type="password" autocomplete="off" placeholder="${t('vfx.runpodKeyPlaceholder')}"
+            class="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs text-white outline-none">
+        <button id="vfx-runpod-save" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.runpodSaveKey')}</button>
+    `;
+    runpodKeyRow.querySelector('#vfx-runpod-save').onclick = async () => {
+        const value = runpodKeyRow.querySelector('#vfx-runpod-key').value;
+        try {
+            await vork.setRunpodKey(value);
+            runpodKeyRow.querySelector('#vfx-runpod-key').value = '';
+            await refreshRunpod();
+        } catch (err) {
+            runpodBalance.textContent = err.message || String(err);
+        }
+    };
+    runpodBilling.onclick = async () => {
+        try {
+            await vork.openRunpodBilling();
+            await refreshRunpod();
+        } catch (err) {
+            statusEl.textContent = err.message || String(err);
+        }
+    };
+
+    const askRunpod = async (profile) => {
+        if (rendering) return;
+        setBusy(true);
+        runpodConfirm.classList.add('hidden');
+        try {
+            const quote = await vork.runpodQuote();
+            showRunpodBalance(quote);
+            if (!quote?.ok) {
+                setBusy(false);
+                return;
+            }
+            const amount = `${quote.amount} ${quote.currency || 'USD'}`;
+            const price = quote.hourlyPrice == null
+                ? t('vfx.runpodPriceUnknown')
+                : tf('vfx.runpodPrice', quote.hourlyPrice, quote.currency || 'USD');
+            runpodConfirm.innerHTML = '';
+            const line = document.createElement('p');
+            line.className = `text-xs m-0 ${quote.low ? 'text-amber-300' : 'text-white/80'}`;
+            line.textContent = tf('vfx.runpodConfirm', amount, price);
+            const row = document.createElement('div');
+            row.className = 'flex gap-2';
+            const go = document.createElement('button');
+            go.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black';
+            go.textContent = t('vfx.runpodConfirmButton');
+            const stop = document.createElement('button');
+            stop.className = 'px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80';
+            stop.textContent = t('common.cancel');
+            stop.onclick = () => {
+                runpodConfirm.classList.add('hidden');
+                setBusy(false);
+            };
+            go.onclick = () => renderJob({ profile, remote: true });
+            row.append(go, stop);
+            runpodConfirm.append(line, row);
+            runpodConfirm.classList.remove('hidden');
+        } catch (err) {
+            runpodBalance.textContent = err.message || String(err);
+            setBusy(false);
+        }
+    };
+
     const offProgress = localAI.onProgress((data) => {
         if (data?.engine !== 'vork') return;
         if (data.status === 'done') return;
-        const seconds = Math.round((data.elapsedMs || 0) / 1000);
-        statusEl.textContent = data.task === 'setup'
-            ? tf('vfx.setupFor', seconds)
-            : tf('vfx.renderingFor', seconds);
+        statusEl.textContent = progressText(data);
     });
 
     const detach = new MutationObserver(() => {
@@ -222,6 +360,7 @@ export function VfxStudio() {
 
     showStatus().catch((err) => { statusEl.textContent = err.message || String(err); });
     showScene().catch(() => { sceneEl.textContent = ''; });
+    refreshRunpod().catch((err) => { runpodBalance.textContent = err.message || String(err); });
 
     return container;
 }

@@ -39,6 +39,11 @@ contextBridge.exposeInMainWorld('localAI', {
         render: (params) => ipcRenderer.invoke('vork:render', params),
         openOutput: (outPath) => ipcRenderer.invoke('vork:open-output', outPath),
         cancel: () => ipcRenderer.invoke('vork:cancel'),
+        runpodStatus: () => ipcRenderer.invoke('vork:runpod-status'),
+        setRunpodKey: (apiKey) => ipcRenderer.invoke('vork:runpod-set-key', apiKey),
+        runpodQuote: () => ipcRenderer.invoke('vork:runpod-quote'),
+        renderRunpod: (params) => ipcRenderer.invoke('vork:runpod-render', params),
+        openRunpodBilling: () => ipcRenderer.invoke('vork:runpod-open-billing'),
     },
 
     // Progress events — both engines emit on local-ai:progress

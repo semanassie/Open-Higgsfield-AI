@@ -123,6 +123,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.4.1",
+    "ssh2": "^1.17.0",
     "studio": "*",
     "workflow-builder": "file:./packages/Vibe-Workflow/packages/workflow-builder"
   },

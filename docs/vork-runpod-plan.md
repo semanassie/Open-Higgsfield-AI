@@ -1,6 +1,6 @@
 # Vork RunPodissa — ehdotus
 
-Tämä on ehdotus, ei osa 7.11.2026 hyväksyttyä suunnitelmaa. Koodia ei ole tehty. Paikallinen renderöinti jää ennalleen.
+Tämä on ehdotus, ei osa 7.11.2026 hyväksyttyä suunnitelmaa. Paikallinen renderöinti jää ennalleen. Toteutus käyttää RunPodin REST v2 -rajapintaa (`https://api.runpod.io/v2`), koska v1 poistuu 15.11.2026. Saldo haetaan GraphQL-kutsulla `myself { clientBalance }`, koska REST ei palauta sitä. Vaiheet ovat samat kuin alla.
 
 Hyväksytty suunnitelma (`docs/vork-integration-plan.md`) käynnistää virallisen binäärin käyttäjän koneella. Tämä ehdotus lisää toisen reitin: työpöytä vuokraa käyttäjän omalla RunPod-tilillä yhden RTX 4090 -podin, ajaa saman still-renderöinnin siellä ja sammuttaa podin. Selain ei edelleenkään renderöi. Next, MuAPI ja `packages/studio` eivät osallistu.
 
