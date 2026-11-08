@@ -40,6 +40,10 @@ function navigate(page) {
     import('./components/McpCliStudio.js').then(({ McpCliStudio }) => {
       contentArea.appendChild(McpCliStudio());
     });
+  } else if (page === 'vfx') {
+    import('./components/VfxStudio.js').then(({ VfxStudio }) => {
+      contentArea.appendChild(VfxStudio());
+    });
   }
 }
 
