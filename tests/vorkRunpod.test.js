@@ -10,6 +10,7 @@ const {
     BILLING_URL,
     GPU_4090,
     POD_IMAGE,
+    sshEndpoint,
     accountQuote,
     createBody,
     ensureSshKey,
@@ -68,17 +69,33 @@ test('SSH public key is OpenSSH ed25519 and the private key stays encrypted', ()
     const paths = tempPaths();
     const ssh = ensureSshKey({ paths, safeStorage: safeStorage() });
     assert.match(ssh.publicKey, /^ssh-ed25519 /);
-    assert.match(ssh.privateKey, /BEGIN PRIVATE KEY/);
+    assert.match(ssh.privateKey, /OPENSSH PRIVATE KEY/);
     const stored = fs.readFileSync(path.join(paths.dataDir, 'vork-runpod-ssh.bin')).toString();
     assert.equal(stored.startsWith('enc:'), true);
     assert.notEqual(stored, ssh.privateKey);
+});
+
+test('ssh endpoint prefers the direct host from the pod', () => {
+    const endpoint = sshEndpoint({
+        status: 'RUNNING',
+        ssh: { direct: { host: '203.0.113.10', port: 22123, username: 'root' }, proxy: null },
+    });
+    assert.equal(endpoint.host, '203.0.113.10');
+    assert.equal(endpoint.sftp, true);
+    const proxy = sshEndpoint({
+        ssh: { direct: null, proxy: { host: 'ssh.runpod.io', port: 22, username: 'pod-token' } },
+    });
+    assert.equal(proxy.sftp, false);
+    assert.equal(proxy.host, 'ssh.runpod.io');
 });
 
 test('create body requests one on-demand 4090 and enables graphics', () => {
     const body = createBody('vork-abc', 'COMMUNITY');
     assert.equal(body.gpu.id, GPU_4090);
     assert.equal(body.gpu.count, 1);
-    assert.equal(body.interruptible, false);
+    assert.equal(body.cloud, 'COMMUNITY');
+    assert.equal(body.startSsh, true);
+    assert.equal(body.interruptible, undefined);
     assert.equal(body.env.NVIDIA_DRIVER_CAPABILITIES, 'all');
     assert.equal(body.image, POD_IMAGE);
     assert.equal(body.disk >= 20, true);

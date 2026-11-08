@@ -73,7 +73,7 @@ function wrap(conn) {
     return {
         exec(command) {
             return new Promise((resolve, reject) => {
-                conn.exec(command, (err, stream) => {
+                conn.exec(command, { pty: true }, (err, stream) => {
                     if (err) {
                         reject(err);
                         return;
@@ -124,6 +124,53 @@ function wrap(conn) {
     };
 }
 
+function retryableSsh(message) {
+    return /container not found|is not running|not ready|connection refused|timed out|ECONNREFUSED|error response from daemon/i.test(message);
+}
+
+async function openReadySession({ connect, host, port, username, privateKey, sleep }) {
+    const deadline = Date.now() + 10 * 60 * 1000;
+    let last = 'SSH is not ready';
+    while (Date.now() <= deadline) {
+        let session;
+        try {
+            session = await connect({ host, port, username, privateKey });
+            const probe = await session.exec('echo READY');
+            const text = `${probe.stdout || ''}\n${probe.stderr || ''}`;
+            if (probe.code === 0 && !retryableSsh(text)) return session;
+            last = tail(probe) || text.trim() || last;
+            session.close();
+            if (probe.code !== 0 && !retryableSsh(text) && !retryableSsh(last)) throw new Error(last);
+        } catch (error) {
+            try { session?.close(); } catch { /* already closed */ }
+            last = error.message || last;
+            if (!retryableSsh(last)) throw error;
+        }
+        await sleep(5000);
+    }
+    throw new Error(last);
+}
+
+async function putRemote(session, localPath, remotePath, sftp) {
+    if (sftp !== false) {
+        await session.putFile(localPath, remotePath);
+        return;
+    }
+    const payload = fs.readFileSync(localPath).toString('base64');
+    const written = await session.exec(`base64 -d > ${remotePath} << 'B64'\n${payload}\nB64`);
+    if (written.code !== 0) throw new Error(tail(written) || 'could not copy the scene to the pod');
+}
+
+async function getRemote(session, remotePath, localPath, sftp) {
+    if (sftp !== false) {
+        await session.getFile(remotePath, localPath);
+        return;
+    }
+    const encoded = await session.exec(`base64 ${remotePath}`);
+    if (encoded.code !== 0) throw new Error(tail(encoded) || 'could not read the render from the pod');
+    fs.writeFileSync(localPath, Buffer.from(encoded.stdout.replace(/\s+/g, ''), 'base64'));
+}
+
 function tail(result) {
     return `${result.stderr || ''}\n${result.stdout || ''}`.trim().split('\n').slice(-20).join('\n');
 }
@@ -132,7 +179,10 @@ async function renderOnPod({
     connect = defaultConnect,
     host,
     port,
+    username = 'root',
+    sftp = true,
     privateKey,
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     profile,
     output = 'png',
     frameStart,
@@ -143,26 +193,38 @@ async function renderOnPod({
     onProgress,
 }) {
     const remoteOut = output === 'mp4' ? '/tmp/clip.mp4' : '/tmp/final.png';
-    const session = await connect({ host, port, username: 'root', privateKey });
-    try {
-        onProgress?.({ engine: 'vork', task: 'install', status: 'install' });
-        const installed = await session.exec(installScript());
-        if (installed.code !== 0 || !installed.stdout.includes(VORK_VERSION)) {
-            throw new Error(tail(installed) || 'vork install failed on the pod');
+    const deadline = Date.now() + 10 * 60 * 1000;
+    let last = 'SSH is not ready';
+    while (Date.now() <= deadline) {
+        const session = await openReadySession({ connect, host, port, username, privateKey, sleep });
+        try {
+            onProgress?.({ engine: 'vork', task: 'install', status: 'install' });
+            const installed = await session.exec(installScript());
+            const installText = `${installed.stdout || ''}\n${installed.stderr || ''}`;
+            if (retryableSsh(installText)) {
+                last = tail(installed) || 'container is not running';
+                await sleep(5000);
+                continue;
+            }
+            if (installed.code !== 0 || !installed.stdout.includes(VORK_VERSION)) {
+                throw new Error(tail(installed) || 'vork install failed on the pod');
+            }
+            onProgress?.({ engine: 'vork', task: 'transfer', status: 'transfer' });
+            await putRemote(session, shotPath, '/tmp/shot.json', sftp);
+            if (glbPath) await putRemote(session, glbPath, '/tmp/model.glb', sftp);
+            onProgress?.({ engine: 'vork', task: 'render', status: 'render' });
+            const rendered = await session.exec(renderCommand({ profile, output, frameStart, frameEnd }));
+            if (rendered.code !== 0) {
+                throw new Error(tail(rendered) || 'vork render failed on the pod');
+            }
+            onProgress?.({ engine: 'vork', task: 'fetch', status: 'fetch' });
+            await getRemote(session, remoteOut, outPath, sftp);
+            return;
+        } finally {
+            session.close();
         }
-        onProgress?.({ engine: 'vork', task: 'transfer', status: 'transfer' });
-        await session.putFile(shotPath, '/tmp/shot.json');
-        if (glbPath) await session.putFile(glbPath, '/tmp/model.glb');
-        onProgress?.({ engine: 'vork', task: 'render', status: 'render' });
-        const rendered = await session.exec(renderCommand({ profile, output, frameStart, frameEnd }));
-        if (rendered.code !== 0) {
-            throw new Error(tail(rendered) || 'vork render failed on the pod');
-        }
-        onProgress?.({ engine: 'vork', task: 'fetch', status: 'fetch' });
-        await session.getFile(remoteOut, outPath);
-    } finally {
-        session.close();
     }
+    throw new Error(last);
 }
 
 module.exports = {

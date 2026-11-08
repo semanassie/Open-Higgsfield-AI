@@ -4,7 +4,9 @@
 // GraphQL because the REST API does not return it.
 
 const crypto = require('crypto');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const { planRender, glbFiles, stubScene, DEFAULT_SHOT_ID } = require('./vorkScene');
@@ -62,16 +64,18 @@ function clearApiKey(paths) {
     if (fs.existsSync(file)) fs.unlinkSync(file);
 }
 
-function openSshPublicKey(publicKey) {
-    const der = publicKey.export({ type: 'spki', format: 'der' });
-    const raw = der.subarray(der.length - 32);
-    const frame = (buf) => {
-        const len = Buffer.alloc(4);
-        len.writeUInt32BE(buf.length);
-        return Buffer.concat([len, buf]);
-    };
-    const blob = Buffer.concat([frame(Buffer.from('ssh-ed25519')), frame(raw)]);
-    return `ssh-ed25519 ${blob.toString('base64')} vork-desktop`;
+function generateSshKeyPair() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vork-ssh-'));
+    const file = path.join(dir, 'id_ed25519');
+    try {
+        execFileSync('ssh-keygen', ['-q', '-t', 'ed25519', '-N', '', '-f', file, '-C', 'vork-desktop'], { stdio: 'ignore' });
+        return {
+            privateKey: fs.readFileSync(file, 'utf8'),
+            publicKey: fs.readFileSync(`${file}.pub`, 'utf8').trim(),
+        };
+    } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+    }
 }
 
 function ensureSshKey({ paths, safeStorage }) {
@@ -82,14 +86,15 @@ function ensureSshKey({ paths, safeStorage }) {
     const pubFile = sshPublicPath(paths);
     const privFile = sshPrivatePath(paths);
     if (fs.existsSync(pubFile) && fs.existsSync(privFile)) {
-        return {
-            publicKey: fs.readFileSync(pubFile, 'utf8').trim(),
-            privateKey: safeStorage.decryptString(fs.readFileSync(privFile)),
-        };
+        const privateKey = safeStorage.decryptString(fs.readFileSync(privFile));
+        if (privateKey.includes('OPENSSH PRIVATE KEY')) {
+            return {
+                publicKey: fs.readFileSync(pubFile, 'utf8').trim(),
+                privateKey,
+            };
+        }
     }
-    const pair = crypto.generateKeyPairSync('ed25519');
-    const privateKey = pair.privateKey.export({ type: 'pkcs8', format: 'pem' });
-    const publicKey = openSshPublicKey(pair.publicKey);
+    const { privateKey, publicKey } = generateSshKeyPair();
     fs.writeFileSync(privFile, safeStorage.encryptString(privateKey));
     fs.writeFileSync(pubFile, `${publicKey}\n`);
     return { publicKey, privateKey };
@@ -183,6 +188,24 @@ function unwrapPod(body) {
 
 function sshEndpoint(pod) {
     if (!pod) return null;
+    const direct = pod.ssh && pod.ssh.direct;
+    if (direct && direct.host && direct.port) {
+        return {
+            host: direct.host,
+            port: Number(direct.port),
+            username: direct.username || 'root',
+            sftp: true,
+        };
+    }
+    const proxy = pod.ssh && pod.ssh.proxy;
+    if (proxy && proxy.host && proxy.port && proxy.username) {
+        return {
+            host: proxy.host,
+            port: Number(proxy.port),
+            username: proxy.username,
+            sftp: false,
+        };
+    }
     const host = pod.publicIp || pod.ip || pod.runtime?.publicIp || null;
     const mappings = pod.portMappings || pod.runtime?.portMappings || null;
     let port = mappings ? Number(mappings['22'] || mappings[22]) : 0;
@@ -192,7 +215,7 @@ function sshEndpoint(pod) {
         if (ssh) port = Number(ssh.publicPort);
     }
     if (!host || !port) return null;
-    return { host, port };
+    return { host, port, username: 'root', sftp: true };
 }
 
 function isRunning(pod) {
@@ -204,41 +227,41 @@ function podName() {
     return `vork-${crypto.randomBytes(4).toString('hex')}`;
 }
 
-function createBody(name, cloudType) {
+function createBody(name, cloud) {
     return {
         name,
         image: POD_IMAGE,
+        cloud,
         gpu: { id: GPU_4090, count: 1 },
         disk: 20,
         ports: ['22/tcp'],
         env: { NVIDIA_DRIVER_CAPABILITIES: 'all' },
-        cloudType,
-        interruptible: false,
+        startSsh: true,
     };
 }
 
 function capacityError(error) {
     const message = String(error?.message || '').toLowerCase();
-    return /capacity|unavailable|not enough|no gpu|out of stock|no instances/.test(message);
+    return /capacity|unavailable|not enough|no gpu|out of stock|no instances|instances available|try again/.test(message);
 }
 
 async function createPod({ apiKey, fetchImpl, name = podName() }) {
     let lastError = null;
-    for (const cloudType of ['COMMUNITY', 'SECURE']) {
+    for (const cloud of ['COMMUNITY', 'SECURE']) {
         try {
             const created = await api({
                 apiKey,
                 method: 'POST',
                 url: `${API_ROOT}/pods`,
-                body: createBody(name, cloudType),
+                body: createBody(name, cloud),
                 fetchImpl,
             });
             const pod = unwrapPod(created);
             if (!pod?.id) throw new Error('RunPod did not return a pod id');
-            return { ...pod, name: pod.name || name, cloudType };
+            return { ...pod, name: pod.name || name, cloud };
         } catch (error) {
             lastError = error;
-            if (cloudType === 'COMMUNITY' && capacityError(error)) continue;
+            if (cloud === 'COMMUNITY' && capacityError(error)) continue;
             throw error;
         }
     }
@@ -329,15 +352,19 @@ function hourlyFromGpu(gpu) {
     if (!gpu) return null;
     const pricing = gpu.pricing || gpu.price || {};
     const lowest = gpu.lowestPrice || {};
-    return numberFrom(pricing.community)
-        ?? numberFrom(pricing.onDemand)
-        ?? numberFrom(pricing.hourly)
-        ?? numberFrom(gpu.communityPrice)
-        ?? numberFrom(gpu.securePrice)
-        ?? numberFrom(gpu.onDemandPrice)
-        ?? numberFrom(gpu.pricePerHour)
-        ?? numberFrom(lowest.uninterruptablePrice)
-        ?? numberFrom(lowest.minimumBidPrice);
+    const candidates = [
+        pricing.community,
+        pricing.secure,
+        pricing.onDemand,
+        pricing.hourly,
+        gpu.communityPrice,
+        gpu.securePrice,
+        gpu.onDemandPrice,
+        gpu.pricePerHour,
+        lowest.uninterruptablePrice,
+    ].map(numberFrom).filter((value) => value !== null && value > 0);
+    if (!candidates.length) return null;
+    return Math.max(...candidates);
 }
 
 function parseHourlyPrice(body) {
@@ -565,6 +592,8 @@ async function runInside(options, current, apiKey) {
         host: endpoint.host,
         port: endpoint.port,
         privateKey: ssh.privateKey,
+        username: endpoint.username,
+        sftp: endpoint.sftp,
         profile,
         output: plan.output,
         frameStart: plan.frameStart,
@@ -573,6 +602,7 @@ async function runInside(options, current, apiKey) {
         glbPath: glbPath || undefined,
         outPath: plan.outPath,
         onProgress,
+        sleep,
     });
     let stat = null;
     try {
