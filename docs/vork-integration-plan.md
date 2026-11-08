@@ -53,3 +53,9 @@ Haku: tallennettu polku, sitten `~/.local/bin/vork` tai `%LOCALAPPDATA%\Programs
 Still-kuva, ruutuvälin MP4 samasta `shot.json`-tiedostosta, `.glb`-tuonti nimellä `model.glb`, ja `vork setup` napista. Ensimmäinen renderöinti ajaa setupin itse, jos sitä ei ole vielä tehty.
 
 Pilveä, vendoroitua binääriä ja Next-studion välilehteä ei lisätä.
+
+## Ehdotus: RunPod käyttäjän omalta tililtä
+
+Erillinen, ei vielä hyväksytty ehdotus on tiedostossa `docs/vork-runpod-plan.md`. Paikallinen binääri jää oletukseksi. Ehdotus vuokraa RTX 4090:n käyttäjän omalla RunPod-avaimella, asentaa vorkin mukaan lukien `libegl1`, siirtää kohtauksen, renderöi, hakee PNG:n ja tuhoaa podin. Jaettua jonoa ei ole.
+
+Käyttöliittymä näyttää VFX-studiossa RunPod-tilin senhetkisen saldon ja linkin sivulle `https://console.runpod.io/user/billing`, josta käyttäjä voi ladata lisää rahaa. Sovellus ei tee latausta itse.
