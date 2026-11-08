@@ -227,7 +227,9 @@ function podName() {
     return `vork-${crypto.randomBytes(4).toString('hex')}`;
 }
 
-function createBody(name, cloud) {
+function createBody(name, cloud, publicKey) {
+    const env = { NVIDIA_DRIVER_CAPABILITIES: 'all' };
+    if (publicKey) env.PUBLIC_KEY = String(publicKey).trim();
     return {
         name,
         image: POD_IMAGE,
@@ -235,7 +237,7 @@ function createBody(name, cloud) {
         gpu: { id: GPU_4090, count: 1 },
         disk: 20,
         ports: ['22/tcp'],
-        env: { NVIDIA_DRIVER_CAPABILITIES: 'all' },
+        env,
         startSsh: true,
     };
 }
@@ -245,7 +247,14 @@ function capacityError(error) {
     return /capacity|unavailable|not enough|no gpu|out of stock|no instances|instances available|try again/.test(message);
 }
 
-async function createPod({ apiKey, fetchImpl, name = podName() }) {
+function connectableEndpoint(pod) {
+    const endpoint = sshEndpoint(pod);
+    if (!endpoint || endpoint.sftp === false) return null;
+    if (!endpoint.host || !endpoint.port) return null;
+    return endpoint;
+}
+
+async function createPod({ apiKey, fetchImpl, name = podName(), publicKey }) {
     let lastError = null;
     for (const cloud of ['COMMUNITY', 'SECURE']) {
         try {
@@ -253,7 +262,7 @@ async function createPod({ apiKey, fetchImpl, name = podName() }) {
                 apiKey,
                 method: 'POST',
                 url: `${API_ROOT}/pods`,
-                body: createBody(name, cloud),
+                body: createBody(name, cloud, publicKey),
                 fetchImpl,
             });
             const pod = unwrapPod(created);
@@ -448,15 +457,17 @@ async function sleepDefault(ms) {
 
 async function waitUntilReady({ apiKey, podId, fetchImpl, sleep, onProgress, current }) {
     const deadline = Date.now() + READY_MS;
+    let delay = 3000;
     while (Date.now() < deadline) {
         throwIfCancelled(current);
         onProgress?.({ engine: 'vork', task: 'wait', status: 'wait', elapsedMs: READY_MS - (deadline - Date.now()) });
         const pod = await getPod({ apiKey, podId, fetchImpl });
-        const endpoint = pod && isRunning(pod) ? sshEndpoint(pod) : null;
+        const endpoint = pod && isRunning(pod) ? connectableEndpoint(pod) : null;
         if (endpoint) return endpoint;
-        await sleep(POLL_MS);
+        await sleep(delay);
+        delay = Math.min(20000, Math.round(delay * 1.5));
     }
-    throw new Error('The RunPod pod did not become ready in time');
+    throw new Error('The RunPod pod did not publish an SSH host and port in time');
 }
 
 async function terminateOwned({ apiKey, podId, fetchImpl, owned }) {
@@ -572,7 +583,7 @@ async function runInside(options, current, apiKey) {
     throwIfCancelled(current);
     onProgress?.({ engine: 'vork', task: 'rent', status: 'rent' });
     await registerSshKey({ apiKey, publicKey: ssh.publicKey, fetchImpl });
-    const pod = await createPod({ apiKey, fetchImpl });
+    const pod = await createPod({ apiKey, fetchImpl, publicKey: ssh.publicKey });
     current.podId = pod.id;
     current.owned.add(pod.id);
     if (pod.gpu && pod.gpu.id && pod.gpu.id !== GPU_4090) {

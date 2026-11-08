@@ -73,8 +73,16 @@ function wrap(conn) {
     return {
         exec(command) {
             return new Promise((resolve, reject) => {
+                const timeoutMs = command.startsWith('echo ') ? 20000 : 7 * 60 * 1000;
+                const timer = setTimeout(() => {
+                    try { conn.end(); } catch { /* closing a dead socket */ }
+                    const error = new Error('remote command timed out');
+                    error.retryable = true;
+                    reject(error);
+                }, timeoutMs);
                 conn.exec(command, { pty: true }, (err, stream) => {
                     if (err) {
+                        clearTimeout(timer);
                         reject(err);
                         return;
                     }
@@ -82,7 +90,10 @@ function wrap(conn) {
                     let stderr = '';
                     stream.on('data', (chunk) => { stdout += chunk.toString(); });
                     stream.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
-                    stream.on('close', (code) => resolve({ code: code ?? 0, stdout, stderr }));
+                    stream.on('close', (code) => {
+                        clearTimeout(timer);
+                        resolve({ code: code ?? 0, stdout, stderr });
+                    });
                 });
             });
         },
@@ -125,7 +136,7 @@ function wrap(conn) {
 }
 
 function retryableSsh(message) {
-    return /container not found|is not running|not ready|connection refused|timed out|ECONNREFUSED|error response from daemon/i.test(message);
+    return /container not found|is not running|not ready|connection refused|timed out|ECONNREFUSED|ECONNRESET|error response from daemon|remote command timed out/i.test(message);
 }
 
 async function openReadySession({ connect, host, port, username, privateKey, sleep }) {
@@ -135,12 +146,19 @@ async function openReadySession({ connect, host, port, username, privateKey, sle
         let session;
         try {
             session = await connect({ host, port, username, privateKey });
-            const probe = await session.exec('echo READY');
+            const probe = await session.exec('echo READY', 20000);
             const text = `${probe.stdout || ''}\n${probe.stderr || ''}`;
-            if (probe.code === 0 && !retryableSsh(text)) return session;
-            last = tail(probe) || text.trim() || last;
-            session.close();
-            if (probe.code !== 0 && !retryableSsh(text) && !retryableSsh(last)) throw new Error(last);
+            if (!text.trim() || retryableSsh(text)) {
+                last = tail(probe) || text.trim() || 'container did not respond';
+                session.close();
+                await sleep(5000);
+                continue;
+            }
+            if (probe.code !== 0) {
+                session.close();
+                throw new Error(tail(probe) || 'remote command failed');
+            }
+            return session;
         } catch (error) {
             try { session?.close(); } catch { /* already closed */ }
             last = error.message || last;
@@ -220,8 +238,12 @@ async function renderOnPod({
             onProgress?.({ engine: 'vork', task: 'fetch', status: 'fetch' });
             await getRemote(session, remoteOut, outPath, sftp);
             return;
+        } catch (error) {
+            last = error.message || last;
+            if (!error.retryable && !retryableSsh(last)) throw error;
+            await sleep(5000);
         } finally {
-            session.close();
+            try { session.close(); } catch { /* already closed */ }
         }
     }
     throw new Error(last);
