@@ -809,6 +809,7 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
               {nodeSchemas && workflowDef ? (
                 <WorkflowUI
                   workflowId={selectedWorkflow?.id}
+                  apiKey={apiKey}
                   initialNodeSchemas={nodeSchemas}
                   initialWorkflowData={{
                     ...workflowDef,

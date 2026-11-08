@@ -9,6 +9,7 @@ import {
   getLipSyncModelById,
   getResolutionsForLipSyncModel,
 } from "../models.js";
+import { peekSendToPayload, consumeSendToPayload, SEND_TO_EVENT } from "../lib/assetsStore.js";
 
 // ---------------------------------------------------------------------------
 // Upload button states
@@ -411,6 +412,65 @@ export default function LipSyncStudio({
     } finally {
       hasRestored.current = true;
     }
+  }, []);
+
+  // ── Post-gen: Send to Lipsync prefill ─────────────────────────────────────
+  useEffect(() => {
+    const applyPayload = (payload) => {
+      if (!payload || payload.target !== "lipsync") return;
+      const asset = payload.asset || payload;
+      const url = asset.url || payload.url;
+      if (!url) return;
+      const mediaType = asset.type || payload.mediaType || payload.meta?.type;
+      const isVideo =
+        mediaType === "video" || /\.(mp4|webm|mov)(\?|$)/i.test(url);
+
+      if (isVideo) {
+        setInputMode("video");
+        setVideoUrl(url);
+        setVideoName("From studio");
+        setVideoState(UPLOAD_STATE.READY);
+        setImageUrl(null);
+        setImageState(UPLOAD_STATE.IDLE);
+        const first = videoLipSyncModels[0];
+        if (first) {
+          setSelectedModelId(first.id);
+          setSelectedResolution(first.inputs?.resolution?.default ?? "480p");
+        }
+      } else {
+        setInputMode("image");
+        setImageUrl(url);
+        setImageName("From studio");
+        setImageState(UPLOAD_STATE.READY);
+        setVideoUrl(null);
+        setVideoState(UPLOAD_STATE.IDLE);
+        const first = imageLipSyncModels[0];
+        if (first) {
+          setSelectedModelId(first.id);
+          setSelectedResolution(first.inputs?.resolution?.default ?? "480p");
+        }
+      }
+      if (payload.meta?.prompt || asset.prompt) {
+        setPrompt(payload.meta?.prompt || asset.prompt || "");
+      }
+    };
+
+    const timer = setTimeout(() => {
+      const pending = peekSendToPayload();
+      if (pending?.target === "lipsync") {
+        consumeSendToPayload();
+        applyPayload(pending);
+      }
+    }, 0);
+
+    const onSend = (e) => {
+      if (e.detail?.target === "lipsync") applyPayload(e.detail);
+    };
+    window.addEventListener(SEND_TO_EVENT, onSend);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener(SEND_TO_EVENT, onSend);
+    };
   }, []);
 
   // ── Persistence: Save ────────────────────────────────────────────────────

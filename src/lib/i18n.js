@@ -53,6 +53,7 @@ const translations = {
         // Navigation
         'nav.image': 'Image',
         'nav.video': 'Video',
+        'nav.audio': 'Audio',
         'nav.lipsync': 'Lip Sync',
         'nav.cinema': 'Cinema Studio',
         'nav.director': 'Director',
@@ -205,11 +206,19 @@ const translations = {
 
         // Agent Studio
         'agents.title': 'Agent Studio',
-        'agents.webOnly': 'Available in the web app at open-generative-ai.com',
+        'agents.webOnly': 'Available in the hosted app. Open the link below.',
+        'agents.webUrl': 'https://muapi.ai/open-generative-ai',
 
         // Workflow Studio
         'workflows.title': 'Workflow Studio',
-        'workflows.webOnly': 'Available in the web app at open-generative-ai.com',
+        'workflows.webOnly': 'Available in the hosted app. Open the link below.',
+        'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
+
+        // Audio Studio
+        'audio.title': 'Audio Studio',
+        'audio.webOnly': 'Available in the hosted app. Open the link below.',
+        'audio.webUrl': 'https://muapi.ai/open-generative-ai',
+        'audio.openWeb': 'Open hosted audio studio',
 
         // Local Model Manager
         'localModels.title': 'Local Models',
@@ -265,6 +274,8 @@ const translations = {
         'director.length': 'Length',
         'director.aspect': 'Aspect',
         'director.quality': 'Quality',
+        'director.llmLabel': 'Model',
+        'director.llmCurrent': 'Current',
         'director.screenplay': 'Screenplay',
         'director.pass1': '1 · Screenplay',
         'director.pass2': '2 · Shot list',
@@ -356,6 +367,7 @@ const translations = {
         // Navigation
         'nav.image': '图像',
         'nav.video': '视频',
+        'nav.audio': '音频',
         'nav.lipsync': '唇语同步',
         'nav.cinema': '电影工作室',
         'nav.director': '导演',
@@ -508,11 +520,19 @@ const translations = {
 
         // Agent Studio
         'agents.title': '智能体工作室',
-        'agents.webOnly': '在网页应用 open-generative-ai.com 上可用',
+        'agents.webOnly': '请在托管应用中使用。打开下面的链接。',
+        'agents.webUrl': 'https://muapi.ai/open-generative-ai',
 
         // Workflow Studio
         'workflows.title': '工作流工作室',
-        'workflows.webOnly': '在网页应用 open-generative-ai.com 上可用',
+        'workflows.webOnly': '请在托管应用中使用。打开下面的链接。',
+        'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
+
+        // Audio Studio
+        'audio.title': '音频工作室',
+        'audio.webOnly': '请在托管应用中使用。打开下面的链接。',
+        'audio.webUrl': 'https://muapi.ai/open-generative-ai',
+        'audio.openWeb': '打开托管音频工作室',
 
         // Local Model Manager
         'localModels.title': '本地模型',
@@ -568,6 +588,8 @@ const translations = {
         'director.length': '长度',
         'director.aspect': '画幅',
         'director.quality': '质量',
+        'director.llmLabel': '模型',
+        'director.llmCurrent': '当前',
         'director.screenplay': '剧本',
         'director.pass1': '1 · 剧本',
         'director.pass2': '2 · 镜头表',

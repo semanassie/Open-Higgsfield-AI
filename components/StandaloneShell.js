@@ -1,9 +1,31 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { ImageStudio, VideoStudio, ClippingStudio, VibeMotionStudio, LipSyncStudio, RecastStudio, CinemaStudio, AudioStudio, MarketingStudio, WorkflowStudio, AgentStudio, AppsStudio, getUserBalance } from 'studio';
+import {
+  ImageStudio,
+  EnhanceStudio,
+  VideoStudio,
+  ClippingStudio,
+  VibeMotionStudio,
+  LipSyncStudio,
+  RecastStudio,
+  CinemaStudio,
+  AudioStudio,
+  MarketingStudio,
+  WorkflowStudio,
+  AgentStudio,
+  AppsStudio,
+  AssetsPanel,
+  McpCliStudio,
+  StudioCatalog,
+  MoodboardPanel,
+  ProductionStudio,
+  getUserBalance,
+  POSTGEN_NAV_EVENT,
+  SEND_TO_EVENT,
+} from 'studio';
 
 const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignAgentStudio), {
   ssr: false,
@@ -14,25 +36,33 @@ import ApiKeyModal from './ApiKeyModal';
 
 const TABS = [
   { id: 'image',   label: 'Image Studio' },
+  { id: 'enhance', label: 'Enhancer' },
   { id: 'video',   label: 'Video Studio' },
+  { id: 'studios', label: 'Studios' },
+  { id: 'assets',  label: 'Assets' },
+  { id: 'moodboard', label: 'Moodboard' },
   { id: 'audio',   label: 'Audio Studio' },
   { id: 'clipping', label: 'AI Clipping' },
   { id: 'vibe-motion', label: 'Vibe Motion' },
   { id: 'lipsync', label: 'Lip Sync' },
   { id: 'body-swap', label: 'Body Swap' },
   { id: 'cinema',  label: 'Cinema Studio' },
+  { id: 'production', label: 'Production' },
   { id: 'marketing', label: 'Marketing Studio' },
   { id: 'workflows', label: 'Workflows' },
   { id: 'agents', label: 'Agents' },
   { id: 'design-agent', label: 'Design Agent' },
+  { id: 'mcp-cli', label: 'MCP & CLI' },
   { id: 'apps', label: 'Explore Apps' },
 ];
 
 const STORAGE_KEY = 'muapi_key';
 
-export default function StandaloneShell() {
+function StandaloneShellInner() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const modelQuery = searchParams?.get('model') || null;
   const slug = params?.slug || []; 
   const idFromParams = params?.id;
   const tabFromParams = params?.tab;
@@ -102,6 +132,27 @@ export default function StandaloneShell() {
     router.push(`/studio/${tabId}`);
     // setActiveTab(tabId);
   };
+
+  // Cross-tab navigation from PostGenActions / Assets Send to…
+  useEffect(() => {
+    const goToTab = (tabId) => {
+      if (!tabId || !TABS.find((t) => t.id === tabId)) return;
+      setActiveTab(tabId);
+      router.push(`/studio/${tabId}`);
+    };
+    const onPostGenNav = (e) => {
+      if (e.detail?.tab) goToTab(e.detail.tab);
+    };
+    const onSendTo = (e) => {
+      if (e.detail?.target) goToTab(e.detail.target);
+    };
+    window.addEventListener(POSTGEN_NAV_EVENT, onPostGenNav);
+    window.addEventListener(SEND_TO_EVENT, onSendTo);
+    return () => {
+      window.removeEventListener(POSTGEN_NAV_EVENT, onPostGenNav);
+      window.removeEventListener(SEND_TO_EVENT, onSendTo);
+    };
+  }, [router]);
 
   // Auto-hide header when inside a specific workflow view or design agent
   useEffect(() => {
@@ -358,18 +409,46 @@ export default function StandaloneShell() {
 
       {/* Studio Content */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
-        {activeTab === 'image'   && <ImageStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-        {activeTab === 'video'   && <VideoStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'image'   && (
+          <ImageStudio
+            apiKey={apiKey}
+            droppedFiles={droppedFiles}
+            onFilesHandled={handleFilesHandled}
+            initialModelQuery={modelQuery}
+          />
+        )}
+        {activeTab === 'enhance' && <EnhanceStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'video'   && (
+          <VideoStudio
+            apiKey={apiKey}
+            droppedFiles={droppedFiles}
+            onFilesHandled={handleFilesHandled}
+            initialModelQuery={modelQuery}
+          />
+        )}
+        {activeTab === 'studios' && <StudioCatalog onOpenStudio={handleTabChange} />}
+        {activeTab === 'assets' && (
+          <div className="h-full w-full p-4 md:p-6 overflow-hidden">
+            <AssetsPanel className="max-w-7xl mx-auto h-full" />
+          </div>
+        )}
+        {activeTab === 'moodboard' && (
+          <div className="h-full w-full p-4 md:p-6 overflow-hidden">
+            <MoodboardPanel className="max-w-7xl mx-auto h-full" />
+          </div>
+        )}
         {activeTab === 'clipping' && <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'vibe-motion' && <VibeMotionStudio apiKey={apiKey} />}
         {activeTab === 'lipsync' && <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'body-swap' && <RecastStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'cinema'  && <CinemaStudio  apiKey={apiKey} />}
+        {activeTab === 'production' && <ProductionStudio apiKey={apiKey} />}
         {activeTab === 'audio'   && <AudioStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'marketing' && <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         {activeTab === 'agents' && <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
         {activeTab === 'design-agent' && <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'mcp-cli' && <McpCliStudio />}
         {activeTab === 'apps' && <AppsStudio apiKey={apiKey} />}
       </div>
 
@@ -411,5 +490,19 @@ export default function StandaloneShell() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function StandaloneShell() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+          <div className="animate-spin text-[#22d3ee] text-3xl">◌</div>
+        </div>
+      }
+    >
+      <StandaloneShellInner />
+    </Suspense>
   );
 }

@@ -24,6 +24,10 @@ function navigate(page) {
     import('./components/DirectorStudio.js').then(({ DirectorStudio }) => {
       contentArea.appendChild(DirectorStudio());
     });
+  } else if (page === 'audio') {
+    import('./components/AudioStudio.js').then(({ AudioStudio }) => {
+      contentArea.appendChild(AudioStudio());
+    });
   } else if (page === 'lipsync') {
     import('./components/LipSyncStudio.js').then(({ LipSyncStudio }) => {
       contentArea.appendChild(LipSyncStudio());
