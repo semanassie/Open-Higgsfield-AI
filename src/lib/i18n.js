@@ -214,10 +214,11 @@ const translations = {
         'workflows.webOnly': 'Available in the hosted app. Open the link below.',
         'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
-        // Audio Studio (Electron aperture → Next /studio/audio)
+        // Audio Studio
         'audio.title': 'Audio Studio',
-        'audio.webOnly': 'Full audio generation (Suno & more) runs in the Next web shell. Open /studio/audio after npm run dev.',
-        'audio.openWeb': 'Open /studio/audio',
+        'audio.webOnly': 'Available in the hosted app. Open the link below.',
+        'audio.webUrl': 'https://muapi.ai/open-generative-ai',
+        'audio.openWeb': 'Open hosted audio studio',
 
         // Local Model Manager
         'localModels.title': 'Local Models',
@@ -527,10 +528,11 @@ const translations = {
         'workflows.webOnly': '请在托管应用中使用。打开下面的链接。',
         'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
-        // Audio Studio (Electron aperture → Next /studio/audio)
+        // Audio Studio
         'audio.title': '音频工作室',
-        'audio.webOnly': '完整音频生成（Suno 等）在 Next Web shell 中运行。执行 npm run dev 后打开 /studio/audio。',
-        'audio.openWeb': '打开 /studio/audio',
+        'audio.webOnly': '请在托管应用中使用。打开下面的链接。',
+        'audio.webUrl': 'https://muapi.ai/open-generative-ai',
+        'audio.openWeb': '打开托管音频工作室',
 
         // Local Model Manager
         'localModels.title': '本地模型',
