@@ -3,6 +3,8 @@
  * Files live in the host app at public/workflow-thumbs/.
  * A few official cdn.muapi.ai/outputs covers are private (S3 403). Those
  * slugs point at another public image already embedded in that workflow.
+ * paper-cutting and phoenix had no other public image; their files are the
+ * same output objects, fetched from the Wayback snapshot that still returns 200.
  */
 const WORKFLOW_LOCAL_THUMBS = {
   "indie-anime-maker-qwen-flux-2-pro-wan2-2": "/workflow-thumbs/indie-anime-maker-qwen-flux-2-pro-wan2-2.jpg",
@@ -51,6 +53,8 @@ const WORKFLOW_LOCAL_THUMBS = {
   "soccer-collectable-card-maker-nano-banana": "/workflow-thumbs/soccer-collectable-card-maker-nano-banana.png",
   "ai-sculpture-maker-nano-banana-2": "/workflow-thumbs/ai-sculpture-maker-nano-banana-2.png",
   "furniture-campaign-generator-seedream-v5-qwen-nano": "/workflow-thumbs/furniture-campaign-generator-seedream-v5-qwen-nano.png",
+  "paper-cutting-art-seedream-v5": "/workflow-thumbs/paper-cutting-art-seedream-v5.jpg",
+  "phoenix-multi-model-image-to-video-wan2-seedream": "/workflow-thumbs/phoenix-multi-model-image-to-video-wan2-seedream.png",
 };
 
 export function localWorkflowThumbnail(slug) {
