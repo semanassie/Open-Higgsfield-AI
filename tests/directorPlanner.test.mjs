@@ -19,8 +19,9 @@ import {
     LLM_FAMILY_PRIORITY,
     LLM_FAMILY_DEFAULT_ID,
     getLlmModelById,
+    llmOptionLabel,
 } from 'studio/src/llmModels.js';
-import { getFamilies } from 'studio/src/modelFamilies.js';
+import { getFamilies, filterAndSortByName } from 'studio/src/modelFamilies.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -220,30 +221,54 @@ test('DirectorStudio mounts with dataset.studio = director and restores session'
 const P1_SLUGS = [
     'gpt-6-astra',
     'gpt-6-1-sol',
+    'gpt-6-1-terra',
     'gpt-6-sol',
     'gpt-6-luna',
     'gpt-5-6-sol',
     'gpt-5-6-terra',
     'gpt-5-6-luna',
     'gpt-5-5',
+    'gpt-5-4',
+    'gpt-5-2',
+    'gpt-5-nano',
+    'gpt-5-mini',
+    'gpt-codex',
     'claude-fable-5',
     'claude-fable-5-1',
     'claude-opus-5-5',
     'claude-opus-5',
+    'claude-opus-4-8',
+    'claude-opus-4-7',
+    'claude-opus-4-6',
+    'claude-opus-4-5',
     'claude-sonnet-5-5',
     'claude-sonnet-5',
+    'claude-sonnet-4-6',
+    'claude-sonnet-4-5',
+    'claude-haiku-5-5',
+    'claude-haiku-4-5',
+    'gemini-4-argon',
     'gemini-3-8-flash',
     'gemini-3-pro',
     'gemini-3-1-pro',
+    'gemini-3-7-flash',
+    'gemini-3-6-flash',
+    'gemini-3-5-flash',
+    'gemini-3-flash',
+    'gemini-2-5-pro',
+    'gemini-2-5-flash',
     'grok-4-7',
+    'grok-4-6',
+    'grok-4-5',
+    'grok-4-3',
     'kimi-k3',
     'deepseek-v4-pro',
     'deepseek-v4-1-flash',
     'deepseek-v4-flash',
 ];
 
-test('P1 llm catalog is 22 slug entries in 11 families', () => {
-    assert.equal(llmModels.length, 22);
+test('LLM catalog matches the 2026-11-08 text-generation shortlist', () => {
+    assert.equal(llmModels.length, 46);
     assert.deepEqual(llmModels.map((m) => m.id), P1_SLUGS);
     for (const model of llmModels) {
         assert.equal(model.transport, 'slug');
@@ -274,18 +299,23 @@ test('P1 llm catalog is 22 slug entries in 11 families', () => {
     const families = getFamilies(llmModels, { preferredOrder: LLM_FAMILY_PRIORITY });
     assert.deepEqual(families.map((f) => f.id), LLM_FAMILY_PRIORITY);
     const modeCount = Object.fromEntries(families.map((f) => [f.id, f.modes.length]));
-    assert.equal(modeCount['gpt-6'], 4);
+    assert.equal(modeCount['gpt-6'], 5);
     assert.equal(modeCount['gpt-5.6'], 3);
     assert.equal(modeCount['claude-fable'], 2);
-    assert.equal(modeCount['claude-opus'], 2);
-    assert.equal(modeCount['claude-sonnet'], 2);
+    assert.equal(modeCount['claude-opus'], 6);
+    assert.equal(modeCount['claude-sonnet'], 4);
+    assert.equal(modeCount['claude-haiku'], 2);
     assert.equal(modeCount['gemini-3-pro'], 2);
+    assert.equal(modeCount['gemini-flash'], 4);
+    assert.equal(modeCount['gemini-2.5'], 2);
+    assert.equal(modeCount['grok-4'], 4);
     assert.equal(modeCount['deepseek-v4'], 3);
-    for (const id of ['gpt-5.5', 'gemini-3.8', 'grok-4', 'kimi']) {
+    for (const id of ['gpt-5.5', 'gpt-5.4', 'gpt-5.2', 'gpt-codex', 'gemini-4', 'gemini-3.8', 'kimi']) {
         assert.equal(modeCount[id], 1);
     }
+    assert.equal(modeCount['gpt-5'], 2);
     assert.equal(families.find((f) => f.id === 'gemini-3-pro').name, 'Gemini 3 Pro');
-    assert.equal(families.find((f) => f.id === 'grok-4').name, 'Grok 4.7');
+    assert.equal(families.find((f) => f.id === 'grok-4').name, 'Grok 4');
 
     const modelsSrc = readFileSync(join(root, 'packages/studio/src/models.js'), 'utf8');
     assert.equal(modelsSrc.includes('gpt-6-astra'), false);
@@ -420,7 +450,7 @@ function walk(node, acc = []) {
     return acc;
 }
 
-test('Director LLM picker starts on Current and selects a family default slug', async () => {
+test('Director LLM picker opens a searchable alphabetical menu', async () => {
     installDomStub();
     const { DirectorStudio } = await import('../src/components/DirectorStudio.js');
     const { saveDirectorProject, createEmptyDirectorProject, clearDirectorProject } =
@@ -430,32 +460,31 @@ test('Director LLM picker starts on Current and selects a family default slug', 
     const picker = walk(root).find((n) => n.dataset?.testid === 'director-llm-picker');
     assert.ok(picker);
     assert.equal(picker.dataset.llmModel, '');
-    const families = walk(picker).filter((n) => n.dataset?.family);
-    assert.deepEqual(families.map((n) => n.dataset.family), LLM_FAMILY_PRIORITY);
+    assert.equal(walk(picker).some((n) => n.dataset?.modelId), false);
+
+    walk(picker).find((n) => n.dataset?.testid === 'director-llm-toggle').onclick();
+    const options = walk(picker).filter((n) => n.dataset?.modelId);
+    const expected = filterAndSortByName(llmModels, '', llmOptionLabel).map((m) => m.id);
+    assert.deepEqual(options.map((n) => n.dataset.modelId), expected);
     const current = walk(picker).find((n) => n.dataset?.llmChoice === 'current');
     assert.equal(current.getAttribute('aria-pressed'), 'true');
-    assert.equal(walk(picker).some((n) => n.dataset?.testid === 'mode-chips'), false);
 
-    families.find((n) => n.dataset.family === 'claude-fable').onclick();
-    const afterFable = walk(picker);
+    options.find((n) => n.dataset.modelId === 'claude-fable-5-1').onclick();
     assert.equal(picker.dataset.llmModel, 'claude-fable-5-1');
-    const fableChip = afterFable.find((n) => n.dataset?.modelId === 'claude-fable-5-1');
-    assert.equal(fableChip.getAttribute('aria-pressed'), 'true');
-    assert.equal(afterFable.filter((n) => n.dataset?.modeKey).length, 2);
 
-    afterFable.find((n) => n.dataset?.modelId === 'claude-fable-5').onclick();
-    assert.equal(picker.dataset.llmModel, 'claude-fable-5');
+    walk(picker).find((n) => n.dataset?.testid === 'director-llm-toggle').onclick();
+    const search = walk(picker).find((n) => n.dataset?.testid === 'director-llm-search');
+    search.value = 'argon';
+    search.oninput({ target: search });
+    const filtered = walk(picker).filter((n) => n.dataset?.modelId);
+    assert.deepEqual(filtered.map((n) => n.dataset.modelId), ['gemini-4-argon']);
 
-    walk(picker).find((n) => n.dataset?.family === 'grok-4').onclick();
-    assert.equal(picker.dataset.llmModel, 'grok-4-7');
-    assert.equal(walk(picker).some((n) => n.dataset?.testid === 'mode-chips'), false);
+    filtered[0].onclick();
+    assert.equal(picker.dataset.llmModel, 'gemini-4-argon');
 
-    walk(picker).find((n) => n.dataset?.family === 'gemini-3-pro').onclick();
-    assert.equal(picker.dataset.llmModel, 'gemini-3-1-pro');
-
+    walk(picker).find((n) => n.dataset?.testid === 'director-llm-toggle').onclick();
     walk(picker).find((n) => n.dataset?.llmChoice === 'current').onclick();
     assert.equal(picker.dataset.llmModel, '');
-    assert.equal(walk(picker).find((n) => n.dataset?.llmChoice === 'current').getAttribute('aria-pressed'), 'true');
 
     saveDirectorProject({ ...createEmptyDirectorProject(), llmModelId: 'not-a-slug' });
     const restored = DirectorStudio();

@@ -375,6 +375,30 @@ export function findFamilyForModel(models, modelId) {
   return families.find((f) => f.models.some((m) => m.id === modelId)) || null;
 }
 
+/**
+ * Alphabetical filter for model menus. Matches display label or id.
+ * @param {Array} items
+ * @param {string} query
+ * @param {(item: any) => string} [labelOf]
+ */
+export function filterAndSortByName(items, query, labelOf = (item) => item?.name || item?.id || "") {
+  const q = String(query || "").trim().toLowerCase();
+  return [...(items || [])]
+    .filter((item) => {
+      if (!q) return true;
+      const label = String(labelOf(item)).toLowerCase();
+      const id = String(item?.id || "").toLowerCase();
+      const endpoint = String(item?.endpoint || "").toLowerCase();
+      return label.includes(q) || id.includes(q) || endpoint.includes(q);
+    })
+    .sort((a, b) =>
+      String(labelOf(a)).localeCompare(String(labelOf(b)), undefined, {
+        sensitivity: "base",
+        numeric: true,
+      }),
+    );
+}
+
 export function filterFamiliesBySearch(families, query) {
   const q = (query || "").trim().toLowerCase();
   if (!q) return families;

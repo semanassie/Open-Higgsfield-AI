@@ -25,12 +25,11 @@ import {
 } from '../lib/directorModels.js';
 import { getCharacters } from '../lib/characterLibrary.js';
 import { t, tf } from '../lib/i18n.js';
-import { getFamilies } from 'studio/src/modelFamilies.js';
+import { filterAndSortByName } from 'studio/src/modelFamilies.js';
 import {
     llmModels,
-    LLM_FAMILY_PRIORITY,
-    LLM_FAMILY_DEFAULT_ID,
     getLlmModelById,
+    llmOptionLabel,
 } from '../lib/llmModels.js';
 
 function requireKey() {
@@ -87,7 +86,8 @@ export function DirectorStudio() {
     llmPicker.className = 'flex flex-col gap-2';
     llmPicker.dataset.testid = 'director-llm-picker';
     card.appendChild(llmPicker);
-    const llmFamilies = getFamilies(llmModels, { preferredOrder: LLM_FAMILY_PRIORITY });
+    let llmQuery = '';
+    let llmMenuOpen = false;
 
     function clearNode(node) {
         if (typeof node.replaceChildren === 'function') node.replaceChildren();
@@ -103,83 +103,101 @@ export function DirectorStudio() {
     function renderLlmPicker() {
         clearNode(llmPicker);
         llmPicker.dataset.llmModel = state.llmModelId || '';
+        const selected = getLlmModelById(state.llmModelId);
 
         const label = document.createElement('span');
         label.className = 'text-[10px] text-muted font-bold uppercase tracking-widest';
         label.textContent = t('director.llmLabel');
 
-        const list = document.createElement('div');
-        list.className = 'flex flex-col gap-1.5';
-        list.setAttribute('role', 'group');
-        list.setAttribute('aria-label', t('director.llmLabel'));
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.dataset.testid = 'director-llm-toggle';
+        toggle.className = 'w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-xs font-bold text-left';
+        toggle.textContent = selected ? llmOptionLabel(selected) : t('director.llmCurrent');
+        toggle.setAttribute('aria-expanded', llmMenuOpen ? 'true' : 'false');
+        toggle.onclick = () => {
+            llmMenuOpen = !llmMenuOpen;
+            renderLlmPicker();
+        };
+        llmPicker.append(label, toggle);
+        if (!llmMenuOpen) return;
+
+        const menu = document.createElement('div');
+        menu.dataset.testid = 'director-llm-menu';
+        menu.className = 'flex flex-col gap-1.5 bg-[#111] border border-white/10 rounded-xl p-2 max-h-72 overflow-y-auto';
+        menu.setAttribute('role', 'listbox');
+        menu.setAttribute('aria-label', t('director.llmLabel'));
+
+        const search = document.createElement('input');
+        search.type = 'text';
+        search.dataset.testid = 'director-llm-search';
+        search.placeholder = t('common.searchModels');
+        search.value = llmQuery;
+        search.className = 'w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-primary/50';
+        search.onclick = (e) => e.stopPropagation();
+        search.oninput = (e) => {
+            llmQuery = e.target.value;
+            const caret = e.target.selectionStart;
+            renderLlmPicker();
+            const next = walkInputs(llmPicker).find((node) => node.dataset?.testid === 'director-llm-search');
+            if (next && typeof next.focus === 'function') {
+                next.focus();
+                if (typeof next.setSelectionRange === 'function') {
+                    const pos = Math.min(caret ?? next.value.length, next.value.length);
+                    next.setSelectionRange(pos, pos);
+                }
+            }
+        };
+        menu.appendChild(search);
 
         const currentBtn = document.createElement('button');
         currentBtn.type = 'button';
         currentBtn.dataset.llmChoice = 'current';
-        currentBtn.className = llmChoiceClass(!state.llmModelId);
+        currentBtn.className = `${llmChoiceClass(!state.llmModelId)} text-left`;
         currentBtn.textContent = t('director.llmCurrent');
         currentBtn.setAttribute('aria-pressed', state.llmModelId ? 'false' : 'true');
         currentBtn.onclick = () => {
-            if (!state.llmModelId) return;
             state.llmModelId = null;
+            llmMenuOpen = false;
+            llmQuery = '';
             persist();
             renderLlmPicker();
         };
-        const currentRow = document.createElement('div');
-        currentRow.className = 'flex flex-wrap items-center gap-1.5';
-        currentRow.appendChild(currentBtn);
-        list.appendChild(currentRow);
+        menu.appendChild(currentBtn);
 
-        for (const family of llmFamilies) {
-            const selected = family.models.some((m) => m.id === state.llmModelId);
-            const row = document.createElement('div');
-            row.className = 'flex flex-wrap items-center gap-1.5';
-
+        const visible = filterAndSortByName(llmModels, llmQuery, llmOptionLabel);
+        if (!visible.length) {
+            const empty = document.createElement('div');
+            empty.className = 'px-1 py-2 text-xs text-white/40';
+            empty.textContent = 'No models match';
+            menu.appendChild(empty);
+        }
+        for (const model of visible) {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.dataset.family = family.id;
-            btn.className = llmChoiceClass(selected);
-            btn.textContent = family.name;
-            btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            btn.dataset.family = model.family;
+            btn.dataset.modelId = model.id;
+            btn.className = `${llmChoiceClass(model.id === state.llmModelId)} text-left`;
+            btn.textContent = llmOptionLabel(model);
+            btn.setAttribute('aria-pressed', model.id === state.llmModelId ? 'true' : 'false');
             btn.onclick = () => {
-                if (family.models.some((m) => m.id === state.llmModelId)) return;
-                state.llmModelId = LLM_FAMILY_DEFAULT_ID[family.id] || family.defaultModelId;
+                state.llmModelId = model.id;
+                llmMenuOpen = false;
+                llmQuery = '';
                 persist();
                 renderLlmPicker();
             };
-            row.appendChild(btn);
-
-            if (selected && family.modes.length > 1) {
-                const chips = document.createElement('div');
-                chips.className = 'flex flex-wrap items-center gap-1.5';
-                chips.dataset.testid = 'mode-chips';
-                chips.setAttribute('role', 'group');
-                chips.setAttribute('aria-label', family.name);
-                for (const mode of family.modes) {
-                    const chip = document.createElement('button');
-                    chip.type = 'button';
-                    chip.dataset.modeKey = mode.key;
-                    chip.dataset.modelId = mode.modelId;
-                    const chipSelected = mode.modelId === state.llmModelId;
-                    chip.className = llmChoiceClass(chipSelected);
-                    chip.textContent = mode.label;
-                    chip.title = mode.modelId;
-                    chip.setAttribute('aria-pressed', chipSelected ? 'true' : 'false');
-                    chip.onclick = () => {
-                        if (state.llmModelId === mode.modelId) return;
-                        state.llmModelId = mode.modelId;
-                        persist();
-                        renderLlmPicker();
-                    };
-                    chips.appendChild(chip);
-                }
-                row.appendChild(chips);
-            }
-
-            list.appendChild(row);
+            menu.appendChild(btn);
         }
 
-        llmPicker.append(label, list);
+        llmPicker.appendChild(menu);
+    }
+
+    function walkInputs(node, acc = []) {
+        if (!node || typeof node !== 'object') return acc;
+        acc.push(node);
+        for (const child of node.children || []) walkInputs(child, acc);
+        return acc;
     }
     renderLlmPicker();
 

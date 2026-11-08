@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { sortByDisplayName } from "../sortModels.js";
 import { processLipSync, uploadFile } from "../muapi.js";
 import {
   lipsyncModels,
@@ -151,9 +152,25 @@ function MediaPickerButton({
 // ---------------------------------------------------------------------------
 // Inline dropdown
 // ---------------------------------------------------------------------------
-function Dropdown({ isOpen, items, selectedId, onSelect, onClose, anchorRef }) {
+function Dropdown({ isOpen, items, selectedId, onSelect, onClose, anchorRef, searchable = false }) {
   const dropRef = useRef(null);
   const [style, setStyle] = useState({});
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) setQuery("");
+  }, [isOpen]);
+
+  const visibleItems = useMemo(() => {
+    const sorted = searchable ? sortByDisplayName(items) : items || [];
+    const q = query.trim().toLowerCase();
+    if (!searchable || !q) return sorted;
+    return sorted.filter(
+      (item) =>
+        (item.name || "").toLowerCase().includes(q) ||
+        (item.id || "").toLowerCase().includes(q),
+    );
+  }, [items, query, searchable]);
 
   useEffect(() => {
     if (!isOpen || !anchorRef?.current || !dropRef.current) return;
@@ -204,7 +221,20 @@ function Dropdown({ isOpen, items, selectedId, onSelect, onClose, anchorRef }) {
       }}
       className="bg-[#111] border border-white/10 rounded-lg shadow-3xl p-2 custom-scrollbar w-[calc(100vw-3rem)] max-w-xs"
     >
-      {items.map((item) => (
+      {searchable && (
+        <input
+          type="text"
+          value={query}
+          placeholder="Search models..."
+          onChange={(e) => setQuery(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full mb-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+        />
+      )}
+      {visibleItems.length === 0 && (
+        <div className="px-3 py-4 text-xs text-white/40 text-center">No models match</div>
+      )}
+      {visibleItems.map((item) => (
         <button
           key={item.id}
           type="button"
@@ -1063,6 +1093,7 @@ export default function LipSyncStudio({
                   onSelect={handleModelSelect}
                   onClose={() => setOpenDropdown(null)}
                   anchorRef={modelBtnRef}
+                  searchable
                 />
               </div>
 

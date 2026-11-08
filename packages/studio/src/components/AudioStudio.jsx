@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { generateAudio, uploadFile } from "../muapi.js";
 import { audioModels, getAudioModelById } from "../models.js";
+import FamilyModePicker from "./FamilyModePicker.jsx";
 
 // ---------------------------------------------------------------------------
 // Upload button states
@@ -698,27 +699,18 @@ export default function AudioStudio({
             </button>
 
             {openDropdown && (
-              <div className="absolute left-0 right-0 mt-2 z-50 bg-[#161618] border border-zinc-700 rounded shadow-3xl max-h-60 overflow-y-auto custom-scrollbar p-1.5">
-                {audioModels.map((model) => (
-                  <button
-                    key={model.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedModelId(model.id);
-                      setOpenDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 rounded text-xs font-bold transition-all flex flex-col gap-1.5 border ${
-                      model.id === selectedModelId ? "text-primary bg-primary/10 border-primary/20" : "text-zinc-200 border-transparent hover:bg-zinc-900 hover:text-white"
-                    }`}
-                  >
-                    <span>{model.name}</span>
-                    {model.description && (
-                      <span className="text-[10px] text-zinc-300 truncate max-w-[320px] font-normal">
-                        {model.description}
-                      </span>
-                    )}
-                  </button>
-                ))}
+              <div
+                className="absolute left-0 right-0 mt-2 z-50 bg-[#161618] border border-zinc-700 rounded shadow-3xl p-1.5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FamilyModePicker
+                  models={audioModels}
+                  selectedModelId={selectedModelId}
+                  sectionTitle="Audio models"
+                  searchPlaceholder="Search models..."
+                  onSelect={(model) => setSelectedModelId(model.id)}
+                  onClose={() => setOpenDropdown(false)}
+                />
               </div>
             )}
           </div>

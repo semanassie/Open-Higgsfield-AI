@@ -4,10 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { callLlm } from "../muapi.js";
 import {
   llmModels,
-  LLM_FAMILY_PRIORITY,
   getLlmModelById,
 } from "../llmModels.js";
-import { getFamilies } from "../modelFamilies.js";
+import FamilyModePicker from "./FamilyModePicker.jsx";
 import { GRADE_IDS, gradePromptClause } from "../lib/cinemaGrades.js";
 import {
   runLocalDefaultChain,
@@ -65,11 +64,19 @@ export default function ProductionStudio({ apiKey }) {
   const [error, setError] = useState("");
   const [selectedBeatId, setSelectedBeatId] = useState(null);
   const [genIndex, setGenIndex] = useState(-1);
+  const [llmOpen, setLlmOpen] = useState(false);
 
   useEffect(() => {
     setProject(loadProductionProject());
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!llmOpen) return undefined;
+    const close = () => setLlmOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [llmOpen]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -78,11 +85,6 @@ export default function ProductionStudio({ apiKey }) {
     }, 400);
     return () => clearTimeout(t);
   }, [project, hydrated]);
-
-  const llmFamilies = useMemo(
-    () => getFamilies(llmModels, { preferredOrder: LLM_FAMILY_PRIORITY }),
-    [],
-  );
 
   const recipes = useMemo(() => listRecipes(), []);
 
@@ -492,25 +494,37 @@ export default function ProductionStudio({ apiKey }) {
         </nav>
 
         <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-black/40 p-3">
-          <label className="flex flex-col gap-1 text-[11px] text-white/50">
+          <div className="relative flex flex-col gap-1 text-[11px] text-white/50">
             Spec LLM
-            <select
-              className="bg-black/60 border border-white/15 rounded px-2 py-1.5 text-white/90 text-xs min-w-[14rem]"
-              value={project.llmModelId || ""}
+            <button
+              type="button"
               disabled={busy}
-              onChange={(e) => patch({ llmModelId: e.target.value })}
+              onClick={() => setLlmOpen((open) => !open)}
+              className="bg-black/60 border border-white/15 rounded px-2 py-1.5 text-white/90 text-xs min-w-[14rem] text-left"
             >
-              {llmFamilies.map((family) => (
-                <optgroup key={family.id} label={family.id}>
-                  {family.models.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} · {m.modeLabel}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
+              {currentLlm
+                ? `${currentLlm.name} · ${currentLlm.modeLabel}`
+                : "Select model"}
+            </button>
+            {llmOpen && (
+              <div
+                className="absolute left-0 top-full z-50 mt-1 w-[20rem] max-w-[calc(100vw-2rem)] rounded-lg border border-white/15 bg-black p-2 shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FamilyModePicker
+                  models={llmModels}
+                  selectedModelId={project.llmModelId}
+                  sectionTitle="Language models"
+                  searchPlaceholder="Search models..."
+                  onSelect={(model, family) => {
+                    patch({ llmModelId: model.id });
+                    if (!family || family.modes.length <= 1) setLlmOpen(false);
+                  }}
+                  onClose={() => setLlmOpen(false)}
+                />
+              </div>
+            )}
+          </div>
           {currentLlm && (
             <span className="text-[10px] text-white/35 pb-1.5">
               {currentLlm.name} · {currentLlm.modeLabel}

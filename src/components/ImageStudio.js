@@ -9,6 +9,7 @@ import { LOCAL_MODEL_CATALOG, getLocalModelById } from '../lib/localModels.js';
 import { ENHANCE_TAGS, QUICK_PROMPTS } from '../lib/promptUtils.js';
 import { AuthModal } from './AuthModal.js';
 import { t } from '../lib/i18n.js';
+import { sortByDisplayName } from 'studio/src/sortModels.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
 
@@ -735,10 +736,10 @@ export function ImageStudio() {
 
                 if (useLocalModel) {
                     // ── Local model list (Wan2GP image-capable models only) ───
-                    const filtered = LOCAL_IMAGE_MODELS.filter(m =>
+                    const filtered = sortByDisplayName(LOCAL_IMAGE_MODELS.filter(m =>
                         m.name.toLowerCase().includes(filter.toLowerCase()) ||
                         m.id.toLowerCase().includes(filter.toLowerCase())
-                    );
+                    ));
                     if (filtered.length === 0) {
                         list.innerHTML = `<div class="text-xs text-muted text-center py-4">${t('common.noResults')}</div>`;
                         return;
@@ -774,7 +775,7 @@ export function ImageStudio() {
                 }
 
                 // ── Remote (API) model list ───────────────────────────────────
-                const filtered = getCurrentModels().filter(m => m.name.toLowerCase().includes(filter.toLowerCase()) || m.id.toLowerCase().includes(filter.toLowerCase()));
+                const filtered = sortByDisplayName(getCurrentModels().filter(m => m.name.toLowerCase().includes(filter.toLowerCase()) || m.id.toLowerCase().includes(filter.toLowerCase())));
 
                 filtered.forEach(m => {
                     const item = document.createElement('div');

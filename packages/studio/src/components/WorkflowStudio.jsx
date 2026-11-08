@@ -14,6 +14,7 @@ import {
   getAllNodeSchemas,
   getWorkflowData,
 } from "../muapi.js";
+import { localWorkflowThumbnail } from "../lib/workflowThumbs.js";
 import dynamic from "next/dynamic";
 
 const WorkflowUI = dynamic(() => import("./WorkflowUI"), {
@@ -383,7 +384,14 @@ export default function WorkflowStudio({ apiKey, isHeaderVisible = true, onToggl
         } else if (activeMainTab === "published") {
           data = await getPublishedWorkflows(apiKey);
         }
-        setWorkflows(data);
+        setWorkflows(
+          Array.isArray(data)
+            ? data.map((workflow) => {
+                const local = localWorkflowThumbnail(workflow?.slug);
+                return local ? { ...workflow, thumbnail: local } : workflow;
+              })
+            : data
+        );
       } catch (err) {
         console.error("Failed to load workflows:", err);
         setError("Failed to load workflows list.");

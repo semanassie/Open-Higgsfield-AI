@@ -11,6 +11,7 @@ import {
   getFamilyDisplayName,
 } from "../modelFamilies.js";
 import ModelBadges from "./ModelBadges.jsx";
+import { sortByDisplayName } from "../sortModels.js";
 
 const CheckSvg = () => (
   <svg
@@ -102,7 +103,7 @@ export default function FamilyModePicker({
   onClose,
   preferredOrder,
   sectionTitle = "Models",
-  searchPlaceholder = "Search families...",
+  searchPlaceholder = "Search models...",
   extraSections = [],
   domain,
 }) {
@@ -118,7 +119,7 @@ export default function FamilyModePicker({
     [models, order],
   );
   const filtered = useMemo(
-    () => filterFamiliesBySearch(families, search),
+    () => sortByDisplayName(filterFamiliesBySearch(families, search)),
     [families, search],
   );
 
@@ -268,6 +269,8 @@ export default function FamilyModePicker({
           <input
             type="text"
             placeholder={searchPlaceholder}
+            aria-label={searchPlaceholder}
+            autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onClick={(e) => e.stopPropagation()}
@@ -282,15 +285,17 @@ export default function FamilyModePicker({
         {filtered.map(renderFamily)}
         {filtered.length === 0 && (
           <div className="px-3 py-6 text-xs text-white/30 text-center">
-            No families match “{search}”
+            No models match “{search}”
           </div>
         )}
         {(extraSections || []).map((section) => {
-          const sectionModels = (section.models || []).filter(
-            (m) =>
-              !lf ||
-              m.name?.toLowerCase().includes(lf) ||
-              m.id?.toLowerCase().includes(lf),
+          const sectionModels = sortByDisplayName(
+            (section.models || []).filter(
+              (m) =>
+                !lf ||
+                m.name?.toLowerCase().includes(lf) ||
+                m.id?.toLowerCase().includes(lf),
+            ),
           );
           if (sectionModels.length === 0) return null;
           return (

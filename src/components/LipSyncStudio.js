@@ -2,6 +2,7 @@ import { muapi } from '../lib/muapi.js';
 import { lipsyncModels, imageLipSyncModels, videoLipSyncModels, getLipSyncModelById, getResolutionsForLipSyncModel } from '../lib/models.js';
 import { AuthModal } from './AuthModal.js';
 import { t } from '../lib/i18n.js';
+import { sortByDisplayName } from 'studio/src/sortModels.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
 
@@ -329,8 +330,26 @@ export function LipSyncStudio() {
     const populateDropdown = (type) => {
         dropdown.innerHTML = '';
         if (type === 'model') {
-            const models = getCurrentModels();
-            models.forEach(m => {
+            const search = document.createElement('input');
+            search.type = 'text';
+            search.placeholder = t('common.searchModels');
+            search.className = 'w-full mb-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50';
+            search.onclick = (e) => e.stopPropagation();
+            const list = document.createElement('div');
+            const renderList = () => {
+                list.replaceChildren();
+                const q = search.value.trim().toLowerCase();
+                const models = sortByDisplayName(getCurrentModels()).filter((m) =>
+                    !q || m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q)
+                );
+                if (!models.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'px-3 py-4 text-xs text-white/40 text-center';
+                    empty.textContent = 'No models match';
+                    list.appendChild(empty);
+                    return;
+                }
+                models.forEach(m => {
                 const item = document.createElement('button');
                 item.type = 'button';
                 item.className = `w-full text-left px-4 py-2.5 rounded-xl text-sm transition-all hover:bg-white/10 ${m.id === selectedModel ? 'text-primary font-bold bg-primary/5' : 'text-white font-medium'}`;
@@ -349,8 +368,15 @@ export function LipSyncStudio() {
                     textarea.style.display = m.hasPrompt ? '' : 'none';
                     closeDropdown();
                 };
-                dropdown.appendChild(item);
+                list.appendChild(item);
             });
+            };
+            search.oninput = (e) => {
+                e.stopPropagation();
+                renderList();
+            };
+            renderList();
+            dropdown.append(search, list);
         } else if (type === 'resolution') {
             const resolutions = getResolutionsForLipSyncModel(selectedModel);
             resolutions.forEach(r => {

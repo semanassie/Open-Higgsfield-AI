@@ -2,6 +2,7 @@ import { muapi } from '../lib/muapi.js';
 import { t2vModels, getAspectRatiosForVideoModel, getDurationsForModel, getResolutionsForVideoModel, i2vModels, getAspectRatiosForI2VModel, getDurationsForI2VModel, getResolutionsForI2VModel, v2vModels, getModesForModel } from '../lib/models.js';
 import { AuthModal } from './AuthModal.js';
 import { t } from '../lib/i18n.js';
+import { sortByDisplayName } from 'studio/src/sortModels.js';
 import { createUploadPicker } from './UploadPicker.js';
 import { savePendingJob, removePendingJob, getPendingJobs } from '../lib/pendingJobs.js';
 import { localAI, isLocalAIAvailable } from '../lib/localInferenceClient.js';
@@ -630,12 +631,12 @@ export function VideoStudio() {
 
                 // Regular generation models (always t2v or i2v, never v2v)
                 const generationModels = imageMode ? allI2V : allT2V;
-                const filteredMain = generationModels
-                    .filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf));
+                const filteredMain = sortByDisplayName(generationModels
+                    .filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf)));
                 filteredMain.forEach(m => list.appendChild(makeModelItem(m, false)));
 
                 // Video Tools section
-                const filteredV2V = v2vModels.filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf));
+                const filteredV2V = sortByDisplayName(v2vModels.filter(m => m.name.toLowerCase().includes(lf) || m.id.toLowerCase().includes(lf)));
                 if (filteredV2V.length > 0) {
                     const sectionLabel = document.createElement('div');
                     sectionLabel.className = 'text-[10px] font-bold text-orange-400/70 uppercase tracking-widest px-3 py-2 mt-1 border-t border-white/5';
