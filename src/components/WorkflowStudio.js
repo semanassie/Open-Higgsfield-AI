@@ -19,8 +19,16 @@ export function WorkflowStudio() {
     sub.textContent = t('workflows.webOnly');
     sub.className = 'text-sm opacity-40';
 
+    const link = document.createElement('a');
+    link.href = t('workflows.webUrl');
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'muapi.ai/open-generative-ai';
+    link.className = 'text-sm text-primary underline';
+
     container.appendChild(icon);
     container.appendChild(title);
     container.appendChild(sub);
+    container.appendChild(link);
     return container;
 }

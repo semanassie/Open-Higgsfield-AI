@@ -205,11 +205,13 @@ const translations = {
 
         // Agent Studio
         'agents.title': 'Agent Studio',
-        'agents.webOnly': 'Available in the web app at open-generative-ai.com',
+        'agents.webOnly': 'Available in the hosted app. Open the link below.',
+        'agents.webUrl': 'https://muapi.ai/open-generative-ai',
 
         // Workflow Studio
         'workflows.title': 'Workflow Studio',
-        'workflows.webOnly': 'Available in the web app at open-generative-ai.com',
+        'workflows.webOnly': 'Available in the hosted app. Open the link below.',
+        'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
         // Local Model Manager
         'localModels.title': 'Local Models',
@@ -508,11 +510,13 @@ const translations = {
 
         // Agent Studio
         'agents.title': '智能体工作室',
-        'agents.webOnly': '在网页应用 open-generative-ai.com 上可用',
+        'agents.webOnly': '请在托管应用中使用。打开下面的链接。',
+        'agents.webUrl': 'https://muapi.ai/open-generative-ai',
 
         // Workflow Studio
         'workflows.title': '工作流工作室',
-        'workflows.webOnly': '在网页应用 open-generative-ai.com 上可用',
+        'workflows.webOnly': '请在托管应用中使用。打开下面的链接。',
+        'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
         // Local Model Manager
         'localModels.title': '本地模型',
