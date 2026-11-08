@@ -1,4 +1,5 @@
 import { getModelById, getVideoModelById, getI2IModelById, getI2VModelById, getV2VModelById, getRecastModelById, getLipSyncModelById, getAudioModelById } from './models.js';
+import { buildLlmCall } from './llmModels.js';
 
 // In an http(s) browser we route through the host app's proxy (Next.js routes
 // under /api/* re-issue the call server-side) so api.muapi.ai CORS is bypassed.
@@ -99,6 +100,22 @@ export async function generateI2I(apiKey, params) {
     if (modelInfo?.inputs?.name) {
         payload.name = params.name || modelInfo.inputs.name.default;
     }
+    // TechLead S1.3: topaz upscale_factor (+ optional seed) must reach the API
+    if (params.upscale_factor != null && params.upscale_factor !== '') {
+        payload.upscale_factor = params.upscale_factor;
+    }
+    if (params.seed != null && params.seed !== '' && params.seed !== -1) {
+        payload.seed = params.seed;
+    }
+    // Pass remaining schema-defined inputs when provided by UI
+    if (modelInfo?.inputs) {
+        for (const key of Object.keys(modelInfo.inputs)) {
+            if (payload[key] !== undefined) continue;
+            if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+                payload[key] = params[key];
+            }
+        }
+    }
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 60);
 }
 
@@ -113,6 +130,7 @@ export async function generateVideo(apiKey, params) {
     if (params.quality) payload.quality = params.quality;
     if (params.mode) payload.mode = params.mode;
     if (params.image_url) payload.image_url = params.image_url;
+    if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 
@@ -148,6 +166,7 @@ export async function generateI2V(apiKey, params) {
     if (modelInfo?.inputs?.name) {
         payload.name = params.name || modelInfo.inputs.name.default;
     }
+    if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 
@@ -174,6 +193,7 @@ export async function processV2V(apiKey, params) {
     if (modelInfo?.hasPrompt && params.prompt) {
         payload.prompt = params.prompt;
     }
+    if (params.seed !== undefined && params.seed !== -1) payload.seed = params.seed;
     return submitAndPoll(endpoint, payload, apiKey, params.onRequestId, 900);
 }
 
@@ -726,4 +746,59 @@ export async function runMotionGraphicsEdit(apiKey, params) {
         duration_seconds: params.duration_seconds || 6,
     };
     return submitAndPoll("motion-graphics-edit", payload, apiKey, params.onRequestId, 900);
+}
+
+/**
+ * Text LLM call for Production Studio (and similar).
+ * Mirrors the Electron text-planning request via buildLlmCall.
+ * @param {string} apiKey
+ * @param {{ prompt: string, systemPrompt?: string, model?: string, modelId?: string, useCase?: string }} options
+ * @returns {Promise<string>}
+ */
+export async function callLlm(apiKey, options = {}) {
+    const prompt = String(options.prompt || "");
+    if (!prompt.trim()) throw new Error("callLlm needs a prompt");
+    if (!apiKey) throw new Error("Missing API key for LLM call");
+
+    const { url, body } = buildLlmCall({
+        baseUrl: BASE_URL,
+        prompt,
+        systemPrompt: options.systemPrompt,
+        model: options.model,
+        modelId: options.modelId,
+    });
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": apiKey },
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        const errText = await response.text();
+        notifyAuthRequired(response.status, errText);
+        throw new Error(`LLM Failed: ${response.status} - ${errText.slice(0, 200)}`);
+    }
+
+    const data = await response.json();
+    const requestId = data.request_id || data.id;
+    let result = data;
+    if (requestId && !data.output && !data.text && !data.response && !data.outputs) {
+        result = await pollForResult(requestId, apiKey, 120, 1500);
+    }
+
+    const text =
+        result.output?.text ||
+        result.output ||
+        result.text ||
+        result.response ||
+        result.outputs?.[0] ||
+        (typeof result === "string" ? result : null);
+
+    if (!text || typeof text !== "string") {
+        const choice =
+            result.choices?.[0]?.message?.content || result.choices?.[0]?.text;
+        if (choice) return String(choice);
+        throw new Error("LLM Failed: empty response");
+    }
+    return text;
 }

@@ -267,14 +267,21 @@ export function bindCharacters(screenplay) {
     return bindings;
 }
 
+function llmOptions(systemPrompt, useCase, modelId) {
+    const options = { systemPrompt, useCase };
+    if (modelId) options.modelId = modelId;
+    return options;
+}
+
 /**
  * Run pass 1 — screenplay.
  * @param {{ callLLM: Function }} llm
+ * @param {{ prompt: string, shotCount: number, libraryCharacters?: object[], modelId?: string }} args
  */
-export async function runPass1Screenplay(llm, { prompt, shotCount, libraryCharacters = [] }) {
+export async function runPass1Screenplay(llm, { prompt, shotCount, libraryCharacters = [], modelId } = {}) {
     const raw = await llm.callLLM(
         buildScreenplayPrompt(prompt, shotCount, libraryCharacters),
-        { systemPrompt: SCREENPLAY_SYSTEM, useCase: 'director_screenplay' }
+        llmOptions(SCREENPLAY_SYSTEM, 'director_screenplay', modelId)
     );
     const screenplay = parseScreenplay(raw);
     if (!screenplay.characters.length && libraryCharacters.length) {
@@ -291,13 +298,14 @@ export async function runPass1Screenplay(llm, { prompt, shotCount, libraryCharac
 /**
  * Run pass 2 — shot JSON.
  */
-export async function runPass2Shots(llm, { screenplay, shotCount }) {
+export async function runPass2Shots(llm, { screenplay, shotCount, modelId }) {
     const raw = await llm.callLLM(
         buildShotBreakdownPrompt(screenplay, shotCount),
-        {
-            systemPrompt: 'You output strict JSON arrays for film shot breakdowns. No prose.',
-            useCase: 'director_shots',
-        }
+        llmOptions(
+            'You output strict JSON arrays for film shot breakdowns. No prose.',
+            'director_shots',
+            modelId
+        )
     );
     const arr = extractJsonArray(raw);
     const shots = arr?.length
@@ -309,14 +317,15 @@ export async function runPass2Shots(llm, { screenplay, shotCount }) {
 /**
  * Run pass 3 — model polish.
  */
-export async function runPass3Polish(llm, { shots, screenplay, qualityTier }) {
+export async function runPass3Polish(llm, { shots, screenplay, qualityTier, modelId }) {
     const models = resolveDirectorModels(qualityTier);
     const raw = await llm.callLLM(
         buildPolishPrompt(shots, models, screenplay),
-        {
-            systemPrompt: 'You write precise image and video prompts. Output JSON only.',
-            useCase: 'director_polish',
-        }
+        llmOptions(
+            'You write precise image and video prompts. Output JSON only.',
+            'director_polish',
+            modelId
+        )
     );
     const arr = extractJsonArray(raw);
     if (!arr?.length) {
@@ -345,15 +354,18 @@ export async function runPass3Polish(llm, { shots, screenplay, qualityTier }) {
 export async function planShortFilm(llm, options) {
     const shotCount = Math.min(Math.max(options.shotCount || 4, 1), 8);
     const qualityTier = options.qualityTier || 'budget';
+    const modelId = options.modelId || undefined;
     const pass1 = await runPass1Screenplay(llm, {
         prompt: options.prompt,
         shotCount,
         libraryCharacters: options.libraryCharacters || [],
+        modelId,
     });
     const bindings = bindCharacters(pass1.screenplay);
     const pass2 = await runPass2Shots(llm, {
         screenplay: pass1.screenplay,
         shotCount,
+        modelId,
     });
     // Remap characterIds to library names for prompts
     const shotsWithNames = pass2.shots.map((s) => ({
@@ -367,6 +379,7 @@ export async function planShortFilm(llm, options) {
         shots: shotsWithNames,
         screenplay: pass1.screenplay,
         qualityTier,
+        modelId,
     });
     return {
         screenplay: pass1.screenplay,

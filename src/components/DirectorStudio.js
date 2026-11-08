@@ -15,6 +15,8 @@ import {
 } from '../lib/directorPlanner.js';
 import { renderAllShots, renderShotStill, renderShotVideo } from '../lib/directorRender.js';
 import { combineVideosLocally, copySceneUrls } from '../lib/clientVideoCombine.js';
+import { timelineFromShots } from '../lib/directorTimeline.js';
+import { exportTimelineLocally } from '../lib/directorTimelineExport.js';
 import {
     DIRECTOR_DEFAULT_SHOT_COUNT,
     DIRECTOR_MAX_SHOT_COUNT,
@@ -23,6 +25,13 @@ import {
 } from '../lib/directorModels.js';
 import { getCharacters } from '../lib/characterLibrary.js';
 import { t, tf } from '../lib/i18n.js';
+import { getFamilies } from 'studio/src/modelFamilies.js';
+import {
+    llmModels,
+    LLM_FAMILY_PRIORITY,
+    LLM_FAMILY_DEFAULT_ID,
+    getLlmModelById,
+} from '../lib/llmModels.js';
 
 function requireKey() {
     try {
@@ -44,6 +53,7 @@ export function DirectorStudio() {
     if (!state.shotCount) state.shotCount = DIRECTOR_DEFAULT_SHOT_COUNT;
     if (!state.qualityTier) state.qualityTier = 'budget';
     if (!state.aspectRatio) state.aspectRatio = '16:9';
+    if (state.llmModelId && !getLlmModelById(state.llmModelId)) state.llmModelId = null;
 
     let isBusy = false;
     let cancelFlag = false;
@@ -72,6 +82,106 @@ export function DirectorStudio() {
     prompt.placeholder = t('director.promptPlaceholder');
     prompt.value = state.prompt || '';
     card.appendChild(prompt);
+
+    const llmPicker = document.createElement('div');
+    llmPicker.className = 'flex flex-col gap-2';
+    llmPicker.dataset.testid = 'director-llm-picker';
+    card.appendChild(llmPicker);
+    const llmFamilies = getFamilies(llmModels, { preferredOrder: LLM_FAMILY_PRIORITY });
+
+    function clearNode(node) {
+        if (typeof node.replaceChildren === 'function') node.replaceChildren();
+        else if (Array.isArray(node.children)) node.children.length = 0;
+    }
+
+    function llmChoiceClass(selected) {
+        return selected
+            ? 'px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide border bg-primary/20 border-primary/40 text-primary'
+            : 'px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wide border bg-white/5 border-white/10 text-white/70 hover:bg-white/10';
+    }
+
+    function renderLlmPicker() {
+        clearNode(llmPicker);
+        llmPicker.dataset.llmModel = state.llmModelId || '';
+
+        const label = document.createElement('span');
+        label.className = 'text-[10px] text-muted font-bold uppercase tracking-widest';
+        label.textContent = t('director.llmLabel');
+
+        const list = document.createElement('div');
+        list.className = 'flex flex-col gap-1.5';
+        list.setAttribute('role', 'group');
+        list.setAttribute('aria-label', t('director.llmLabel'));
+
+        const currentBtn = document.createElement('button');
+        currentBtn.type = 'button';
+        currentBtn.dataset.llmChoice = 'current';
+        currentBtn.className = llmChoiceClass(!state.llmModelId);
+        currentBtn.textContent = t('director.llmCurrent');
+        currentBtn.setAttribute('aria-pressed', state.llmModelId ? 'false' : 'true');
+        currentBtn.onclick = () => {
+            if (!state.llmModelId) return;
+            state.llmModelId = null;
+            persist();
+            renderLlmPicker();
+        };
+        const currentRow = document.createElement('div');
+        currentRow.className = 'flex flex-wrap items-center gap-1.5';
+        currentRow.appendChild(currentBtn);
+        list.appendChild(currentRow);
+
+        for (const family of llmFamilies) {
+            const selected = family.models.some((m) => m.id === state.llmModelId);
+            const row = document.createElement('div');
+            row.className = 'flex flex-wrap items-center gap-1.5';
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.dataset.family = family.id;
+            btn.className = llmChoiceClass(selected);
+            btn.textContent = family.name;
+            btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+            btn.onclick = () => {
+                if (family.models.some((m) => m.id === state.llmModelId)) return;
+                state.llmModelId = LLM_FAMILY_DEFAULT_ID[family.id] || family.defaultModelId;
+                persist();
+                renderLlmPicker();
+            };
+            row.appendChild(btn);
+
+            if (selected && family.modes.length > 1) {
+                const chips = document.createElement('div');
+                chips.className = 'flex flex-wrap items-center gap-1.5';
+                chips.dataset.testid = 'mode-chips';
+                chips.setAttribute('role', 'group');
+                chips.setAttribute('aria-label', family.name);
+                for (const mode of family.modes) {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.dataset.modeKey = mode.key;
+                    chip.dataset.modelId = mode.modelId;
+                    const chipSelected = mode.modelId === state.llmModelId;
+                    chip.className = llmChoiceClass(chipSelected);
+                    chip.textContent = mode.label;
+                    chip.title = mode.modelId;
+                    chip.setAttribute('aria-pressed', chipSelected ? 'true' : 'false');
+                    chip.onclick = () => {
+                        if (state.llmModelId === mode.modelId) return;
+                        state.llmModelId = mode.modelId;
+                        persist();
+                        renderLlmPicker();
+                    };
+                    chips.appendChild(chip);
+                }
+                row.appendChild(chips);
+            }
+
+            list.appendChild(row);
+        }
+
+        llmPicker.append(label, list);
+    }
+    renderLlmPicker();
 
     const controls = document.createElement('div');
     controls.className = 'flex flex-wrap gap-3 items-center';
@@ -217,6 +327,8 @@ export function DirectorStudio() {
         [pass1Btn, pass2Btn, pass3Btn, renderBtn, autoBtn, combineBtn, newBtn].forEach((b) => {
             b.disabled = busy;
         });
+        llmPicker.style.pointerEvents = busy ? 'none' : '';
+        llmPicker.style.opacity = busy ? '0.55' : '';
         if (!busy) syncButtonStates();
     }
 
@@ -346,6 +458,8 @@ export function DirectorStudio() {
                 state.stillUrls[i] = res.url;
                 state.shots[i].error = res.error;
                 state.shots[i].status = res.error ? 'error' : 'still_done';
+                state.timeline = null;
+                state.combinedVideoUrl = null;
                 persist();
                 renderShots();
                 status.textContent = res.error ? `✗ ${res.error}` : tf('director.statusStillDone', i + 1);
@@ -365,6 +479,8 @@ export function DirectorStudio() {
                 state.videoUrls[i] = res.url;
                 state.shots[i].error = res.error;
                 state.shots[i].status = res.error ? 'error' : 'done';
+                state.timeline = null;
+                state.combinedVideoUrl = null;
                 persist();
                 renderShots();
                 syncButtonStates();
@@ -377,6 +493,8 @@ export function DirectorStudio() {
                 if (!state.stillUrls) state.stillUrls = [];
                 state.videoUrls[i] = null;
                 state.shots[i].status = 'skipped';
+                state.timeline = null;
+                state.combinedVideoUrl = null;
                 persist();
                 renderShots();
                 syncButtonStates();
@@ -411,9 +529,11 @@ export function DirectorStudio() {
         state.shots = [];
         state.stillUrls = [];
         state.videoUrls = [];
+        state.timeline = null;
         state.combinedVideoUrl = null;
         updateCostHint();
         renderShots();
+        renderLlmPicker();
     };
 
     pass1Btn.onclick = async () => {
@@ -427,6 +547,7 @@ export function DirectorStudio() {
                 prompt: p,
                 shotCount: parseInt(shotCount.value, 10) || 4,
                 libraryCharacters: getCharacters(),
+                modelId: state.llmModelId || undefined,
             });
             state.characters = screenplay.characters;
             state.characterBindings = bindCharacters(screenplay);
@@ -458,10 +579,12 @@ export function DirectorStudio() {
             const { shots, usedFallback } = await runPass2Shots(muapi, {
                 screenplay,
                 shotCount: parseInt(shotCount.value, 10) || 4,
+                modelId: state.llmModelId || undefined,
             });
             state.shots = shots;
             state.stillUrls = [];
             state.videoUrls = [];
+            state.timeline = null;
             state.combinedVideoUrl = null;
             state.pass = 2;
             status.textContent = usedFallback
@@ -492,6 +615,7 @@ export function DirectorStudio() {
                 shots: state.shots,
                 screenplay,
                 qualityTier: quality.value,
+                modelId: state.llmModelId || undefined,
             });
             state.shots = shots;
             state.modelIds = models;
@@ -514,6 +638,7 @@ export function DirectorStudio() {
         if (!(state.shots || []).length) return;
         cancelFlag = false;
         setBusy(true);
+        state.timeline = null;
         state.combinedVideoUrl = null;
         try {
             const result = await renderAllShots(state.shots, {
@@ -572,6 +697,7 @@ export function DirectorStudio() {
                 shotCount: n,
                 qualityTier: quality.value,
                 libraryCharacters: getCharacters(),
+                modelId: state.llmModelId || undefined,
             });
             state.characters = planned.screenplay.characters;
             state.characterBindings = planned.characterBindings;
@@ -582,6 +708,7 @@ export function DirectorStudio() {
             state.modelIds = planned.models;
             state.stillUrls = [];
             state.videoUrls = [];
+            state.timeline = null;
             state.combinedVideoUrl = null;
             state.pass = 3;
             persist();
@@ -604,10 +731,17 @@ export function DirectorStudio() {
         if (urls.length < 2) return;
         setBusy(true);
         status.textContent = t('director.statusCombine');
+        const onStatus = (m) => { status.textContent = `⏳ ${m}`; };
         try {
-            state.combinedVideoUrl = await combineVideosLocally(urls, {
-                onStatus: (m) => { status.textContent = `⏳ ${m}`; },
-            });
+            if (!state.timeline) {
+                state.timeline = timelineFromShots(state.shots, state.videoUrls);
+            }
+            try {
+                state.combinedVideoUrl = await exportTimelineLocally(state.timeline, { onStatus });
+            } catch {
+                // WebAV unsupported / export failure → keep ffmpeg concat as fallback
+                state.combinedVideoUrl = await combineVideosLocally(urls, { onStatus });
+            }
             showCombined();
             status.textContent = t('director.statusCombineDone');
             persist();

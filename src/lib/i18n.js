@@ -53,6 +53,7 @@ const translations = {
         // Navigation
         'nav.image': 'Image',
         'nav.video': 'Video',
+        'nav.audio': 'Audio',
         'nav.lipsync': 'Lip Sync',
         'nav.cinema': 'Cinema Studio',
         'nav.director': 'Director',
@@ -213,6 +214,11 @@ const translations = {
         'workflows.webOnly': 'Available in the hosted app. Open the link below.',
         'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
+        // Audio Studio (Electron aperture → Next /studio/audio)
+        'audio.title': 'Audio Studio',
+        'audio.webOnly': 'Full audio generation (Suno & more) runs in the Next web shell. Open /studio/audio after npm run dev.',
+        'audio.openWeb': 'Open /studio/audio',
+
         // Local Model Manager
         'localModels.title': 'Local Models',
         'localModels.webOnly': 'Local model inference is only available in the desktop app (Electron build). Use npm run electron:build to build.',
@@ -267,6 +273,8 @@ const translations = {
         'director.length': 'Length',
         'director.aspect': 'Aspect',
         'director.quality': 'Quality',
+        'director.llmLabel': 'Model',
+        'director.llmCurrent': 'Current',
         'director.screenplay': 'Screenplay',
         'director.pass1': '1 · Screenplay',
         'director.pass2': '2 · Shot list',
@@ -358,6 +366,7 @@ const translations = {
         // Navigation
         'nav.image': '图像',
         'nav.video': '视频',
+        'nav.audio': '音频',
         'nav.lipsync': '唇语同步',
         'nav.cinema': '电影工作室',
         'nav.director': '导演',
@@ -518,6 +527,11 @@ const translations = {
         'workflows.webOnly': '请在托管应用中使用。打开下面的链接。',
         'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
+        // Audio Studio (Electron aperture → Next /studio/audio)
+        'audio.title': '音频工作室',
+        'audio.webOnly': '完整音频生成（Suno 等）在 Next Web shell 中运行。执行 npm run dev 后打开 /studio/audio。',
+        'audio.openWeb': '打开 /studio/audio',
+
         // Local Model Manager
         'localModels.title': '本地模型',
         'localModels.webOnly': '本地模型推理仅在桌面应用（Electron 构建版）中可用。使用 npm run electron:build 进行构建。',
@@ -572,6 +586,8 @@ const translations = {
         'director.length': '长度',
         'director.aspect': '画幅',
         'director.quality': '质量',
+        'director.llmLabel': '模型',
+        'director.llmCurrent': '当前',
         'director.screenplay': '剧本',
         'director.pass1': '1 · 剧本',
         'director.pass2': '2 · 镜头表',
