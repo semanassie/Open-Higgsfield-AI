@@ -97,7 +97,7 @@ Komento on sama kuin paikallisessa `planRender`-funktiossa:
 vork render /tmp/shot.json --profile std/previs|std/final --out /tmp/final.png
 ```
 
-Profiilin valitsee studion nappi, kuten nyt. MP4 jää myöhemmäksi: sama JSON ja `--frame-start` / `--frame-end`, mutta podille tarvitaan vielä `ffmpeg`. Ensimmäinen automaatio on still-kuva.
+Profiilin valitsee studion nappi, kuten nyt. Videoleike käyttää samaa JSONia ja oletusväliä 0–47. Asennus asentaa myös `ffmpeg`-ohjelman, jotta vork saa muxattua MP4:n. Tiedosto haetaan polkuun `clip.mp4` eikä sitä upoteta data-URLina.
 
 Aikakatkaisu on minuuteissa, ei sekunneissa. Setup ja ensimmäinen käännös ovat hiljaa. Sovellus ei tapa ajoa muutaman sekunnin hiljaisuuden takia.
 

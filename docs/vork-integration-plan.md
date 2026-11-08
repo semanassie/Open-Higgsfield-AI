@@ -56,6 +56,6 @@ Pilveä, vendoroitua binääriä ja Next-studion välilehteä ei lisätä.
 
 ## Ehdotus: RunPod käyttäjän omalta tililtä
 
-Työpöytäversio osaa nyt vuokrata RTX 4090:n käyttäjän omalla RunPod-avaimella, asentaa vorkin mukaan lukien `libegl1`, siirtää kohtauksen, renderöidä, hakea PNG:n ja tuhota podin. Yksityiskohdat ovat tiedostossa `docs/vork-runpod-plan.md`. Jaettua jonoa ei ole, eikä Next-studio osallistu. Paikallinen binääri jää oletukseksi.
+Työpöytäversio osaa nyt vuokrata RTX 4090:n käyttäjän omalla RunPod-avaimella, asentaa vorkin mukaan lukien `libegl1` ja `ffmpeg`, siirtää kohtauksen, renderöidä still-kuvan tai MP4-leikkeen, hakea tuloksen ja tuhota podin. Yksityiskohdat ovat tiedostossa `docs/vork-runpod-plan.md`. Jaettua jonoa ei ole, eikä Next-studio osallistu. Paikallinen binääri jää oletukseksi.
 
 Käyttöliittymä näyttää VFX-studiossa RunPod-tilin senhetkisen saldon ja linkin sivulle `https://console.runpod.io/user/billing`, josta käyttäjä voi ladata lisää rahaa. Sovellus ei tee latausta itse.

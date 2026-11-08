@@ -38,6 +38,7 @@ export function VfxStudio() {
             <div class="flex flex-wrap gap-2">
                 <button id="vfx-runpod-previs" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.runpodPrevis')}</button>
                 <button id="vfx-runpod-final" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.runpodFinal')}</button>
+                <button id="vfx-runpod-clip" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.runpodClip')}</button>
                 <button id="vfx-runpod-billing" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80">${t('vfx.runpodTopUp')}</button>
             </div>
         </div>
@@ -58,8 +59,9 @@ export function VfxStudio() {
     const runpodConfirm = inner.querySelector('#vfx-runpod-confirm');
     const runpodPrevis = inner.querySelector('#vfx-runpod-previs');
     const runpodFinal = inner.querySelector('#vfx-runpod-final');
+    const runpodClip = inner.querySelector('#vfx-runpod-clip');
     const runpodBilling = inner.querySelector('#vfx-runpod-billing');
-    const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn, runpodPrevis, runpodFinal];
+    const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn, runpodPrevis, runpodFinal, runpodClip];
 
     if (!isLocalAIAvailable()) {
         statusEl.textContent = t('vfx.desktopOnly');
@@ -170,7 +172,12 @@ export function VfxStudio() {
         resultEl.classList.add('hidden');
         try {
             const result = params.remote
-                ? await vork.renderRunpod({ profile: params.profile })
+                ? await vork.renderRunpod({
+                    profile: params.profile,
+                    output: params.output,
+                    frameStart: params.frameStart,
+                    frameEnd: params.frameEnd,
+                })
                 : await vork.render(params);
             showResult(result);
             await showScene();
@@ -221,6 +228,7 @@ export function VfxStudio() {
     clipBtn.onclick = () => renderJob({ profile: 'std/final', output: 'mp4' });
     runpodPrevis.onclick = () => askRunpod('std/previs');
     runpodFinal.onclick = () => askRunpod('std/final');
+    runpodClip.onclick = () => askRunpod('std/final', 'mp4');
     cancelBtn.onclick = () => {
         vork.cancel();
         setBusy(false);
@@ -262,6 +270,7 @@ export function VfxStudio() {
             runpodBalance.textContent = t('vfx.runpodNoEncryption');
             runpodPrevis.disabled = true;
             runpodFinal.disabled = true;
+            runpodClip.disabled = true;
             runpodKeyRow.classList.add('hidden');
             return;
         }
@@ -301,7 +310,7 @@ export function VfxStudio() {
         }
     };
 
-    const askRunpod = async (profile) => {
+    const askRunpod = async (profile, output = 'png') => {
         if (rendering) return;
         setBusy(true);
         runpodConfirm.classList.add('hidden');
@@ -332,7 +341,7 @@ export function VfxStudio() {
                 runpodConfirm.classList.add('hidden');
                 setBusy(false);
             };
-            go.onclick = () => renderJob({ profile, remote: true });
+            go.onclick = () => renderJob({ profile, output, remote: true });
             row.append(go, stop);
             runpodConfirm.append(line, row);
             runpodConfirm.classList.remove('hidden');

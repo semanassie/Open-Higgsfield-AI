@@ -513,10 +513,10 @@ async function runInside(options, current, apiKey) {
         connect,
         sleep = sleepDefault,
         onProgress,
+        output = 'png',
+        frameStart,
+        frameEnd,
     } = options;
-    if (profile !== 'std/previs' && profile !== 'std/final') {
-        throw new Error('RunPod rendering in this version is a still image');
-    }
     const ssh = ensureSshKey({ paths, safeStorage });
     let scene = options.scene;
     if (!scene) {
@@ -532,7 +532,9 @@ async function runInside(options, current, apiKey) {
         scene,
         profile,
         shotId: DEFAULT_SHOT_ID,
-        output: 'png',
+        output,
+        frameStart,
+        frameEnd,
     });
     fs.mkdirSync(plan.shotDir, { recursive: true });
     fs.writeFileSync(plan.shotPath, JSON.stringify(plan.scene, null, 2));
@@ -563,7 +565,10 @@ async function runInside(options, current, apiKey) {
         host: endpoint.host,
         port: endpoint.port,
         privateKey: ssh.privateKey,
-        profile: plan.profile,
+        profile,
+        output: plan.output,
+        frameStart: plan.frameStart,
+        frameEnd: plan.frameEnd,
         shotPath: plan.shotPath,
         glbPath: glbPath || undefined,
         outPath: plan.outPath,
@@ -577,12 +582,29 @@ async function runInside(options, current, apiKey) {
     }
     if (!stat || !stat.isFile() || stat.size === 0) {
         return {
-            kind: 'image',
+            kind: plan.kind,
             missing: true,
-            message: 'vork finished without an output image.',
-            profile: plan.profile,
+            message: plan.kind === 'video'
+                ? 'vork finished without an output video. ffmpeg is required on the pod.'
+                : 'vork finished without an output image.',
+            profile,
             shotPath: plan.shotPath,
             outPath: plan.outPath,
+            frameStart: plan.frameStart,
+            frameEnd: plan.frameEnd,
+            podId: pod.id,
+        };
+    }
+    if (plan.kind === 'video') {
+        onProgress?.({ engine: 'vork', task: 'render', status: 'done', progress: 1 });
+        return {
+            kind: 'video',
+            profile,
+            shotPath: plan.shotPath,
+            outPath: plan.outPath,
+            fileUrl: pathToFileURL(plan.outPath).href,
+            frameStart: plan.frameStart,
+            frameEnd: plan.frameEnd,
             podId: pod.id,
         };
     }
@@ -591,7 +613,7 @@ async function runInside(options, current, apiKey) {
     return {
         kind: 'image',
         url: `data:image/png;base64,${image.toString('base64')}`,
-        profile: plan.profile,
+        profile,
         shotPath: plan.shotPath,
         outPath: plan.outPath,
         fileUrl: pathToFileURL(plan.outPath).href,

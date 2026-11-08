@@ -87,9 +87,9 @@ export const vork = {
         return window.localAI.vork.runpodQuote();
     },
 
-    async renderRunpod({ profile, scene } = {}) {
+    async renderRunpod({ profile, scene, output, frameStart, frameEnd } = {}) {
         if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.renderRunpod({ profile, scene });
+        return window.localAI.vork.renderRunpod({ profile, scene, output, frameStart, frameEnd });
     },
 
     async openRunpodBilling() {

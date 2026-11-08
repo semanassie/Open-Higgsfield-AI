@@ -12,7 +12,7 @@ function installScript() {
         'set -euo pipefail',
         'export DEBIAN_FRONTEND=noninteractive',
         'apt-get update',
-        'apt-get install -y libegl1 libvulkan1 libgomp1 ca-certificates curl',
+        'apt-get install -y libegl1 libvulkan1 libgomp1 ca-certificates curl ffmpeg',
         'cd /tmp',
         `curl -fL -o SHA256SUMS ${VORK_RELEASE}/SHA256SUMS`,
         `curl -fL -o ${archive} ${VORK_RELEASE}/${archive}`,
@@ -29,8 +29,24 @@ function installScript() {
     ].join('\n');
 }
 
-function renderCommand(profile) {
-    return `export PATH="/usr/local/bin:$PATH"; export NVIDIA_VISIBLE_DEVICES=all; export VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json; vork render /tmp/shot.json --profile ${profile} --out /tmp/final.png`;
+function renderCommand(profile, options = {}) {
+    if (profile && typeof profile === 'object') {
+        options = profile;
+        profile = options.profile;
+    }
+    if (profile !== 'std/previs' && profile !== 'std/final') {
+        throw new Error('profile must be std/previs or std/final');
+    }
+    const output = options.output === 'mp4' ? 'mp4' : 'png';
+    const remoteOut = output === 'mp4' ? '/tmp/clip.mp4' : '/tmp/final.png';
+    let frames = '';
+    if (output === 'mp4') {
+        if (!Number.isInteger(options.frameStart) || !Number.isInteger(options.frameEnd)) {
+            throw new Error('frame range is invalid');
+        }
+        frames = ` --frame-start ${options.frameStart} --frame-end ${options.frameEnd}`;
+    }
+    return `export PATH="/usr/local/bin:$PATH"; export NVIDIA_VISIBLE_DEVICES=all; export VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json; vork render /tmp/shot.json --profile ${profile}${frames} --out ${remoteOut}`;
 }
 
 function defaultConnect({ host, port, username = 'root', privateKey }) {
@@ -118,11 +134,15 @@ async function renderOnPod({
     port,
     privateKey,
     profile,
+    output = 'png',
+    frameStart,
+    frameEnd,
     shotPath,
     glbPath,
     outPath,
     onProgress,
 }) {
+    const remoteOut = output === 'mp4' ? '/tmp/clip.mp4' : '/tmp/final.png';
     const session = await connect({ host, port, username: 'root', privateKey });
     try {
         onProgress?.({ engine: 'vork', task: 'install', status: 'install' });
@@ -134,12 +154,12 @@ async function renderOnPod({
         await session.putFile(shotPath, '/tmp/shot.json');
         if (glbPath) await session.putFile(glbPath, '/tmp/model.glb');
         onProgress?.({ engine: 'vork', task: 'render', status: 'render' });
-        const rendered = await session.exec(renderCommand(profile));
+        const rendered = await session.exec(renderCommand({ profile, output, frameStart, frameEnd }));
         if (rendered.code !== 0) {
             throw new Error(tail(rendered) || 'vork render failed on the pod');
         }
         onProgress?.({ engine: 'vork', task: 'fetch', status: 'fetch' });
-        await session.getFile('/tmp/final.png', outPath);
+        await session.getFile(remoteOut, outPath);
     } finally {
         session.close();
     }

@@ -37,12 +37,17 @@ function tempPaths() {
 test('install script includes libegl1 and checks the official archive', () => {
     const script = installScript();
     assert.match(script, /libegl1/);
+    assert.match(script, /ffmpeg/);
     assert.match(script, /libvulkan1/);
     assert.match(script, /sha256sum -c/);
     assert.match(script, /\/usr\/local\/lib\/vork/);
     assert.match(script, /vork setup/);
     assert.match(renderCommand('std/final'), /--profile std\/final/);
     assert.match(renderCommand('std/final'), /\/tmp\/final\.png/);
+    const clip = renderCommand({ profile: 'std/final', output: 'mp4', frameStart: 0, frameEnd: 47 });
+    assert.match(clip, /--frame-start 0 --frame-end 47/);
+    assert.match(clip, /\/tmp\/clip\.mp4/);
+    assert.equal(clip.includes('/tmp/final.png'), false);
 });
 
 test('API key is encrypted and refused when the OS cannot encrypt', () => {
@@ -234,6 +239,42 @@ test('a pod this app did not rent is not terminated', async () => {
         }),
         /did not rent/,
     );
+});
+
+test('a clip rents a 4090, requests an mp4 frame range, and terminates without billing a real account', async () => {
+    const paths = tempPaths();
+    const storage = safeStorage();
+    saveApiKey({ paths, apiKey: 'rp-secret', safeStorage: storage });
+    const calls = [];
+    const commands = [];
+    const result = await runRemoteStill({
+        paths,
+        profile: 'std/final',
+        output: 'mp4',
+        safeStorage: storage,
+        sleep: async () => {},
+        connect: async () => ({
+            exec: async (command) => {
+                commands.push(command);
+                return { code: 0, stdout: 'vork 0.1.0\n', stderr: '' };
+            },
+            putFile: async () => {},
+            getFile: async (remote, local) => {
+                assert.equal(remote, '/tmp/clip.mp4');
+                fs.writeFileSync(local, Buffer.from('mp4-bytes'));
+            },
+            close: () => {},
+        }),
+        fetchImpl: podFetch(calls, { ready: true }),
+    });
+    assert.equal(result.kind, 'video');
+    assert.equal(result.frameStart, 0);
+    assert.equal(result.frameEnd, 47);
+    assert.equal(result.url, undefined);
+    assert.match(result.fileUrl, /^file:/);
+    assert.match(commands.find((command) => command.includes('vork render')), /--frame-start 0 --frame-end 47/);
+    assert.equal(calls.some((call) => call.method === 'DELETE'), true);
+    assert.equal(calls.some((call) => String(call.url).includes('api.runpod.io') && call.method === 'POST'), true);
 });
 
 test('an empty image is reported missing and the pod is still shut down', async () => {
