@@ -2,7 +2,7 @@ import { SettingsModal } from './SettingsModal.js';
 import { t, getLang, setLang } from '../lib/i18n.js';
 import { isLocalAIAvailable } from '../lib/localInferenceClient.js';
 
-export function Header(navigate) {
+export function Header(navigate, initialPage = 'workflows') {
     const header = document.createElement('header');
     header.className = 'w-full flex flex-col z-50 sticky top-0';
 
@@ -42,22 +42,20 @@ export function Header(navigate) {
         ...(isLocalAIAvailable() ? [{ label: t('nav.vfx'), page: 'vfx' }] : []),
     ];
 
-    items.forEach(({ label, page }, idx) => {
+    items.forEach(({ label, page }) => {
         const link = document.createElement('a');
         link.textContent = label;
-        link.className = `hover:text-white transition-all cursor-pointer relative group ${idx === 0 ? 'text-white' : ''}`;
+        link.dataset.page = page;
+        const active = page === initialPage;
+        link.className = `hover:text-white transition-all cursor-pointer relative group ${active ? 'text-white' : ''}`;
 
-        if (idx === 0) {
-            const dot = document.createElement('div');
-            dot.className = 'absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full';
-            link.appendChild(dot);
-        }
+        const dot = document.createElement('div');
+        dot.dataset.navDot = '1';
+        dot.hidden = !active;
+        dot.className = 'absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full';
+        link.appendChild(dot);
 
-        link.onclick = () => {
-            Array.from(menu.children).forEach(child => child.classList.remove('text-white'));
-            link.classList.add('text-white');
-            navigate(page);
-        };
+        link.onclick = () => navigate(page);
 
         menu.appendChild(link);
     });

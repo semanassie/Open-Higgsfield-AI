@@ -211,6 +211,11 @@ const translations = {
 
         // Workflow Studio
         'workflows.title': 'Workflow Studio',
+        'workflows.desktopHint': 'Template covers from this repo. Image and Video tabs keep the model picker.',
+        'workflows.loading': 'Loading workflows…',
+        'workflows.needKey': 'Set your MuAPI key in Settings to load workflow templates.',
+        'workflows.empty': 'No workflows found.',
+        'workflows.loadError': 'Failed to load workflows.',
         'workflows.webOnly': 'Available in the hosted app. Open the link below.',
         'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 
@@ -525,6 +530,11 @@ const translations = {
 
         // Workflow Studio
         'workflows.title': '工作流工作室',
+        'workflows.desktopHint': '模板封面来自本仓库。图像和视频页仍包含模型选择器。',
+        'workflows.loading': '正在加载工作流…',
+        'workflows.needKey': '请在设置中填写 MuAPI 密钥以加载工作流模板。',
+        'workflows.empty': '没有找到工作流。',
+        'workflows.loadError': '工作流加载失败。',
         'workflows.webOnly': '请在托管应用中使用。打开下面的链接。',
         'workflows.webUrl': 'https://muapi.ai/open-generative-ai',
 

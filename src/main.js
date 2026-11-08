@@ -4,10 +4,36 @@ import { ImageStudio } from './components/ImageStudio.js';
 
 const app = document.querySelector('#app');
 let contentArea;
+let currentPage = null;
 
-// Router
+const PAGES = new Set([
+  'image', 'video', 'cinema', 'director', 'audio', 'lipsync',
+  'workflows', 'agents', 'mcp-cli', 'vfx',
+]);
+
+function pageFromLocation() {
+  const raw = (location.hash || '').replace(/^#\/?/, '').split(/[/?#]/)[0];
+  return PAGES.has(raw) ? raw : 'workflows';
+}
+
+function markNav(page) {
+  document.querySelectorAll('nav a[data-page]').forEach((el) => {
+    const active = el.dataset.page === page;
+    el.classList.toggle('text-white', active);
+    const dot = el.querySelector('[data-nav-dot]');
+    if (dot) dot.hidden = !active;
+  });
+}
+
+// Router. Desktop window loads dist/index.html#workflows (not /studio/workflows).
 function navigate(page) {
   if (!contentArea) return;
+  if (!PAGES.has(page)) page = 'workflows';
+  if (currentPage === page) return;
+  currentPage = page;
+  const nextHash = `#${page}`;
+  if (location.hash !== nextHash) location.hash = nextHash;
+  markNav(page);
   contentArea.innerHTML = '';
 
   if (page === 'image') {
@@ -52,16 +78,19 @@ function navigate(page) {
 }
 
 app.innerHTML = '';
-// Pass navigate to Header so links work
-app.appendChild(Header(navigate));
+const initialPage = pageFromLocation();
+app.appendChild(Header(navigate, initialPage));
 
 contentArea = document.createElement('main');
 contentArea.id = 'content-area';
 contentArea.className = 'flex-1 relative w-full overflow-hidden flex flex-col bg-app-bg';
 app.appendChild(contentArea);
 
-// Initial Route
-navigate('image');
+navigate(initialPage);
+
+window.addEventListener('hashchange', () => {
+  navigate(pageFromLocation());
+});
 
 // Event Listener for Navigation
 window.addEventListener('navigate', (e) => {

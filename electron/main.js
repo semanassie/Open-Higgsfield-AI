@@ -36,7 +36,9 @@ function createWindow() {
     });
 
     const indexPath = path.join(__dirname, '../dist/index.html');
-    mainWindow.loadFile(indexPath).catch((err) => {
+    // Hash route inside the built desktop UI. /studio/workflows is the Next.js
+    // web app and is not served by this window (or by whatever owns port 3000).
+    mainWindow.loadFile(indexPath, { hash: 'workflows' }).catch((err) => {
         console.error('Failed to load index.html:', err);
         mainWindow.show();
     });
