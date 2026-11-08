@@ -254,9 +254,9 @@ function connectableEndpoint(pod) {
     return endpoint;
 }
 
-async function createPod({ apiKey, fetchImpl, name = podName(), publicKey }) {
+async function createPod({ apiKey, fetchImpl, name = podName(), publicKey, clouds = ['COMMUNITY', 'SECURE'] }) {
     let lastError = null;
-    for (const cloud of ['COMMUNITY', 'SECURE']) {
+    for (const cloud of clouds) {
         try {
             const created = await api({
                 apiKey,
@@ -270,7 +270,7 @@ async function createPod({ apiKey, fetchImpl, name = podName(), publicKey }) {
             return { ...pod, name: pod.name || name, cloud };
         } catch (error) {
             lastError = error;
-            if (cloud === 'COMMUNITY' && capacityError(error)) continue;
+            if (cloud !== clouds[clouds.length - 1] && capacityError(error)) continue;
             throw error;
         }
     }
@@ -583,7 +583,12 @@ async function runInside(options, current, apiKey) {
     throwIfCancelled(current);
     onProgress?.({ engine: 'vork', task: 'rent', status: 'rent' });
     await registerSshKey({ apiKey, publicKey: ssh.publicKey, fetchImpl });
-    const pod = await createPod({ apiKey, fetchImpl, publicKey: ssh.publicKey });
+    const pod = await createPod({
+        apiKey,
+        fetchImpl,
+        publicKey: ssh.publicKey,
+        clouds: options.clouds,
+    });
     current.podId = pod.id;
     current.owned.add(pod.id);
     if (pod.gpu && pod.gpu.id && pod.gpu.id !== GPU_4090) {

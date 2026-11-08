@@ -14,8 +14,8 @@ function installScript() {
         'apt-get update',
         'apt-get install -y libegl1 libvulkan1 libgomp1 ca-certificates curl ffmpeg',
         'cd /tmp',
-        `curl -fL -o SHA256SUMS ${VORK_RELEASE}/SHA256SUMS`,
-        `curl -fL -o ${archive} ${VORK_RELEASE}/${archive}`,
+        `curl -fL --retry 5 --retry-all-errors --retry-delay 2 -o SHA256SUMS ${VORK_RELEASE}/SHA256SUMS`,
+        `curl -fL --retry 5 --retry-all-errors --retry-delay 2 -o ${archive} ${VORK_RELEASE}/${archive}`,
         `grep ${archive} SHA256SUMS | sha256sum -c`,
         'rm -rf /tmp/vork-tree /usr/local/lib/vork',
         'mkdir -p /tmp/vork-tree /usr/local/lib/vork',
@@ -136,7 +136,7 @@ function wrap(conn) {
 }
 
 function retryableSsh(message) {
-    return /container not found|is not running|not ready|connection refused|timed out|ECONNREFUSED|ECONNRESET|error response from daemon|remote command timed out/i.test(message);
+    return /container not found|is not running|not ready|connection refused|timed out|ECONNREFUSED|ECONNRESET|error response from daemon|remote command timed out|curl: \(22\)|error: 504|error: 502|error: 503/i.test(message);
 }
 
 async function openReadySession({ connect, host, port, username, privateKey, sleep }) {
