@@ -1,99 +1,161 @@
-// Browser-side seam for the desktop vork studio.
-// The page asks Electron to launch the official binary. It does not render.
+// Browser-side seam for vork.
+// Electron talks to the official binary over IPC.
+// The Next studio talks to the same actions on the localhost bridge.
 
 import { isLocalAIAvailable } from './localInferenceClient.js';
 
-function unavailable(value) {
-    if (!isLocalAIAvailable()) return value;
-    return null;
+const BRIDGE = 'http://127.0.0.1:3011';
+
+async function bridge(path, { method = 'GET', json, file, filename } = {}) {
+    /** @type {RequestInit} */
+    const init = { method };
+    if (file) {
+        init.method = 'POST';
+        init.body = file;
+        init.headers = { 'X-Filename': filename || 'model.glb' };
+    } else if (json !== undefined) {
+        init.method = method === 'GET' ? 'POST' : method;
+        init.headers = { 'Content-Type': 'application/json' };
+        init.body = JSON.stringify(json);
+    }
+    let response;
+    try {
+        response = await fetch(`${BRIDGE}${path}`, init);
+    } catch {
+        const error = new Error('Vork bridge is not running. Start launch.bat.');
+        error.bridgeDown = true;
+        throw error;
+    }
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(data.error || `Vork bridge failed (${response.status})`);
+    }
+    return data;
+}
+
+function desktop() {
+    return isLocalAIAvailable();
 }
 
 export const vork = {
     async getStatus() {
-        const fallback = unavailable({ found: false, binaryPath: '', desktopOnly: true });
-        if (fallback) return fallback;
-        return window.localAI.vork.getStatus();
+        if (desktop()) return window.localAI.vork.getStatus();
+        try {
+            return await bridge('/v1/status');
+        } catch (err) {
+            if (err.bridgeDown) return { found: false, binaryPath: '', desktopOnly: true };
+            throw err;
+        }
     },
 
     async setBinaryPath(binaryPath) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.setBinaryPath(binaryPath);
+        if (desktop()) return window.localAI.vork.setBinaryPath(binaryPath);
+        return bridge('/v1/binary', { json: { binaryPath } });
     },
 
     async probe() {
-        const fallback = unavailable({ ok: false, error: 'Vork is only available in the desktop app.' });
-        if (fallback) return fallback;
-        return window.localAI.vork.probe();
+        if (desktop()) return window.localAI.vork.probe();
+        return bridge('/v1/probe', { method: 'POST', json: {} });
     },
 
     async getScene() {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.getScene();
+        if (desktop()) return window.localAI.vork.getScene();
+        return bridge('/v1/scene');
     },
 
-    // Agent seam: replace the stub scene. The human does not edit this JSON.
     async writeScene(scene) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.writeScene(scene);
+        if (desktop()) return window.localAI.vork.writeScene(scene);
+        return bridge('/v1/scene', { json: scene });
     },
 
     async setup() {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.setup();
+        if (desktop()) return window.localAI.vork.setup();
+        return bridge('/v1/setup', { method: 'POST', json: {} });
     },
 
-    // Copies a .glb into the shot folder as model.glb and adds the asset node.
-    // Without a path, the desktop app opens the file dialog itself.
     async importGltf(sourcePath) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.importGltf(sourcePath);
+        if (desktop()) return window.localAI.vork.importGltf(sourcePath);
+        if (!sourcePath) throw new Error('Choose a .glb file');
+        return bridge('/v1/import', { json: { sourcePath } });
     },
 
-    async render({ profile, scene, output, frameStart, frameEnd } = {}) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.render({ profile, scene, output, frameStart, frameEnd });
+    async importGltfFile(file, filename) {
+        if (desktop()) throw new Error('Use the desktop file dialog in the Electron app.');
+        return bridge('/v1/import', { file, filename: filename || file?.name || 'model.glb' });
+    },
+
+    async render(params = {}) {
+        if (desktop()) return window.localAI.vork.render(params);
+        return bridge('/v1/render', { json: params });
     },
 
     async openOutput(outPath) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.openOutput(outPath);
+        if (desktop()) return window.localAI.vork.openOutput(outPath);
+        return bridge('/v1/open-output', { json: { outPath } });
     },
 
     cancel() {
-        if (!isLocalAIAvailable()) return;
-        window.localAI.vork.cancel();
+        if (desktop()) {
+            window.localAI.vork.cancel();
+            return;
+        }
+        bridge('/v1/cancel', { method: 'POST', json: {} }).catch(() => {});
     },
 
     async runpodStatus() {
-        const fallback = unavailable({
-            encryptionAvailable: false,
-            hasKey: false,
-            publicKey: '',
-            billingUrl: 'https://console.runpod.io/user/billing',
-            desktopOnly: true,
-        });
-        if (fallback) return fallback;
-        return window.localAI.vork.runpodStatus();
+        if (desktop()) return window.localAI.vork.runpodStatus();
+        try {
+            return await bridge('/v1/runpod/status');
+        } catch (err) {
+            if (err.bridgeDown) {
+                return {
+                    encryptionAvailable: false,
+                    hasKey: false,
+                    publicKey: '',
+                    billingUrl: 'https://console.runpod.io/user/billing',
+                    desktopOnly: true,
+                };
+            }
+            throw err;
+        }
     },
 
     async setRunpodKey(apiKey) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.setRunpodKey(apiKey);
+        if (desktop()) return window.localAI.vork.setRunpodKey(apiKey);
+        return bridge('/v1/runpod/key', { json: { apiKey } });
     },
 
     async runpodQuote() {
-        const fallback = unavailable({ ok: false, error: 'Vork is only available in the desktop app.' });
-        if (fallback) return fallback;
-        return window.localAI.vork.runpodQuote();
+        if (desktop()) return window.localAI.vork.runpodQuote();
+        return bridge('/v1/runpod/quote');
     },
 
-    async renderRunpod({ profile, scene, output, frameStart, frameEnd } = {}) {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.renderRunpod({ profile, scene, output, frameStart, frameEnd });
+    async renderRunpod(params = {}) {
+        if (desktop()) return window.localAI.vork.renderRunpod(params);
+        return bridge('/v1/runpod/render', { json: params });
     },
 
     async openRunpodBilling() {
-        if (!isLocalAIAvailable()) throw new Error('Vork is only available in the desktop app.');
-        return window.localAI.vork.openRunpodBilling();
+        if (desktop()) return window.localAI.vork.openRunpodBilling();
+        return bridge('/v1/runpod/billing', { method: 'POST', json: {} });
+    },
+
+    watchProgress(callback) {
+        if (desktop()) return () => {};
+        let stopped = false;
+        const tick = async () => {
+            if (stopped) return;
+            try {
+                const data = await bridge('/v1/progress');
+                if (data) callback(data);
+            } catch {
+                // Bridge down: the status line already explains it.
+            }
+        };
+        const timer = setInterval(tick, 700);
+        return () => {
+            stopped = true;
+            clearInterval(timer);
+        };
     },
 };

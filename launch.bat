@@ -2,13 +2,10 @@
 cd /d "%~dp0"
 title Open Generative AI
 
-REM Desktop app for THIS checkout only:
+REM This checkout only:
 REM   C:\Projects\Open-Higgsfield-AI\open-higgsfield-ai\launch.bat
-REM Double-click this file. It rebuilds the Electron UI from this folder
-REM and opens the Open Generative AI window on Workflows (file dist/index.html#workflows).
-REM Do not open http://localhost:3000 — that port is OpenClaw's Express server
-REM (C:\Projects\OpenClaw\chat-ui\server.js), which answers "Cannot GET /studio/workflows".
-REM This studio does not use port 3000. Next.js /studio/workflows is the hosted web app.
+REM Starts the Next studio on port 3010 and the localhost Vork bridge on 3011.
+REM Port 3000 belongs to OpenClaw. Do not use it.
 
 where node >nul 2>&1
 if errorlevel 1 (
@@ -17,7 +14,11 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo Kaynnistetaan tyopoytasovellus tasta kansiosta (Electron).
-echo Ikkuna: Open Generative AI — Workflows
-call npm run electron:dev
+echo Kaynnistetaan Vork-silta osoitteessa http://127.0.0.1:3011
+start "Vork bridge" /MIN node scripts\vork-bridge.js
+
+echo Kaynnistetaan web-studio osoitteessa http://localhost:3010/studio
+start "" cmd /c "timeout /t 8 /nobreak >nul & start http://localhost:3010/studio"
+
+call npm run dev -- -p 3010
 if errorlevel 1 pause

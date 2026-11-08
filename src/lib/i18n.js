@@ -322,7 +322,7 @@ const translations = {
         'vfx.kicker': 'Desktop',
         'vfx.title': 'VFX Studio',
         'vfx.subtitle': 'The agent writes the scene. Electron launches the official vork binary. This page does not render.',
-        'vfx.desktopOnly': 'Vork runs in the desktop app. The browser does not render.',
+        'vfx.desktopOnly': 'Vork bridge is not running. Start launch.bat, then open this tab again.',
         'vfx.binaryMissing': 'vork was not found. Install the official release, set VORK_BIN, or paste the binary path below.',
         'vfx.outputMissingTitle': 'No image yet',
         'vfx.outputMissing': 'The render did not produce an image. Install vork, prepare it, then run Preview again.',

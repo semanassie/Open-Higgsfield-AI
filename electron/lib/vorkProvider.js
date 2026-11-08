@@ -320,71 +320,167 @@ function cancelRender() {
     return { ok: true };
 }
 
-function register() {
-    const { app, BrowserWindow, ipcMain } = require('electron');
-    const paths = () => vorkPaths(app.getPath('userData'));
-    const sendProgress = (data) => {
-        const win = BrowserWindow.getAllWindows()[0] || null;
-        win?.webContents.send('local-ai:progress', data);
+/**
+ * Shared vork actions for Electron IPC and the localhost bridge.
+ * @param {{
+ *   userDataPath: string,
+ *   safeStorage?: object,
+ *   openPath?: (target: string) => Promise<string>|string,
+ *   openExternal?: (url: string) => Promise<void>|void,
+ *   onProgress?: (data: object) => void,
+ *   pickGlb?: () => Promise<string|null>,
+ * }} options
+ */
+function createHandlers(options) {
+    const paths = () => vorkPaths(options.userDataPath);
+    const sendProgress = (data) => options.onProgress?.(data);
+    const safeStorage = options.safeStorage;
+
+    return {
+        getStatus() {
+            const store = paths();
+            const binaryPath = resolveBinary(store);
+            const config = readConfig(store.configPath);
+            return {
+                found: Boolean(binaryPath),
+                binaryPath: binaryPath || '',
+                setupComplete: Boolean(config.setupComplete),
+            };
+        },
+
+        setBinaryPath(binaryPath) {
+            const candidate = typeof binaryPath === 'string' ? binaryPath.trim() : '';
+            if (!candidate || !fs.existsSync(candidate)) {
+                throw new Error('vork binary was not found at that path');
+            }
+            const resolved = path.resolve(candidate);
+            const store = paths();
+            writeConfig(store.configPath, { ...readConfig(store.configPath), binaryPath: resolved });
+            return { ok: true, binaryPath: resolved };
+        },
+
+        probe() {
+            const binaryPath = resolveBinary(paths());
+            if (!binaryPath) return { ok: false, binaryPath: '', error: missingBinaryMessage({ platform: process.platform }) };
+            return probeBinary(binaryPath);
+        },
+
+        getScene() {
+            return readCurrentScene(paths());
+        },
+
+        writeScene(scene) {
+            const store = paths();
+            const plan = planRender({
+                shotsRoot: store.shotsRoot,
+                scene,
+                profile: 'std/previs',
+                shotId: DEFAULT_SHOT_ID,
+            });
+            fs.mkdirSync(plan.shotDir, { recursive: true });
+            fs.writeFileSync(plan.shotPath, JSON.stringify(plan.scene, null, 2));
+            return { ok: true, shotPath: plan.shotPath, scene: plan.scene };
+        },
+
+        setup() {
+            const store = paths();
+            return runSetup({
+                binaryPath: resolveBinary(store),
+                paths: store,
+                onProgress: sendProgress,
+            });
+        },
+
+        async importGltf(params = {}) {
+            const store = paths();
+            let sourcePath = params.sourcePath;
+            if (!sourcePath) {
+                if (typeof options.pickGlb !== 'function') {
+                    throw new Error('Choose a .glb file');
+                }
+                sourcePath = await options.pickGlb();
+                if (!sourcePath) return { ok: false, cancelled: true };
+            }
+            return importGltf({ paths: store, sourcePath });
+        },
+
+        async render(params = {}) {
+            if (runpod.isRemoteBusy()) throw new Error('A vork task is already running');
+            const store = paths();
+            const binaryPath = resolveBinary(store);
+            if (!readConfig(store.configPath).setupComplete) {
+                await runSetup({ binaryPath, paths: store, onProgress: sendProgress });
+            }
+            return runRender({
+                binaryPath,
+                paths: store,
+                scene: params.scene,
+                profile: params.profile,
+                output: params.output,
+                frameStart: params.frameStart,
+                frameEnd: params.frameEnd,
+                onProgress: sendProgress,
+            });
+        },
+
+        openOutput(outPath) {
+            const target = assertShotFile(paths(), outPath);
+            if (typeof options.openPath !== 'function') return '';
+            return options.openPath(target);
+        },
+
+        runpodStatus() {
+            return runpod.localStatus({ paths: paths(), safeStorage });
+        },
+
+        setRunpodKey(apiKey) {
+            return runpod.storeApiKey({ paths: paths(), apiKey, safeStorage });
+        },
+
+        runpodQuote() {
+            return runpod.accountQuote({ paths: paths(), safeStorage });
+        },
+
+        runpodRender(params = {}) {
+            if (activeChild) throw new Error('A vork task is already running');
+            return runpod.runRemoteStill({
+                paths: paths(),
+                scene: params.scene,
+                profile: params.profile,
+                output: params.output,
+                frameStart: params.frameStart,
+                frameEnd: params.frameEnd,
+                safeStorage,
+                onProgress: sendProgress,
+                keepPod: params.keepPod === true,
+            });
+        },
+
+        openBilling() {
+            if (typeof options.openExternal === 'function') {
+                return options.openExternal(runpod.BILLING_URL);
+            }
+            return runpod.BILLING_URL;
+        },
+
+        cancel() {
+            return cancelRender();
+        },
     };
+}
 
-    ipcMain.handle('vork:get-status', () => {
-        const store = paths();
-        const binaryPath = resolveBinary(store);
-        const config = readConfig(store.configPath);
-        return {
-            found: Boolean(binaryPath),
-            binaryPath: binaryPath || '',
-            setupComplete: Boolean(config.setupComplete),
-        };
-    });
-
-    ipcMain.handle('vork:set-binary-path', (_event, binaryPath) => {
-        const candidate = typeof binaryPath === 'string' ? binaryPath.trim() : '';
-        if (!candidate || !fs.existsSync(candidate)) {
-            throw new Error('vork binary was not found at that path');
-        }
-        const resolved = path.resolve(candidate);
-        const store = paths();
-        writeConfig(store.configPath, { ...readConfig(store.configPath), binaryPath: resolved });
-        return { ok: true, binaryPath: resolved };
-    });
-
-    ipcMain.handle('vork:probe', () => {
-        const binaryPath = resolveBinary(paths());
-        if (!binaryPath) return { ok: false, binaryPath: '', error: missingBinaryMessage({ platform: process.platform }) };
-        return probeBinary(binaryPath);
-    });
-
-    ipcMain.handle('vork:get-scene', () => readCurrentScene(paths()));
-
-    ipcMain.handle('vork:write-scene', (_event, scene) => {
-        const store = paths();
-        const plan = planRender({
-            shotsRoot: store.shotsRoot,
-            scene,
-            profile: 'std/previs',
-            shotId: DEFAULT_SHOT_ID,
-        });
-        fs.mkdirSync(plan.shotDir, { recursive: true });
-        fs.writeFileSync(plan.shotPath, JSON.stringify(plan.scene, null, 2));
-        return { ok: true, shotPath: plan.shotPath, scene: plan.scene };
-    });
-
-    ipcMain.handle('vork:setup', () => {
-        const store = paths();
-        return runSetup({
-            binaryPath: resolveBinary(store),
-            paths: store,
-            onProgress: sendProgress,
-        });
-    });
-
-    ipcMain.handle('vork:import-gltf', async (_event, params = {}) => {
-        const store = paths();
-        let sourcePath = params.sourcePath;
-        if (!sourcePath) {
-            const { dialog, BrowserWindow } = require('electron');
+function register() {
+    const { app, BrowserWindow, ipcMain, dialog, shell, safeStorage } = require('electron');
+    const handlers = createHandlers({
+        userDataPath: app.getPath('userData'),
+        safeStorage,
+        openPath: (target) => shell.openPath(target),
+        openExternal: (url) => shell.openExternal(url),
+        onProgress: (data) => {
+            const win = BrowserWindow.getAllWindows()[0] || null;
+            win?.webContents.send('local-ai:progress', data);
+        },
+        pickGlb: async () => {
             const win = BrowserWindow.getAllWindows()[0] || null;
             const dialogOptions = {
                 title: 'Import glTF',
@@ -394,78 +490,31 @@ function register() {
             const picked = win
                 ? await dialog.showOpenDialog(win, dialogOptions)
                 : await dialog.showOpenDialog(dialogOptions);
-            if (picked.canceled || !picked.filePaths[0]) return { ok: false, cancelled: true };
-            sourcePath = picked.filePaths[0];
-        }
-        return importGltf({ paths: store, sourcePath });
+            if (picked.canceled || !picked.filePaths[0]) return null;
+            return picked.filePaths[0];
+        },
     });
 
-    ipcMain.handle('vork:render', async (_event, params = {}) => {
-        if (runpod.isRemoteBusy()) throw new Error('A vork task is already running');
-        const store = paths();
-        const binaryPath = resolveBinary(store);
-        if (!readConfig(store.configPath).setupComplete) {
-            await runSetup({ binaryPath, paths: store, onProgress: sendProgress });
-        }
-        return runRender({
-            binaryPath,
-            paths: store,
-            scene: params.scene,
-            profile: params.profile,
-            output: params.output,
-            frameStart: params.frameStart,
-            frameEnd: params.frameEnd,
-            onProgress: sendProgress,
-        });
-    });
-
-    ipcMain.handle('vork:open-output', (_event, outPath) => {
-        const { shell } = require('electron');
-        const target = assertShotFile(paths(), outPath);
-        return shell.openPath(target);
-    });
-
-    ipcMain.handle('vork:runpod-status', () => {
-        const { safeStorage } = require('electron');
-        return runpod.localStatus({ paths: paths(), safeStorage });
-    });
-
-    ipcMain.handle('vork:runpod-set-key', (_event, apiKey) => {
-        const { safeStorage } = require('electron');
-        return runpod.storeApiKey({ paths: paths(), apiKey, safeStorage });
-    });
-
-    ipcMain.handle('vork:runpod-quote', () => {
-        const { safeStorage } = require('electron');
-        return runpod.accountQuote({ paths: paths(), safeStorage });
-    });
-
-    ipcMain.handle('vork:runpod-render', (_event, params = {}) => {
-        if (activeChild) throw new Error('A vork task is already running');
-        const { safeStorage } = require('electron');
-        return runpod.runRemoteStill({
-            paths: paths(),
-            scene: params.scene,
-            profile: params.profile,
-            output: params.output,
-            frameStart: params.frameStart,
-            frameEnd: params.frameEnd,
-            safeStorage,
-            onProgress: sendProgress,
-            keepPod: params.keepPod === true,
-        });
-    });
-
-    ipcMain.handle('vork:runpod-open-billing', () => {
-        const { shell } = require('electron');
-        return shell.openExternal(runpod.BILLING_URL);
-    });
-
-    ipcMain.handle('vork:cancel', () => cancelRender());
+    ipcMain.handle('vork:get-status', () => handlers.getStatus());
+    ipcMain.handle('vork:set-binary-path', (_event, binaryPath) => handlers.setBinaryPath(binaryPath));
+    ipcMain.handle('vork:probe', () => handlers.probe());
+    ipcMain.handle('vork:get-scene', () => handlers.getScene());
+    ipcMain.handle('vork:write-scene', (_event, scene) => handlers.writeScene(scene));
+    ipcMain.handle('vork:setup', () => handlers.setup());
+    ipcMain.handle('vork:import-gltf', (_event, params) => handlers.importGltf(params));
+    ipcMain.handle('vork:render', (_event, params) => handlers.render(params));
+    ipcMain.handle('vork:open-output', (_event, outPath) => handlers.openOutput(outPath));
+    ipcMain.handle('vork:runpod-status', () => handlers.runpodStatus());
+    ipcMain.handle('vork:runpod-set-key', (_event, apiKey) => handlers.setRunpodKey(apiKey));
+    ipcMain.handle('vork:runpod-quote', () => handlers.runpodQuote());
+    ipcMain.handle('vork:runpod-render', (_event, params) => handlers.runpodRender(params));
+    ipcMain.handle('vork:runpod-open-billing', () => handlers.openBilling());
+    ipcMain.handle('vork:cancel', () => handlers.cancel());
 }
 
 module.exports = {
     register,
+    createHandlers,
     vorkPaths,
     resolveBinary,
     readCurrentScene,

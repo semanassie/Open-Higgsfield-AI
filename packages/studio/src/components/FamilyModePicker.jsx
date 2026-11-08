@@ -330,7 +330,6 @@ function getModeIsDefault(model) {
 }
 
 export {
-  ModeChips,
   VIDEO_FAMILY_PRIORITY,
   IMAGE_FAMILY_PRIORITY,
   getFamilies,

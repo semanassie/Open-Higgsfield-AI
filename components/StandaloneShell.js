@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
 import {
   ImageStudio,
   EnhanceStudio,
@@ -14,7 +13,6 @@ import {
   CinemaStudio,
   AudioStudio,
   MarketingStudio,
-  WorkflowStudio,
   AgentStudio,
   AppsStudio,
   AssetsPanel,
@@ -27,12 +25,9 @@ import {
   SEND_TO_EVENT,
 } from 'studio';
 
-const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignAgentStudio), {
-  ssr: false,
-  loading: () => <div className="h-full w-full bg-black flex items-center justify-center text-white/20">Loading Design Studio...</div>
-});
 import axios from 'axios';
 import ApiKeyModal from './ApiKeyModal';
+import VanillaStudio from './VanillaStudio';
 
 const TABS = [
   { id: 'image',   label: 'Image Studio' },
@@ -54,6 +49,8 @@ const TABS = [
   { id: 'design-agent', label: 'Design Agent' },
   { id: 'mcp-cli', label: 'MCP & CLI' },
   { id: 'apps', label: 'Explore Apps' },
+  { id: 'director', label: 'Director' },
+  { id: 'vfx', label: 'VFX' },
 ];
 
 const STORAGE_KEY = 'muapi_key';
@@ -445,11 +442,17 @@ function StandaloneShellInner() {
         {activeTab === 'production' && <ProductionStudio apiKey={apiKey} />}
         {activeTab === 'audio'   && <AudioStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
         {activeTab === 'marketing' && <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-        {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'workflows' && <VanillaStudio studio="workflows" />}
         {activeTab === 'agents' && <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
-        {activeTab === 'design-agent' && <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'design-agent' && (
+          <div className="h-full w-full flex items-center justify-center text-white/50 text-sm px-6 text-center">
+            Design Agent is not in this checkout. The design-agent package is missing.
+          </div>
+        )}
         {activeTab === 'mcp-cli' && <McpCliStudio />}
         {activeTab === 'apps' && <AppsStudio apiKey={apiKey} />}
+        {activeTab === 'director' && <VanillaStudio studio="director" />}
+        {activeTab === 'vfx' && <VanillaStudio studio="vfx" />}
       </div>
 
       {/* Settings Modal */}

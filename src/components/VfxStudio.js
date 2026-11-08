@@ -63,14 +63,7 @@ export function VfxStudio() {
     const runpodBilling = inner.querySelector('#vfx-runpod-billing');
     const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn, runpodPrevis, runpodFinal, runpodClip];
 
-    if (!isLocalAIAvailable()) {
-        statusEl.textContent = t('vfx.desktopOnly');
-        actionBtns.forEach((btn) => { btn.disabled = true; });
-        cancelBtn.disabled = true;
-        runpodBilling.disabled = true;
-        runpodBalance.textContent = t('vfx.desktopOnly');
-        return container;
-    }
+    const bridgeMode = !isLocalAIAvailable();
 
     let rendering = false;
 
@@ -86,6 +79,10 @@ export function VfxStudio() {
 
     const showStatus = async () => {
         const status = await vork.getStatus();
+        if (status.desktopOnly) {
+            statusEl.textContent = t('vfx.desktopOnly');
+            return;
+        }
         if (!status.found) {
             statusEl.textContent = t('vfx.binaryMissing');
             pathRow.classList.remove('hidden');
@@ -208,6 +205,31 @@ export function VfxStudio() {
     };
     importBtn.onclick = async () => {
         if (rendering) return;
+        if (bridgeMode) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.glb,model/gltf-binary';
+            input.onchange = async () => {
+                const file = input.files && input.files[0];
+                if (!file) return;
+                setBusy(true);
+                try {
+                    const imported = await vork.importGltfFile(file, file.name);
+                    if (imported && imported.cancelled) {
+                        statusEl.textContent = t('vfx.cancelled');
+                    } else {
+                        statusEl.textContent = t('vfx.imported');
+                        await showScene();
+                    }
+                } catch (err) {
+                    statusEl.textContent = err.message || String(err);
+                } finally {
+                    setBusy(false);
+                }
+            };
+            input.click();
+            return;
+        }
         setBusy(true);
         try {
             const imported = await vork.importGltf();
@@ -351,11 +373,14 @@ export function VfxStudio() {
         }
     };
 
-    const offProgress = localAI.onProgress((data) => {
+    const onVorkProgress = (data) => {
         if (data?.engine !== 'vork') return;
-        if (data.status === 'done') return;
+        if (data.status === 'done' || data.status === 'idle') return;
         statusEl.textContent = progressText(data);
-    });
+    };
+    const offProgress = bridgeMode
+        ? vork.watchProgress(onVorkProgress)
+        : localAI.onProgress(onVorkProgress);
 
     const detach = new MutationObserver(() => {
         if (container.isConnected) return;
