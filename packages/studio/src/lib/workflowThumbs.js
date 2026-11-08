@@ -1,11 +1,16 @@
 /**
- * Same-origin copies of workflow template covers.
- * Files live in the host app at public/workflow-thumbs/.
+ * Public copies of workflow template covers.
+ * Files live in this repo at public/workflow-thumbs/ (commit on main).
+ * img src must be an absolute URL: muapi.ai hosts its own Next app and does
+ * not serve this repo's public/. Relative /workflow-thumbs/ also 404s if the
+ * app is mounted under a basePath. jsDelivr serves the GitHub files (HTTP 200).
  * A few official cdn.muapi.ai/outputs covers are private (S3 403). Those
  * slugs point at another public image already embedded in that workflow.
  * paper-cutting and phoenix had no other public image; their files are the
  * same output objects, fetched from the Wayback snapshot that still returns 200.
  */
+const THUMB_CDN =
+  "https://cdn.jsdelivr.net/gh/semanassie/open-higgsfield-ai@main/public/workflow-thumbs";
 const WORKFLOW_LOCAL_THUMBS = {
   "indie-anime-maker-qwen-flux-2-pro-wan2-2": "/workflow-thumbs/indie-anime-maker-qwen-flux-2-pro-wan2-2.jpg",
   "3d-logo-animation-nano-banana-2-veo-3-1": "/workflow-thumbs/3d-logo-animation-nano-banana-2-veo-3-1.jpg",
@@ -59,5 +64,8 @@ const WORKFLOW_LOCAL_THUMBS = {
 
 export function localWorkflowThumbnail(slug) {
   if (!slug) return null;
-  return WORKFLOW_LOCAL_THUMBS[slug] || null;
+  const path = WORKFLOW_LOCAL_THUMBS[slug];
+  if (!path) return null;
+  const file = path.slice(path.lastIndexOf("/") + 1);
+  return `${THUMB_CDN}/${file}`;
 }
