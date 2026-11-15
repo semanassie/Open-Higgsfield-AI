@@ -9,6 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const { createHandlers, vorkPaths } = require('../electron/lib/vorkProvider');
+const { createHandlers: createBlenderHandlers } = require('../electron/lib/blenderProvider');
 
 const PORT = Number(process.env.VORK_BRIDGE_PORT || 3011);
 const STUDIO_ORIGINS = new Set([
@@ -71,13 +72,22 @@ function openPath(target) {
 const dataRoot = userDataPath();
 const store = vorkPaths(dataRoot);
 let latestProgress = { engine: 'vork', status: 'idle' };
+const bridgeStorage = bridgeSafeStorage(path.join(store.dataDir, 'bridge.key'));
 const handlers = createHandlers({
     userDataPath: dataRoot,
-    safeStorage: bridgeSafeStorage(path.join(store.dataDir, 'bridge.key')),
+    safeStorage: bridgeStorage,
     openPath,
     openExternal,
     onProgress: (data) => {
         latestProgress = data && typeof data === 'object' ? data : { engine: 'vork', status: 'idle' };
+    },
+});
+const blenderHandlers = createBlenderHandlers({
+    userDataPath: dataRoot,
+    safeStorage: bridgeStorage,
+    openExternal,
+    onProgress: (data) => {
+        latestProgress = data && typeof data === 'object' ? data : { engine: 'blender', status: 'idle' };
     },
 });
 
@@ -227,6 +237,62 @@ const server = http.createServer(async (req, res) => {
             send(res, 200, await handlers.cancel());
             return;
         }
+
+        if (req.method === 'GET' && url.pathname === '/v1/blender/status') {
+            send(res, 200, await blenderHandlers.getStatus());
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/binary') {
+            const body = JSON.parse((await readBody(req, 1024 * 64)).toString('utf8') || '{}');
+            send(res, 200, await blenderHandlers.setBinaryPath(body.binaryPath));
+            return;
+        }
+        if (req.method === 'GET' && url.pathname === '/v1/blender/settings') {
+            send(res, 200, await blenderHandlers.getSettings());
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/settings') {
+            const body = JSON.parse((await readBody(req, 1024 * 64)).toString('utf8') || '{}');
+            send(res, 200, await blenderHandlers.setSettings(body));
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/probe') {
+            send(res, 200, await blenderHandlers.probe());
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/build') {
+            const body = JSON.parse((await readBody(req)).toString('utf8') || '{}');
+            send(res, 200, await blenderHandlers.build(body));
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/render') {
+            const body = JSON.parse((await readBody(req)).toString('utf8') || '{}');
+            send(res, 200, await blenderHandlers.render(body));
+            return;
+        }
+        if (req.method === 'GET' && url.pathname === '/v1/blender/runpod/status') {
+            send(res, 200, await blenderHandlers.runpodStatus());
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/runpod/key') {
+            const body = JSON.parse((await readBody(req, 1024 * 64)).toString('utf8') || '{}');
+            send(res, 200, await blenderHandlers.setRunpodKey(body.apiKey));
+            return;
+        }
+        if (req.method === 'GET' && url.pathname === '/v1/blender/runpod/quote') {
+            send(res, 200, await blenderHandlers.runpodQuote());
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/runpod/billing') {
+            await blenderHandlers.openBilling();
+            send(res, 200, { ok: true });
+            return;
+        }
+        if (req.method === 'POST' && url.pathname === '/v1/blender/cancel') {
+            send(res, 200, await blenderHandlers.cancel());
+            return;
+        }
+
         send(res, 404, { error: 'not found' });
     } catch (err) {
         send(res, 500, { error: err && err.message ? err.message : String(err) });

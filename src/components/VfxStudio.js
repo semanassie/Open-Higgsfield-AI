@@ -1,5 +1,6 @@
 import { isLocalAIAvailable, localAI } from '../lib/localInferenceClient.js';
 import { vork } from '../lib/vorkClient.js';
+import { blender } from '../lib/blenderClient.js';
 import { t, tf } from '../lib/i18n.js';
 
 export function VfxStudio() {
@@ -42,6 +43,37 @@ export function VfxStudio() {
                 <button id="vfx-runpod-billing" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80">${t('vfx.runpodTopUp')}</button>
             </div>
         </div>
+        <div id="vfx-blender" class="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3">
+            <div class="text-[11px] font-bold uppercase tracking-widest text-secondary">${t('vfx.blenderTitle')}</div>
+            <p class="text-xs text-white/70 m-0">${t('vfx.blenderHint')}</p>
+            <div id="vfx-blender-status" class="text-sm text-white/80"></div>
+            <div id="vfx-blender-path" class="hidden flex gap-2"></div>
+            <div id="vfx-blender-confirm" class="hidden rounded-lg border border-white/10 bg-black/30 p-3 flex flex-col gap-2"></div>
+            <div class="flex flex-wrap gap-2">
+                <button id="vfx-blender-render" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.blenderRender')}</button>
+                <button id="vfx-blender-build" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80">${t('vfx.blenderBuild')}</button>
+                <button id="vfx-blender-cancel" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-white/10 text-white/70">${t('common.cancel')}</button>
+            </div>
+            <details id="vfx-blender-settings" class="rounded-lg border border-white/10 bg-black/20 p-3">
+                <summary class="text-xs font-bold text-white/80 cursor-pointer">${t('vfx.blenderSettings')}</summary>
+                <div class="mt-3 flex flex-col gap-2">
+                    <label class="text-[11px] text-white/60">${t('vfx.blenderWidth')}
+                        <input id="vfx-blender-width" type="number" min="64" max="4096" step="1"
+                            class="mt-1 w-full rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs text-white outline-none">
+                    </label>
+                    <label class="text-[11px] text-white/60">${t('vfx.blenderHeight')}
+                        <input id="vfx-blender-height" type="number" min="64" max="4096" step="1"
+                            class="mt-1 w-full rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs text-white outline-none">
+                    </label>
+                    <label class="text-[11px] text-white/60">${t('vfx.blenderSamples')}
+                        <input id="vfx-blender-samples" type="number" min="1" max="4096" step="1"
+                            class="mt-1 w-full rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs text-white outline-none">
+                    </label>
+                    <button id="vfx-blender-save-settings" class="self-start px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/20 text-primary border border-primary/30">${t('vfx.blenderSaveSettings')}</button>
+                    <div id="vfx-blender-keyrow" class="hidden flex gap-2"></div>
+                </div>
+            </details>
+        </div>
     `;
 
     const statusEl = inner.querySelector('#vfx-status');
@@ -61,7 +93,22 @@ export function VfxStudio() {
     const runpodFinal = inner.querySelector('#vfx-runpod-final');
     const runpodClip = inner.querySelector('#vfx-runpod-clip');
     const runpodBilling = inner.querySelector('#vfx-runpod-billing');
-    const actionBtns = [setupBtn, importBtn, previsBtn, finalBtn, clipBtn, runpodPrevis, runpodFinal, runpodClip];
+    const blenderStatusEl = inner.querySelector('#vfx-blender-status');
+    const blenderPathRow = inner.querySelector('#vfx-blender-path');
+    const blenderConfirm = inner.querySelector('#vfx-blender-confirm');
+    const blenderRenderBtn = inner.querySelector('#vfx-blender-render');
+    const blenderBuildBtn = inner.querySelector('#vfx-blender-build');
+    const blenderCancelBtn = inner.querySelector('#vfx-blender-cancel');
+    const blenderWidth = inner.querySelector('#vfx-blender-width');
+    const blenderHeight = inner.querySelector('#vfx-blender-height');
+    const blenderSamples = inner.querySelector('#vfx-blender-samples');
+    const blenderSaveSettings = inner.querySelector('#vfx-blender-save-settings');
+    const blenderKeyRow = inner.querySelector('#vfx-blender-keyrow');
+    const actionBtns = [
+        setupBtn, importBtn, previsBtn, finalBtn, clipBtn,
+        runpodPrevis, runpodFinal, runpodClip,
+        blenderRenderBtn, blenderBuildBtn, blenderSaveSettings,
+    ];
 
     const bridgeMode = !isLocalAIAvailable();
 
@@ -373,13 +420,215 @@ export function VfxStudio() {
         }
     };
 
+    const blenderProgressText = (data) => {
+        const seconds = Math.round((data.elapsedMs || 0) / 1000);
+        const key = {
+            build: 'vfx.blenderBuildingFor',
+            rent: 'vfx.runpodRenting',
+            wait: 'vfx.runpodWaiting',
+            install: 'vfx.blenderInstalling',
+            transfer: 'vfx.runpodTransfer',
+            fetch: 'vfx.runpodFetch',
+            shutdown: 'vfx.runpodStopping',
+            render: 'vfx.renderingFor',
+        }[data.task];
+        if (key) return tf(key, seconds);
+        return tf('vfx.renderingFor', seconds);
+    };
+
+    const fillBlenderSettings = (settings) => {
+        const next = settings || { resolution: [1280, 720], samples: 64 };
+        blenderWidth.value = String(next.resolution?.[0] || 1280);
+        blenderHeight.value = String(next.resolution?.[1] || 720);
+        blenderSamples.value = String(next.samples || 64);
+    };
+
+    const showBlenderStatus = async () => {
+        const status = await blender.getStatus();
+        if (status.desktopOnly) {
+            blenderStatusEl.textContent = t('vfx.blenderDesktopOnly');
+            blenderRenderBtn.disabled = true;
+            blenderBuildBtn.disabled = true;
+            return;
+        }
+        fillBlenderSettings(status.settings);
+        if (!status.found) {
+            blenderStatusEl.textContent = t('vfx.blenderBinaryMissing');
+            blenderPathRow.classList.remove('hidden');
+            return;
+        }
+        blenderPathRow.classList.add('hidden');
+        const probe = await blender.probe();
+        if (!probe.ok) {
+            blenderStatusEl.textContent = tf('vfx.blenderBinaryUnusable', probe.error || status.binaryPath);
+            return;
+        }
+        blenderStatusEl.textContent = tf('vfx.blenderBinaryFound', probe.version || status.binaryPath);
+    };
+
+    blenderPathRow.innerHTML = `
+        <input id="vfx-blender-binary" type="text" placeholder="${t('vfx.blenderPathPlaceholder')}"
+            class="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs text-white outline-none">
+        <button id="vfx-blender-save-path" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.savePath')}</button>
+    `;
+    blenderPathRow.querySelector('#vfx-blender-save-path').onclick = async () => {
+        const value = blenderPathRow.querySelector('#vfx-blender-binary').value;
+        try {
+            await blender.setBinaryPath(value);
+            await showBlenderStatus();
+        } catch (err) {
+            blenderStatusEl.textContent = err.message || String(err);
+        }
+    };
+
+    blenderKeyRow.innerHTML = `
+        <input id="vfx-blender-runpod-key" type="password" autocomplete="off" placeholder="${t('vfx.runpodKeyPlaceholder')}"
+            class="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-1.5 text-xs text-white outline-none">
+        <button id="vfx-blender-runpod-save" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black">${t('vfx.runpodSaveKey')}</button>
+    `;
+    blenderKeyRow.querySelector('#vfx-blender-runpod-save').onclick = async () => {
+        const value = blenderKeyRow.querySelector('#vfx-blender-runpod-key').value;
+        try {
+            await blender.setRunpodKey(value);
+            blenderKeyRow.querySelector('#vfx-blender-runpod-key').value = '';
+            blenderKeyRow.classList.add('hidden');
+            blenderStatusEl.textContent = t('vfx.blenderKeySaved');
+        } catch (err) {
+            blenderStatusEl.textContent = err.message || String(err);
+        }
+    };
+
+    blenderSaveSettings.onclick = async () => {
+        try {
+            const saved = await blender.setSettings({
+                width: Number(blenderWidth.value),
+                height: Number(blenderHeight.value),
+                samples: Number(blenderSamples.value),
+            });
+            fillBlenderSettings(saved);
+            blenderStatusEl.textContent = t('vfx.blenderSettingsSaved');
+        } catch (err) {
+            blenderStatusEl.textContent = err.message || String(err);
+        }
+    };
+
+    const blenderBuildOnly = async () => {
+        if (rendering) return;
+        setBusy(true);
+        blenderConfirm.classList.add('hidden');
+        blenderStatusEl.textContent = t('vfx.blenderBuilding');
+        try {
+            const built = await blender.build();
+            blenderStatusEl.textContent = built.audit
+                ? tf('vfx.blenderBuilt', built.audit)
+                : t('vfx.blenderBuildDone');
+        } catch (err) {
+            blenderStatusEl.textContent = err.message || String(err);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const blenderRenderJob = async () => {
+        setBusy(true);
+        blenderConfirm.classList.add('hidden');
+        blenderStatusEl.textContent = t('vfx.rendering');
+        resultEl.classList.add('hidden');
+        try {
+            const result = await blender.render();
+            showResult(result);
+            if (result?.audit) {
+                blenderStatusEl.textContent = `${t('vfx.done')} · ${result.audit}`;
+            }
+        } catch (err) {
+            const message = err.message || String(err);
+            blenderStatusEl.textContent = message;
+            showPlaceholder(message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const askBlenderRender = async () => {
+        if (rendering) return;
+        setBusy(true);
+        blenderConfirm.classList.add('hidden');
+        try {
+            const status = await blender.runpodStatus();
+            if (!status.encryptionAvailable) {
+                blenderStatusEl.textContent = t('vfx.runpodNoEncryption');
+                setBusy(false);
+                return;
+            }
+            if (!status.hasKey) {
+                blenderKeyRow.classList.remove('hidden');
+                blenderStatusEl.textContent = t('vfx.runpodKeyMissing');
+                setBusy(false);
+                return;
+            }
+            blenderKeyRow.classList.add('hidden');
+            const quote = await blender.runpodQuote();
+            if (!quote?.ok) {
+                blenderStatusEl.textContent = quote?.error || t('vfx.runpodBalanceUnknown');
+                setBusy(false);
+                return;
+            }
+            const amount = `${quote.amount} ${quote.currency || 'USD'}`;
+            const price = quote.hourlyPrice == null
+                ? t('vfx.runpodPriceUnknown')
+                : tf('vfx.runpodPrice', quote.hourlyPrice, quote.currency || 'USD');
+            blenderConfirm.innerHTML = '';
+            const line = document.createElement('p');
+            line.className = `text-xs m-0 ${quote.low ? 'text-amber-300' : 'text-white/80'}`;
+            line.textContent = tf('vfx.blenderConfirm', amount, price);
+            const row = document.createElement('div');
+            row.className = 'flex gap-2';
+            const go = document.createElement('button');
+            go.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-black';
+            go.textContent = t('vfx.runpodConfirmButton');
+            const stop = document.createElement('button');
+            stop.className = 'px-3 py-1.5 rounded-lg text-xs font-bold border border-white/15 text-white/80';
+            stop.textContent = t('common.cancel');
+            stop.onclick = () => {
+                blenderConfirm.classList.add('hidden');
+                setBusy(false);
+            };
+            go.onclick = () => blenderRenderJob();
+            row.append(go, stop);
+            blenderConfirm.append(line, row);
+            blenderConfirm.classList.remove('hidden');
+        } catch (err) {
+            blenderStatusEl.textContent = err.message || String(err);
+            setBusy(false);
+        }
+    };
+
+    blenderRenderBtn.onclick = () => askBlenderRender();
+    blenderBuildBtn.onclick = () => blenderBuildOnly();
+    blenderCancelBtn.onclick = () => {
+        blender.cancel();
+        vork.cancel();
+        setBusy(false);
+        blenderStatusEl.textContent = t('vfx.cancelled');
+        statusEl.textContent = t('vfx.cancelled');
+    };
+
     const onVorkProgress = (data) => {
+        if (data?.engine === 'blender') {
+            if (data.status === 'done' || data.status === 'idle') return;
+            blenderStatusEl.textContent = blenderProgressText(data);
+            return;
+        }
         if (data?.engine !== 'vork') return;
         if (data.status === 'done' || data.status === 'idle') return;
         statusEl.textContent = progressText(data);
     };
     const offProgress = bridgeMode
-        ? vork.watchProgress(onVorkProgress)
+        ? (() => {
+            const offVork = vork.watchProgress(onVorkProgress);
+            const offBlender = blender.watchProgress(onVorkProgress);
+            return () => { offVork(); offBlender(); };
+        })()
         : localAI.onProgress(onVorkProgress);
 
     const detach = new MutationObserver(() => {
@@ -395,6 +644,7 @@ export function VfxStudio() {
     showStatus().catch((err) => { statusEl.textContent = err.message || String(err); });
     showScene().catch(() => { sceneEl.textContent = ''; });
     refreshRunpod().catch((err) => { runpodBalance.textContent = err.message || String(err); });
+    showBlenderStatus().catch((err) => { blenderStatusEl.textContent = err.message || String(err); });
 
     return container;
 }

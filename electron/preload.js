@@ -46,6 +46,22 @@ contextBridge.exposeInMainWorld('localAI', {
         openRunpodBilling: () => ipcRenderer.invoke('vork:runpod-open-billing'),
     },
 
+    // ── Blender (headless local build + RunPod Cycles still) ──
+    blender: {
+        getStatus: () => ipcRenderer.invoke('blender:get-status'),
+        setBinaryPath: (binaryPath) => ipcRenderer.invoke('blender:set-binary-path', binaryPath),
+        getSettings: () => ipcRenderer.invoke('blender:get-settings'),
+        setSettings: (settings) => ipcRenderer.invoke('blender:set-settings', settings),
+        probe: () => ipcRenderer.invoke('blender:probe'),
+        build: (params) => ipcRenderer.invoke('blender:build', params || {}),
+        render: (params) => ipcRenderer.invoke('blender:render', params || {}),
+        cancel: () => ipcRenderer.invoke('blender:cancel'),
+        runpodStatus: () => ipcRenderer.invoke('blender:runpod-status'),
+        setRunpodKey: (apiKey) => ipcRenderer.invoke('blender:runpod-set-key', apiKey),
+        runpodQuote: () => ipcRenderer.invoke('blender:runpod-quote'),
+        openRunpodBilling: () => ipcRenderer.invoke('blender:runpod-open-billing'),
+    },
+
     // Progress events — both engines emit on local-ai:progress
     onProgress: (callback) => {
         const listener = (_, data) => callback(data);
