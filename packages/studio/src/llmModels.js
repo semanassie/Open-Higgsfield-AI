@@ -1,6 +1,6 @@
 /**
  * Hand-maintained Director LLM catalog.
- * Text-generation slugs from GET https://api.muapi.ai/api/v1/models (2026-11-08).
+ * Text-generation slugs from GET https://api.muapi.ai/api/v1/models (2026-11-18).
  * OpenAI-compatible Gemini twins and non-chat tools are omitted.
  * Not generated from models_dump.json — do not add these rows to models.js.
  * transport "slug" posts /api/v1/{endpoint} with prompt + system_prompt.
@@ -8,6 +8,7 @@
  */
 
 export const LLM_FAMILY_PRIORITY = [
+  "gpt-6.2",
   "gpt-6",
   "gpt-5.6",
   "gpt-5.5",
@@ -31,6 +32,7 @@ export const LLM_FAMILY_PRIORITY = [
 
 /** First mode when the user picks a family. Director's initial state is still no id. */
 export const LLM_FAMILY_DEFAULT_ID = {
+  "gpt-6.2": "gpt-6-2-astra",
   "gpt-6": "gpt-6-astra",
   "gpt-5.6": "gpt-5-6-sol",
   "gpt-5.5": "gpt-5-5",
@@ -38,11 +40,11 @@ export const LLM_FAMILY_DEFAULT_ID = {
   "gpt-5.2": "gpt-5-2",
   "gpt-5": "gpt-5-nano",
   "gpt-codex": "gpt-codex",
-  "claude-fable": "claude-fable-5-1",
+  "claude-fable": "claude-fable-5-2",
   "claude-opus": "claude-opus-5-5",
   "claude-sonnet": "claude-sonnet-5-5",
   "claude-haiku": "claude-haiku-5-5",
-  "gemini-4": "gemini-4-argon",
+  "gemini-4": "gemini-4-carbon",
   "gemini-3.8": "gemini-3-8-flash",
   "gemini-3-pro": "gemini-3-1-pro",
   "gemini-flash": "gemini-3-7-flash",
@@ -67,6 +69,8 @@ function llmEntry(name, family, modeKey, modeLabel, slug) {
 }
 
 export const llmModels = [
+  llmEntry("GPT-6.2", "gpt-6.2", "astra", "Astra", "gpt-6-2-astra"),
+  llmEntry("GPT-6.2", "gpt-6.2", "sol", "Sol", "gpt-6-2-sol"),
   llmEntry("GPT-6", "gpt-6", "astra", "Astra", "gpt-6-astra"),
   llmEntry("GPT-6", "gpt-6", "1-sol", "6.1 Sol", "gpt-6-1-sol"),
   llmEntry("GPT-6", "gpt-6", "1-terra", "6.1 Terra", "gpt-6-1-terra"),
@@ -81,6 +85,7 @@ export const llmModels = [
   llmEntry("GPT-5", "gpt-5", "nano", "Nano", "gpt-5-nano"),
   llmEntry("GPT-5", "gpt-5", "mini", "Mini", "gpt-5-mini"),
   llmEntry("GPT Codex", "gpt-codex", "standard", "Standard", "gpt-codex"),
+  llmEntry("Claude Fable", "claude-fable", "5-2", "5.2", "claude-fable-5-2"),
   llmEntry("Claude Fable", "claude-fable", "5", "5", "claude-fable-5"),
   llmEntry("Claude Fable", "claude-fable", "5-1", "5.1", "claude-fable-5-1"),
   llmEntry("Claude Opus", "claude-opus", "5-5", "5.5", "claude-opus-5-5"),
@@ -95,6 +100,8 @@ export const llmModels = [
   llmEntry("Claude Sonnet", "claude-sonnet", "4-5", "4.5", "claude-sonnet-4-5"),
   llmEntry("Claude Haiku", "claude-haiku", "5-5", "5.5", "claude-haiku-5-5"),
   llmEntry("Claude Haiku", "claude-haiku", "4-5", "4.5", "claude-haiku-4-5"),
+  llmEntry("Gemini 4", "gemini-4", "carbon", "Carbon", "gemini-4-carbon"),
+  llmEntry("Gemini 4", "gemini-4", "hydrogen", "Hydrogen", "gemini-4-hydrogen"),
   llmEntry("Gemini 4", "gemini-4", "argon", "Argon", "gemini-4-argon"),
   llmEntry("Gemini 3.8 Flash", "gemini-3.8", "flash", "Flash", "gemini-3-8-flash"),
   llmEntry("Gemini 3 Pro", "gemini-3-pro", "pro", "Pro", "gemini-3-pro"),

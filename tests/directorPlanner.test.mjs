@@ -219,6 +219,8 @@ test('DirectorStudio mounts with dataset.studio = director and restores session'
 });
 
 const P1_SLUGS = [
+    'gpt-6-2-astra',
+    'gpt-6-2-sol',
     'gpt-6-astra',
     'gpt-6-1-sol',
     'gpt-6-1-terra',
@@ -233,6 +235,7 @@ const P1_SLUGS = [
     'gpt-5-nano',
     'gpt-5-mini',
     'gpt-codex',
+    'claude-fable-5-2',
     'claude-fable-5',
     'claude-fable-5-1',
     'claude-opus-5-5',
@@ -247,6 +250,8 @@ const P1_SLUGS = [
     'claude-sonnet-4-5',
     'claude-haiku-5-5',
     'claude-haiku-4-5',
+    'gemini-4-carbon',
+    'gemini-4-hydrogen',
     'gemini-4-argon',
     'gemini-3-8-flash',
     'gemini-3-pro',
@@ -267,8 +272,8 @@ const P1_SLUGS = [
     'deepseek-v4-flash',
 ];
 
-test('LLM catalog matches the 2026-11-08 text-generation shortlist', () => {
-    assert.equal(llmModels.length, 46);
+test('LLM catalog matches the 2026-11-18 text-generation shortlist', () => {
+    assert.equal(llmModels.length, 51);
     assert.deepEqual(llmModels.map((m) => m.id), P1_SLUGS);
     for (const model of llmModels) {
         assert.equal(model.transport, 'slug');
@@ -281,10 +286,11 @@ test('LLM catalog matches the 2026-11-08 text-generation shortlist', () => {
         assert.equal(/abliterated|llama-4|qwen3-vl|openrouter/i.test(model.id), false);
     }
     assert.deepEqual(Object.keys(LLM_FAMILY_DEFAULT_ID), LLM_FAMILY_PRIORITY);
+    assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-6.2'], 'gpt-6-2-astra');
     assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-6'], 'gpt-6-astra');
     assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-5.6'], 'gpt-5-6-sol');
     assert.equal(LLM_FAMILY_DEFAULT_ID['gpt-5.5'], 'gpt-5-5');
-    assert.equal(LLM_FAMILY_DEFAULT_ID['claude-fable'], 'claude-fable-5-1');
+    assert.equal(LLM_FAMILY_DEFAULT_ID['claude-fable'], 'claude-fable-5-2');
     assert.equal(LLM_FAMILY_DEFAULT_ID['claude-opus'], 'claude-opus-5-5');
     assert.equal(LLM_FAMILY_DEFAULT_ID['claude-sonnet'], 'claude-sonnet-5-5');
     assert.equal(LLM_FAMILY_DEFAULT_ID['gemini-3.8'], 'gemini-3-8-flash');
@@ -299,9 +305,10 @@ test('LLM catalog matches the 2026-11-08 text-generation shortlist', () => {
     const families = getFamilies(llmModels, { preferredOrder: LLM_FAMILY_PRIORITY });
     assert.deepEqual(families.map((f) => f.id), LLM_FAMILY_PRIORITY);
     const modeCount = Object.fromEntries(families.map((f) => [f.id, f.modes.length]));
+    assert.equal(modeCount['gpt-6.2'], 2);
     assert.equal(modeCount['gpt-6'], 5);
     assert.equal(modeCount['gpt-5.6'], 3);
-    assert.equal(modeCount['claude-fable'], 2);
+    assert.equal(modeCount['claude-fable'], 3);
     assert.equal(modeCount['claude-opus'], 6);
     assert.equal(modeCount['claude-sonnet'], 4);
     assert.equal(modeCount['claude-haiku'], 2);
@@ -310,7 +317,8 @@ test('LLM catalog matches the 2026-11-08 text-generation shortlist', () => {
     assert.equal(modeCount['gemini-2.5'], 2);
     assert.equal(modeCount['grok-4'], 4);
     assert.equal(modeCount['deepseek-v4'], 3);
-    for (const id of ['gpt-5.5', 'gpt-5.4', 'gpt-5.2', 'gpt-codex', 'gemini-4', 'gemini-3.8', 'kimi']) {
+    assert.equal(modeCount['gemini-4'], 3);
+    for (const id of ['gpt-5.5', 'gpt-5.4', 'gpt-5.2', 'gpt-codex', 'gemini-3.8', 'kimi']) {
         assert.equal(modeCount[id], 1);
     }
     assert.equal(modeCount['gpt-5'], 2);

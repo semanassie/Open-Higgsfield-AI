@@ -6,6 +6,7 @@
 
 /** Preferred family order for Video (P1 + popular). Unknown families sort after. */
 export const VIDEO_FAMILY_PRIORITY = [
+  "seedance-2.5-flash",
   "seedance-2.5",
   "seedance-v2.0",
   "seedance-v1.5-pro",
@@ -31,6 +32,9 @@ export const VIDEO_FAMILY_PRIORITY = [
 
 /** Preferred family order for Image. */
 export const IMAGE_FAMILY_PRIORITY = [
+  "seedream-5.5",
+  "kling-4.0-image",
+  "minimax-h3-image",
   "flux-3",
   "flux-2",
   "flux",
