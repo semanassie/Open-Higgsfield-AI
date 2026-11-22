@@ -134,6 +134,20 @@ export default function McpCliStudio() {
           })}
         </section>
 
+        <section className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 md:p-8 flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-white/50">
+              Blender VFX (desktop bridge)
+            </span>
+            <div className="flex-1 h-px bg-white/5" />
+          </div>
+          <p className="text-sm text-white/60 m-0">
+            Blender scene planning and render live in the VFX studio via the desktop app or
+            launch.bat bridge — not as a Cursor skill and not through muapi-mcp. MuAPI any-llm
+            plans the shot inside the app; local Blender builds; your RunPod GPU renders.
+          </p>
+        </section>
+
         {/* Examples */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">

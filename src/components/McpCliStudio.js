@@ -74,6 +74,17 @@ export function McpCliStudio() {
 
     inner.appendChild(cards);
 
+    const blenderNote = document.createElement('section');
+    blenderNote.className = 'glass-panel rounded-2xl p-6 md:p-8 flex flex-col gap-2';
+    blenderNote.innerHTML = `
+        <div class="flex items-center gap-2">
+            <span class="text-[11px] font-bold uppercase tracking-widest text-secondary">${t('mcp.blenderNoteTitle')}</span>
+            <div class="flex-1 h-px bg-white/5"></div>
+        </div>
+        <p class="text-sm text-white/70 m-0">${t('mcp.blenderNote')}</p>
+    `;
+    inner.appendChild(blenderNote);
+
     // Usage examples
     const examples = document.createElement('section');
     examples.className = 'flex flex-col gap-4';
