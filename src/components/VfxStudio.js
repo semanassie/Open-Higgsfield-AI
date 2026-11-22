@@ -1,6 +1,7 @@
 import { isLocalAIAvailable, localAI } from '../lib/localInferenceClient.js';
 import { vork } from '../lib/vorkClient.js';
 import { blender } from '../lib/blenderClient.js';
+import { planBlenderScene } from '../lib/blenderPlanClient.js';
 import { t, tf } from '../lib/i18n.js';
 
 export function VfxStudio() {
@@ -46,6 +47,8 @@ export function VfxStudio() {
         <div id="vfx-blender" class="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3">
             <div class="text-[11px] font-bold uppercase tracking-widest text-secondary">${t('vfx.blenderTitle')}</div>
             <p class="text-xs text-white/70 m-0">${t('vfx.blenderHint')}</p>
+            <textarea id="vfx-blender-prompt" rows="2" placeholder="${t('vfx.blenderPromptPlaceholder')}"
+                class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-xs text-white outline-none resize-y min-h-[2.5rem]"></textarea>
             <div id="vfx-blender-status" class="text-sm text-white/80"></div>
             <div id="vfx-blender-path" class="hidden flex gap-2"></div>
             <div id="vfx-blender-confirm" class="hidden rounded-lg border border-white/10 bg-black/30 p-3 flex flex-col gap-2"></div>
@@ -93,6 +96,7 @@ export function VfxStudio() {
     const runpodFinal = inner.querySelector('#vfx-runpod-final');
     const runpodClip = inner.querySelector('#vfx-runpod-clip');
     const runpodBilling = inner.querySelector('#vfx-runpod-billing');
+    const blenderPromptEl = inner.querySelector('#vfx-blender-prompt');
     const blenderStatusEl = inner.querySelector('#vfx-blender-status');
     const blenderPathRow = inner.querySelector('#vfx-blender-path');
     const blenderConfirm = inner.querySelector('#vfx-blender-confirm');
@@ -113,6 +117,32 @@ export function VfxStudio() {
     const bridgeMode = !isLocalAIAvailable();
 
     let rendering = false;
+    let plannedScene = null;
+
+    const resolveBlenderScene = async () => {
+        blenderStatusEl.textContent = t('vfx.blenderPlanning');
+        let fallback = null;
+        try {
+            fallback = await vork.getScene();
+        } catch {
+            fallback = null;
+        }
+        const planned = await planBlenderScene(blenderPromptEl.value, { fallbackScene: fallback });
+        plannedScene = planned.scene;
+        if (planned.source === 'llm') {
+            blenderStatusEl.textContent = t('vfx.blenderPlanReady');
+            sceneEl.textContent = JSON.stringify(planned.scene, null, 2);
+        } else if (planned.source === 'prompt-empty') {
+            blenderStatusEl.textContent = t('vfx.blenderPlanSkipped');
+        } else {
+            blenderStatusEl.textContent = tf(
+                'vfx.blenderPlanFallback',
+                planned.error || t('vfx.blenderPlanFallbackGeneric'),
+            );
+            sceneEl.textContent = JSON.stringify(planned.scene, null, 2);
+        }
+        return planned.scene;
+    };
 
     const setBusy = (busy) => {
         rendering = busy;
@@ -516,9 +546,10 @@ export function VfxStudio() {
         if (rendering) return;
         setBusy(true);
         blenderConfirm.classList.add('hidden');
-        blenderStatusEl.textContent = t('vfx.blenderBuilding');
         try {
-            const built = await blender.build();
+            const scene = await resolveBlenderScene();
+            blenderStatusEl.textContent = t('vfx.blenderBuilding');
+            const built = await blender.build({ scene });
             blenderStatusEl.textContent = built.audit
                 ? tf('vfx.blenderBuilt', built.audit)
                 : t('vfx.blenderBuildDone');
@@ -529,13 +560,14 @@ export function VfxStudio() {
         }
     };
 
-    const blenderRenderJob = async () => {
+    const blenderRenderJob = async (scene) => {
         setBusy(true);
         blenderConfirm.classList.add('hidden');
         blenderStatusEl.textContent = t('vfx.rendering');
         resultEl.classList.add('hidden');
         try {
-            const result = await blender.render();
+            const payload = scene || plannedScene || await resolveBlenderScene();
+            const result = await blender.render({ scene: payload });
             showResult(result);
             if (result?.audit) {
                 blenderStatusEl.textContent = `${t('vfx.done')} · ${result.audit}`;
@@ -554,6 +586,7 @@ export function VfxStudio() {
         setBusy(true);
         blenderConfirm.classList.add('hidden');
         try {
+            const scene = await resolveBlenderScene();
             const status = await blender.runpodStatus();
             if (!status.encryptionAvailable) {
                 blenderStatusEl.textContent = t('vfx.runpodNoEncryption');
@@ -593,7 +626,7 @@ export function VfxStudio() {
                 blenderConfirm.classList.add('hidden');
                 setBusy(false);
             };
-            go.onclick = () => blenderRenderJob();
+            go.onclick = () => blenderRenderJob(scene);
             row.append(go, stop);
             blenderConfirm.append(line, row);
             blenderConfirm.classList.remove('hidden');
